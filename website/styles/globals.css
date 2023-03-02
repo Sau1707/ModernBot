@@ -1,0 +1,34 @@
+html,
+body {
+	padding: 0;
+	margin: 0;
+	font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
+		Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+	background: url(https://gpit.innogamescdn.com/images/game/common/water_base.png) 0px 0px repeat
+		rgb(0, 0, 0);
+	overflow-y: overlay;
+	max-width: 100%;
+	overflow-x: hidden;
+}
+
+body::-webkit-scrollbar {
+	width: 10px;
+	padding: 10px;
+}
+
+body::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+body::-webkit-scrollbar-thumb {
+	background-color: rgb(92 84 67);
+	border-radius: 20px;
+	border: 10px solid transparent;
+}
+
+.MuiPaper-root {
+	overflow: visible !important;
+}
+* {
+	box-sizing: border-box;
+}
