@@ -1,0 +1,30 @@
+name: Deploy to Github Pages
+
+on:
+    push:
+        branches:
+            - main
+
+    workflow_dispatch:
+
+jobs:
+    deployment:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 'lts/*'
+                  cache: 'npm'
+                  cache-dependency-path: '**/package-lock.json'
+            - name: Build
+              working-directory: website
+              run: |
+                  npm i --legacy-peer-deps
+                  npm run build
+                  npm run export
+            - name: Deploy
+              uses: peaceiris/actions-gh-pages@v3
+              with:
+                  deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+                  publish_dir: ./website/out
