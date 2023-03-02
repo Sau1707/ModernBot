@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { useState } from 'react';
 
 import Card from 'react-bootstrap/Card';
 import GrepoBox from './GrepoBox';
-import GrepoButton from './GrepoButton';
-import styled from 'styled-components';
 import GrepoModal from './GrepoModal';
 
 const ToolGrid = styled.div`
@@ -16,10 +15,8 @@ const ToolGrid = styled.div`
 	margin-right: 10%;
 `;
 
-/* 
-    color: green | orange | red;
-*/
-function Tool({ title, version, id, url, description, markdown }) {
+
+function Tool({ title, version, description, markdown }) {
     const [open, setOpen] = useState(false);
 
     const handleClickOpen = (e) => {
@@ -76,12 +73,7 @@ const StyledCard = styled(Card)`
     transition: transform 0.1s ease-in-out;
 
     &:hover {
-        transform: rotate(5deg);
-        //animation: shake-rotate 0.5s forwards;
-    }
-
-    &:hover:active {
-        transform: rotate(-5deg);
+        transform: rotate(1deg);
     }
 `
 const BoldTitle = styled.h2`

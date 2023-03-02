@@ -90,16 +90,6 @@ export function getStaticProps(id) {
 const MERGED = 'https://raw.githubusercontent.com/Sau1707/Grepolis/main/merged/merged.user.js';
 
 export default function Home({ data, mergedVersion }) {
-    const [state, setState] = useState('install'); // install | installed | update
-    useEffect(() => {
-        window.addEventListener(`gt_update_grepotweaksmerged`, (e) => {
-            if (!e.detail) return;
-            const v = e.detail.version;
-            if (!v) return;
-            if (v == mergedVersion) setState('installed');
-            else setState('update');
-        });
-    }, []);
 
     return (
         <>
@@ -124,7 +114,7 @@ export default function Home({ data, mergedVersion }) {
                     }}
                 >
                     <GrepoScroll />
-                    <div style={{ margin: 'auto', textAlign: 'center', marginTop: 20 }}>
+                    <div style={{ margin: 'auto', textAlign: 'center', marginTop: 10 }}>
                         <h4 style={{ color: 'white', marginBottom: 0 }}>
                             Open source on{' '}
                             <a
@@ -136,28 +126,10 @@ export default function Home({ data, mergedVersion }) {
                             </a>
                         </h4>
                         <h6 style={{ color: 'white' }}> Created by Sau1707 </h6>
-                        <br />
-                        <br />
-                        <br />
-                        <h4 style={{ color: 'white', textShadow: '1px 1px 2px black' }}>
-                            Click to install
-                        </h4>
-                        <div style={{ margin: 'auto', width: 'fit-content' }}>
-                            {state == 'install' && (
-                                <GrepoButton color='red' href={MERGED}>
-                                    Install
-                                </GrepoButton>
-                            )}
-                            {state == 'update' && (
-                                <GrepoButton color='blue' href={MERGED}>
-                                    Update
-                                </GrepoButton>
-                            )}
-                            {state == 'installed' && (
-                                <GrepoButton color='yellow' href={MERGED}>
-                                    Installed
-                                </GrepoButton>
-                            )}
+                        <div style={{ margin: 'auto', marginTop: 0, width: 'fit-content' }}>
+                            <GrepoButton color='red' href={MERGED}>
+                                Install
+                            </GrepoButton>
                         </div>
                     </div>
                 </div>
@@ -165,10 +137,10 @@ export default function Home({ data, mergedVersion }) {
 
                 <ToolGrid style={{ marginBottom: 100 }}>
                     <h4 style={{ color: 'white', marginBottom: 0, width: "100%", textAlign: "center" }}>
-                        List of features
+                        Features
                     </h4>
                     {data.map((e, i) => (
-                        <Tool key={i} {...e} />
+                        <Tool key={e} {...e} />
                     ))}
                 </ToolGrid>
 
