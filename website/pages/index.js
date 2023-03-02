@@ -15,7 +15,7 @@ import GrepoButton from '../components/GrepoButton';
 
 const postsDirectory = '../markdown';
 
-export function getStaticProps(id) {
+export function getStaticProps() {
 	var files = fs.readdirSync(postsDirectory);
 	let scripts = [];
 
@@ -46,9 +46,9 @@ export function getStaticProps(id) {
 	};
 }
 
-const MERGED = 'https://raw.githubusercontent.com/Sau1707/Grepolis/main/merged/merged.user.js';
+const MERGED = 'https://github.com/Sau1707/ModernBot/raw/main/dist/merged.user.js';
 
-export default function Home({ data, mergedVersion }) {
+export default function Home({ data }) {
 	return (
 		<>
 			<Head>

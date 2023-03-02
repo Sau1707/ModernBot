@@ -4,15 +4,17 @@ const concat = require('gulp-concat');
 var cleanCSS = require('gulp-clean-css');
 const through2 = require('through2');
 
+OUTPUT = 'merged.user.js';
+
 // Gulp task to minify JavaScript files
 gulp.task('scripts', () => {
 	return gulp
 		.src('./src/util.js')
-		.pipe(concat('main.user.js'))
+		.pipe(concat(OUTPUT))
 		.pipe(gulp.src(['./src/**/*.js', '!./src/setup.js', '!./src/util.js']))
-		.pipe(concat('main.user.js'))
+		.pipe(concat(OUTPUT))
 		.pipe(gulp.src('./src/setup.js'))
-		.pipe(concat('main.user.js'))
+		.pipe(concat(OUTPUT))
 		.pipe(gulp.dest('./dist/'));
 });
 
@@ -28,7 +30,7 @@ gulp.task('merge', function () {
 	let cssContents = fs.readFileSync('./dist/all.css', 'utf8');
 
 	return gulp
-		.src('./dist/main.user.js')
+		.src(`./dist/${OUTPUT}`)
 		.pipe(
 			through2.obj(function (file, enc, cb) {
 				file.contents = Buffer.concat([
