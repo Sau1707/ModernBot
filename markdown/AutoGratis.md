@@ -1,7 +1,14 @@
---
-title: AutoGratis
-description: Click the gratis button so you don't have to do it
-
+---
+description: Click the 5 min gratis button, so that you don't have to do it
+version: 1.0.0
 ---
 
-## TODO
+## Auto 5 min
+
+![Alt text](./images/fivemin.png "sentinel_button")
+
+-   Self explanatory, activate and every 4 seconds check if the green 5 min button exists on the screen, in that case click it.
+
+### Planned updates
+
+-   Automatically skip the 5 min everywhere, also where the 5 min is not visible but esist

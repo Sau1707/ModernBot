@@ -16,7 +16,7 @@ const ToolGrid = styled.div`
 `;
 
 
-function Tool({ title, version, description, markdown }) {
+function Tool({ id, title, version, description, contentHtml }) {
     const [open, setOpen] = useState(false);
 
     const handleClickOpen = (e) => {
@@ -37,7 +37,7 @@ function Tool({ title, version, description, markdown }) {
                 <GrepoBox>
                     <Card.Body>
                         <Card.Title>
-                            <BoldTitle>{title}</BoldTitle>
+                            <BoldTitle>{id}</BoldTitle>
                             <Version>Version {version}</Version>
                         </Card.Title>
                         <Description>{description}</Description>
@@ -45,7 +45,7 @@ function Tool({ title, version, description, markdown }) {
                 </GrepoBox>
             </StyledCard>
             <GrepoModal open={open} onClose={handleClose}>
-                <div dangerouslySetInnerHTML={{ __html: markdown }} />
+                <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
             </GrepoModal>
         </>
     );
