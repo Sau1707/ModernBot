@@ -14,6 +14,9 @@ HEADER = `
 // @version      1.0.0
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
+// @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
+// @downloadURL  https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
+// @icon         https://raw.githubusercontent.com/Sau1707/ModernBot/main/img/gear.png
 // ==/UserScript==
 
 `
