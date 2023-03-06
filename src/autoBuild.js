@@ -291,6 +291,13 @@ class AutoBuild extends ModernUtil {
 	/* Main loop for building */
 	main = async () => {
 		for (let town_id of Object.keys(this.towns_buildings)) {
+			/* If the town don't exists in list, remove it to prevent errors */
+			if (!ITowns.towns[town_id]) {
+				delete this.towns_buildings[town_id];
+				this.save('auto_build_levels', this.towns_buildings);
+				continue;
+			}
+
 			if (this.isFullQueue(town_id)) continue;
 			/* If town is done, remove from the list */
 			if (this.isDone(town_id)) {
