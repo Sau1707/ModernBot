@@ -30,10 +30,28 @@ class ModernUtil {
 			const parsedValue = JSON.parse(savedValue);
 			return parsedValue;
 		} catch (error) {
-			console.error(`Error parsing localStorage item ${key}: ${error}`);
-			throw error;
+			return defaultValue;
 		}
 	}
+
+	/* generate list with 1 polis per island */
+	generateList = () => {
+		let islands_list = [];
+		let polis_list = [];
+
+		let town_list = MM.getOnlyCollectionByName('Town').models;
+
+		for (let town of town_list) {
+			if (town.attributes.on_small_island) continue;
+			let { island_id, id } = town.attributes;
+			if (!islands_list.includes(island_id)) {
+				islands_list.push(island_id);
+				polis_list.push(id);
+			}
+		}
+
+		return polis_list;
+	};
 
 	/* Return html of the button */
 	getButtonHtml(id, text, fn, props) {
@@ -41,7 +59,7 @@ class ModernUtil {
 		if (isNaN(parseInt(props))) {
 			props = `'${props}'`;
 		}
-		let click = `window.${name}.${fn.name}(${props ? props : ''})`;
+		let click = `window.modernBot.${name}.${fn.name}(${props ? props : ''})`;
 
 		return `
         <div id="${id}" style="cursor: pointer" class="button_new" onclick="${click}">
@@ -57,7 +75,7 @@ class ModernUtil {
 		if (isNaN(parseInt(props)) && props) {
 			props = `"${props}"`;
 		}
-		let click = `window.${name}.${fn.name}(${props ? props : ''})`;
+		let click = `window.modernBot.${name}.${fn.name}(${props ? props : ''})`;
 		let filter = 'brightness(100%) saturate(186%) hue-rotate(241deg)';
 
 		return `

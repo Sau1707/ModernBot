@@ -13,17 +13,15 @@
 // var r = Math.round(e.building.points * Math.pow(e.building.points_factor, e.next_level)) - Math.round(e.building.points * Math.pow(e.building.points_factor, e.level))
 
 class AutoBuild extends ModernUtil {
-	constructor() {
+	constructor(console) {
 		super();
+		this.console = console;
 
 		/* Load settings, the polis in the settins are the active */
 		this.towns_buildings = this.load('auto_build_levels', {});
 
 		/* Check if shift is pressed */
 		this.shiftHeld = false;
-
-		//if (this.load('enable_autobuild')) this.triggerAutoBuild();
-		if (this.load('enable_autogratis', false)) this.triggerAutoGratis();
 
 		/* Active always, check if the towns are in the active list */
 		this.enable = setInterval(this.main, 20000);
@@ -45,7 +43,7 @@ class AutoBuild extends ModernUtil {
 					layout_main_controller.sub_controllers[
 						i
 					].controller.town_groups_list_view.render_old_modern();
-					var town_ids = Object.keys(autoBuild.towns_buildings);
+					var town_ids = Object.keys(modernBot.autoBuild.towns_buildings);
 					$('.town_group_town').each(function () {
 						var townId = parseInt($(this).attr('data-townid'));
 						if (!town_ids.includes(townId.toString())) return;
@@ -57,7 +55,7 @@ class AutoBuild extends ModernUtil {
 		}, 2500);
 	}
 
-	renderSettings = () => {
+	settings = () => {
 		/* Apply event to shift */
 		requestAnimationFrame(() => {
 			$('#buildings_lvl_buttons').on('mousedown', (e) => {
@@ -83,32 +81,9 @@ class AutoBuild extends ModernUtil {
             <div class="game_border_corner corner2"></div>
             <div class="game_border_corner corner3"></div>
             <div class="game_border_corner corner4"></div>
-            <div id="auto_gratis_title" style="cursor: pointer; filter: ${
-				this.autogratis ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : ''
-			}" class="game_header bold" onclick="window.autoBuild.triggerAutoGratis()"> Auto Build <span class="command_count"></span>
-                <div style="position: absolute; right: 10px; top: 4px; font-size: 10px;"> (click to toggle) </div>
-            </div>
-            <div style="padding: 5px; font-weight: 600">
-                Trigger to automatically press the <div id="dummy_free" class="btn_time_reduction button_new js-item-btn-premium-action js-tutorial-queue-item-btn-premium-action type_building_queue type_instant_buy instant_buy type_free">
-                <div class="left"></div>
-                <div class="right"></div>
-                <div class="caption js-caption">Gratis<div class="effect js-effect"></div></div>
-        </div> button (try every 4 seconds)
-            </div>    
-        </div>
-
-        <div class="game_border" style="margin-bottom: 20px">
-            <div class="game_border_top"></div>
-            <div class="game_border_bottom"></div>
-            <div class="game_border_left"></div>
-            <div class="game_border_right"></div>
-            <div class="game_border_corner corner1"></div>
-            <div class="game_border_corner corner2"></div>
-            <div class="game_border_corner corner3"></div>
-            <div class="game_border_corner corner4"></div>
             <div id="auto_build_title" style="cursor: pointer; filter: ${
 				this.enable ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : ''
-			}" class="game_header bold" onclick="window.autoBuild.triggerAutoBuild()"> Auto Build <span class="command_count"></span>
+			}" class="game_header bold" onclick="window.modernBot.autoBuild.toggle()"> Auto Build <span class="command_count"></span>
                 <div style="position: absolute; right: 10px; top: 4px; font-size: 10px;"> (click to toggle) </div>
             </div>
             <div id="buildings_lvl_buttons"></div>    
@@ -132,8 +107,8 @@ class AutoBuild extends ModernUtil {
 			return `
                 <div class="auto_build_box">
                 <div class="item_icon auto_build_building" style="background-position: -${bg[0]}px -${bg[1]}px;">
-                    <div class="auto_build_up_arrow" onclick="window.autoBuild.editBuildingLevel(${town_id}, '${building}', 1)" ></div>
-                    <div class="auto_build_down_arrow" onclick="window.autoBuild.editBuildingLevel(${town_id}, '${building}', -1)"></div>
+                    <div class="auto_build_up_arrow" onclick="window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', 1)" ></div>
+                    <div class="auto_build_down_arrow" onclick="window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', -1)"></div>
                     <p style="color: ${color}" id="build_lvl_${building}" class="auto_build_lvl"> ${town_buildings[building]} <p>
                 </div>
             </div>`;
@@ -169,32 +144,6 @@ class AutoBuild extends ModernUtil {
                 ${getBuildingHtml('wall', [50, 100])}
             </div>
         </div>`);
-	};
-
-	/* Call to trigger the autogratis */
-	triggerAutoGratis = () => {
-		if (!this.autogratis) {
-			$('#auto_gratis_title').css(
-				'filter',
-				'brightness(100%) saturate(186%) hue-rotate(241deg)',
-			);
-			this.autogratis = setInterval(this.autogratisMain, 4000);
-			botConsole.log('Auto Gratis -> On');
-		} else {
-			$('#auto_gratis_title').css('filter', '');
-			clearInterval(this.autogratis);
-			this.autogratis = null;
-			botConsole.log('Auto Gratis -> Off');
-		}
-		this.save('enable_autogratis', !!this.autogratis);
-	};
-
-	/* Main loop for the autogratis bot */
-	autogratisMain = () => {
-		let el = $('.type_building_queue.type_free').not('#dummy_free');
-		if (!el.length) return;
-		el.click();
-		botConsole.log('Clicked gratis button');
 	};
 
 	/* call with town_id, building type and level to be added */
@@ -248,12 +197,12 @@ class AutoBuild extends ModernUtil {
 		}
 	};
 
-	/* Call to toggle on and off (trigger the current town */
-	triggerAutoBuild = () => {
+	/* Call to toggle on and off (trigger the current town) */
+	toggle = () => {
 		let town = ITowns.getCurrentTown();
 
 		if (!(town.id.toString() in this.towns_buildings)) {
-			botConsole.log(`${town.name}: Auto Build On`);
+			this.console.log(`${town.name}: Auto Build On`);
 			this.towns_buildings[town.id] = {};
 			let buildins = [
 				'main',
@@ -277,15 +226,10 @@ class AutoBuild extends ModernUtil {
 			this.save('auto_build_levels', this.towns_buildings);
 		} else {
 			delete this.towns_buildings[town.id];
-			botConsole.log(`${town.name}: Auto Build Off`);
+			this.console.log(`${town.name}: Auto Build Off`);
 		}
 
 		this.updateTitle();
-	};
-
-	/* Usage async this.sleep(ms) -> stop the code for ms */
-	sleep = (ms) => {
-		return new Promise((resolve) => setTimeout(resolve, ms));
 	};
 
 	/* Main loop for building */
@@ -305,7 +249,7 @@ class AutoBuild extends ModernUtil {
 				this.save('auto_build_levels', this.towns_buildings);
 				this.updateTitle();
 				const town = ITowns.towns[town_id];
-				botConsole.log(`${town.name}: Auto Build Done`);
+				this.console.log(`${town.name}: Auto Build Done`);
 				continue;
 			}
 			await this.getNextBuild(town_id);
@@ -329,7 +273,7 @@ class AutoBuild extends ModernUtil {
 			town_id: town_id,
 		};
 		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
-		botConsole.log(`${town.getName()}: buildUp ${type}`);
+		this.console.log(`${town.getName()}: buildUp ${type}`);
 		await this.sleep(500);
 	};
 
@@ -461,6 +405,7 @@ class AutoBuild extends ModernUtil {
 		if (await check(['docks', 'barracks', 'market'], 30)) return;
 		if (await check(['lumber', 'stoner', 'ironer'], 40)) return;
 		if (await check('temple', 30)) return;
+		if (await check('storage', 35)) return;
 
 		/* Demolish */
 		let lista = [

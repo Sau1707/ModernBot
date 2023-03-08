@@ -1,72 +1,81 @@
 /* Setup autofarm in the window object */
 
+class ModernBot {
+	constructor() {
+		this.console = new BotConsole();
+		this.autoGratis = new AutoGratis(this.console);
+		this.autoFarm = new AutoFarm(this.console);
+		this.autoRuralLevel = new AutoRuralLevel(this.console);
+		this.autoBuild = new AutoBuild(this.console);
+		this.autoRuralTrade = new AutoRuralTrade(this.console);
+		this.autoBootcamp = new AutoBootcamp(this.console);
+
+		this.settingsFactory = new createGrepoWindow({
+			id: 'MODERN_BOT',
+			title: 'ModernBot',
+			size: [800, 300],
+			tabs: [
+				{
+					title: 'Farm',
+					id: 'farm',
+					render: this.settingsFarm,
+				},
+				{
+					title: 'Build',
+					id: 'build',
+					render: this.settingsBuild,
+				},
+				{
+					title: 'Mix',
+					id: 'mix',
+					render: this.settingsMix,
+				},
+				{
+					title: 'Console',
+					id: 'console',
+					render: this.console.renderSettings,
+				},
+			],
+			start_tab: 0,
+		});
+		this.settingsFactory.activate();
+		// TODO: Fix this button for the time attacch the settings event
+		// TODO: change the icon with the one of the Modernbot
+		$('.gods_area_buttons').append(
+			"<div class='btn_settings circle_button settings modern_bot_settings' onclick='window.modernBot.settingsFactory.openWindow()'><div style='background: url(https://raw.githubusercontent.com/Sau1707/ModernBot/main/img/gear.png) no-repeat 6px 5px' class='icon js-caption'></div></div>",
+		);
+	}
+
+	settingsFarm = () => {
+		let html = '';
+		html += this.autoFarm.settings();
+		html += this.autoRuralLevel.settings();
+		html += this.autoRuralTrade.settings();
+		return html;
+	};
+
+	settingsBuild = () => {
+		let html = '';
+		html += this.autoGratis.settings();
+		html += this.autoBuild.settings();
+		return html;
+	};
+	settingsMix = () => {
+		let html = '';
+		html += this.autoBootcamp.settings();
+		return html;
+	};
+}
+
 setTimeout(() => {
-    let uw;
-    if (typeof unsafeWindow === 'undefined') {
-        uw = window;
-    } else {
-        uw = unsafeWindow;
-    }
+	let uw;
+	if (typeof unsafeWindow === 'undefined') {
+		uw = window;
+	} else {
+		uw = unsafeWindow;
+	}
 
-    uw.modernBot = true;
-    uw.botConsole = new BotConsole();
-    uw.autoFarm = new AutoFarm();
-    uw.autoBuild = new AutoBuild();
-    uw.mixedBot = new MixedBot();
-
-    let tabs = [
-        {
-            title: 'Farm',
-            id: 'farm',
-            render: uw.autoFarm.renderSettings,
-        },
-        {
-            title: 'Build',
-            id: 'build',
-            render: uw.autoBuild.renderSettings,
-        },/*
-		{
-			title: 'Train',
-			id: 'train',
-			render: () => `
-            <ul>
-                <li> todo: list polis + troops count </li>
-                <li> todo: usa richiamo </li>
-                <li> todo: move hero </li>
-            </ul>
-            `,
-		},
-		{
-			title: 'Trade',
-			id: 'trade',
-			render: () => `
-            `,
-		},*/
-        {
-            title: 'Mix',
-            id: 'mix',
-            render: uw.mixedBot.renderSettings,
-        },
-        {
-            title: 'Console',
-            id: 'console',
-            render: uw.botConsole.renderSettings,
-        },
-    ];
-
-    uw.modernWindow = new createGrepoWindow({
-        id: 'MODERN_BOT',
-        title: 'ModernBot',
-        size: [800, 300],
-        tabs: tabs,
-        start_tab: 0,
-    });
-
-    uw.modernWindow.activate();
-
-    $('.gods_area_buttons').append(
-        "<div class='btn_settings circle_button settings modern_bot_settings' onclick='window.modernWindow.openWindow()'><div style='filter: grayscale(100%)' class='icon js-caption'></div></div>",
-    );
-
-    setTimeout(() => uw.modernWindow.openWindow(), 500);
+	console.log('here');
+	uw.modernBot = new ModernBot();
+	setTimeout(() => uw.modernBot.settingsFactory.openWindow(), 500);
 }, 1000);

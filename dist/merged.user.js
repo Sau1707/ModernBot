@@ -47,10 +47,28 @@ class ModernUtil {
 			const parsedValue = JSON.parse(savedValue);
 			return parsedValue;
 		} catch (error) {
-			console.error(`Error parsing localStorage item ${key}: ${error}`);
-			throw error;
+			return defaultValue;
 		}
 	}
+
+	/* generate list with 1 polis per island */
+	generateList = () => {
+		let islands_list = [];
+		let polis_list = [];
+
+		let town_list = MM.getOnlyCollectionByName('Town').models;
+
+		for (let town of town_list) {
+			if (town.attributes.on_small_island) continue;
+			let { island_id, id } = town.attributes;
+			if (!islands_list.includes(island_id)) {
+				islands_list.push(island_id);
+				polis_list.push(id);
+			}
+		}
+
+		return polis_list;
+	};
 
 	/* Return html of the button */
 	getButtonHtml(id, text, fn, props) {
@@ -58,7 +76,7 @@ class ModernUtil {
 		if (isNaN(parseInt(props))) {
 			props = `'${props}'`;
 		}
-		let click = `window.${name}.${fn.name}(${props ? props : ''})`;
+		let click = `window.modernBot.${name}.${fn.name}(${props ? props : ''})`;
 
 		return `
         <div id="${id}" style="cursor: pointer" class="button_new" onclick="${click}">
@@ -74,7 +92,7 @@ class ModernUtil {
 		if (isNaN(parseInt(props)) && props) {
 			props = `"${props}"`;
 		}
-		let click = `window.${name}.${fn.name}(${props ? props : ''})`;
+		let click = `window.modernBot.${name}.${fn.name}(${props ? props : ''})`;
 		let filter = 'brightness(100%) saturate(186%) hue-rotate(241deg)';
 
 		return `
@@ -168,6 +186,150 @@ class ModernUtil {
 	};
 }
 
+class AutoBootcamp extends ModernUtil {
+	constructor(console) {
+		super();
+		this.console = console;
+
+		if (this.load('enable_autobootcamp')) this.toggle();
+		if (this.load('bootcamp_use_def')) this.triggerUseDef();
+	}
+
+	settings = () => {
+		requestAnimationFrame(() => {
+			if (this.use_def) {
+				$('#autobootcamp_off').addClass('disabled');
+				$('#autobootcamp_def').removeClass('disabled');
+			} else {
+				$('#autobootcamp_def').addClass('disabled');
+				$('#autobootcamp_off').removeClass('disabled');
+			}
+		});
+
+		// ${this.getButtonHtml('autobootcamp_rewards_1', 'Use Rewards', this.triggerAutoBootcamp)}
+		// ${this.getButtonHtml('autobootcamp_rewards_2', 'Store', this.triggerAutoBootcamp)}
+		return `
+        <div class="game_border" style="margin-bottom: 20px">
+            ${this.getTitleHtml(
+				'auto_autobootcamp',
+				'Auto Bootcamp',
+				this.toggle,
+				'',
+				this.enable_auto_bootcamp,
+			)}
+        
+        <div id="autobootcamp_lvl_buttons" style="padding: 5px; display: inline-flex;">
+            <!-- temp -->
+            <div style="margin-right: 40px">
+                ${this.getButtonHtml('autobootcamp_off', 'Only off', this.triggerUseDef)}
+                ${this.getButtonHtml('autobootcamp_def', 'Off & Def', this.triggerUseDef)}
+            </div>
+        </div >    
+    </div> 
+        `;
+	};
+
+	triggerUseDef = () => {
+		this.use_def = !this.use_def;
+		if (this.use_def) {
+			$('#autobootcamp_off').addClass('disabled');
+			$('#autobootcamp_def').removeClass('disabled');
+		} else {
+			$('#autobootcamp_def').addClass('disabled');
+			$('#autobootcamp_off').removeClass('disabled');
+		}
+		this.save('bootcamp_use_def', this.use_def);
+	};
+
+	toggle = () => {
+		if (!this.enable_auto_bootcamp) {
+			$('#auto_autobootcamp').css(
+				'filter',
+				'brightness(100%) saturate(186%) hue-rotate(241deg)',
+			);
+			this.enable_auto_bootcamp = setInterval(this.main, 4000);
+			this.console.log('Auto Bootcamp -> On');
+		} else {
+			$('#auto_autobootcamp').css('filter', '');
+			clearInterval(this.enable_auto_bootcamp);
+			this.enable_auto_bootcamp = null;
+			this.console.log('Auto Bootcamp -> Off');
+		}
+		this.save('enable_autobootcamp', !!this.enable_auto_bootcamp);
+	};
+
+	attackBootcamp = () => {
+		let cooldown = MM.getModelByNameAndPlayerId('PlayerAttackSpot').getCooldownDuration();
+		if (cooldown > 0) return false;
+
+		let movements = MM.getModels().MovementsUnits;
+
+		/* Check if there isn't already an active attack */
+		if (movements != null) {
+			if (Object.keys(movements).length > 0) {
+				var attack_list = Object.keys(movements);
+				for (var i = 0; i < Object.keys(movements).length; i++) {
+					if (movements[attack_list[i]].attributes.destination_is_attack_spot)
+						return false;
+					if (movements[attack_list[i]].attributes.origin_is_attack_spot) return false;
+				}
+			}
+		}
+
+		var units = { ...ITowns.towns[Game.townId].units() };
+		delete units.militia;
+		for (let unit in units) {
+			if (GameData.units[unit].is_naval) delete units[unit];
+		}
+
+		if (!this.use_def) {
+			delete units.sword;
+			delete units.archer;
+		}
+
+		var model_url = 'PlayerAttackSpot/' + Game.player_id;
+		var data = {
+			model_url: model_url,
+			action_name: 'attack',
+			arguments: units,
+		};
+		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		return true;
+	};
+
+	rewardBootcamp = () => {
+		let model = MM.getModelByNameAndPlayerId('PlayerAttackSpot');
+
+		/* Stop if level is not found */
+		if (typeof model.getLevel() == 'undefined') {
+			this.console.log('Auto Bootcamp not found');
+			this.toggle();
+			return true;
+		}
+
+		let hasReward = model.hasReward();
+		if (!hasReward) return false;
+
+		let reward = model.getReward();
+		if (reward.power_id.includes('instant') && !reward.power_id.includes('favor')) {
+			this.useBootcampReward();
+			return true;
+		}
+
+		if (reward.stashable) {
+			this.stashBootcampReward();
+		} else {
+			this.useBootcampReward();
+		}
+		return true;
+	};
+
+	main = () => {
+		if (this.rewardBootcamp()) return;
+		if (this.attackBootcamp()) return;
+	};
+}
+
 /* 
     Ideas:
     - show current status
@@ -183,17 +345,15 @@ class ModernUtil {
 // var r = Math.round(e.building.points * Math.pow(e.building.points_factor, e.next_level)) - Math.round(e.building.points * Math.pow(e.building.points_factor, e.level))
 
 class AutoBuild extends ModernUtil {
-	constructor() {
+	constructor(console) {
 		super();
+		this.console = console;
 
 		/* Load settings, the polis in the settins are the active */
 		this.towns_buildings = this.load('auto_build_levels', {});
 
 		/* Check if shift is pressed */
 		this.shiftHeld = false;
-
-		//if (this.load('enable_autobuild')) this.triggerAutoBuild();
-		if (this.load('enable_autogratis', false)) this.triggerAutoGratis();
 
 		/* Active always, check if the towns are in the active list */
 		this.enable = setInterval(this.main, 20000);
@@ -215,7 +375,7 @@ class AutoBuild extends ModernUtil {
 					layout_main_controller.sub_controllers[
 						i
 					].controller.town_groups_list_view.render_old_modern();
-					var town_ids = Object.keys(autoBuild.towns_buildings);
+					var town_ids = Object.keys(modernBot.autoBuild.towns_buildings);
 					$('.town_group_town').each(function () {
 						var townId = parseInt($(this).attr('data-townid'));
 						if (!town_ids.includes(townId.toString())) return;
@@ -227,7 +387,7 @@ class AutoBuild extends ModernUtil {
 		}, 2500);
 	}
 
-	renderSettings = () => {
+	settings = () => {
 		/* Apply event to shift */
 		requestAnimationFrame(() => {
 			$('#buildings_lvl_buttons').on('mousedown', (e) => {
@@ -253,32 +413,9 @@ class AutoBuild extends ModernUtil {
             <div class="game_border_corner corner2"></div>
             <div class="game_border_corner corner3"></div>
             <div class="game_border_corner corner4"></div>
-            <div id="auto_gratis_title" style="cursor: pointer; filter: ${
-				this.autogratis ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : ''
-			}" class="game_header bold" onclick="window.autoBuild.triggerAutoGratis()"> Auto Build <span class="command_count"></span>
-                <div style="position: absolute; right: 10px; top: 4px; font-size: 10px;"> (click to toggle) </div>
-            </div>
-            <div style="padding: 5px; font-weight: 600">
-                Trigger to automatically press the <div id="dummy_free" class="btn_time_reduction button_new js-item-btn-premium-action js-tutorial-queue-item-btn-premium-action type_building_queue type_instant_buy instant_buy type_free">
-                <div class="left"></div>
-                <div class="right"></div>
-                <div class="caption js-caption">Gratis<div class="effect js-effect"></div></div>
-        </div> button (try every 4 seconds)
-            </div>    
-        </div>
-
-        <div class="game_border" style="margin-bottom: 20px">
-            <div class="game_border_top"></div>
-            <div class="game_border_bottom"></div>
-            <div class="game_border_left"></div>
-            <div class="game_border_right"></div>
-            <div class="game_border_corner corner1"></div>
-            <div class="game_border_corner corner2"></div>
-            <div class="game_border_corner corner3"></div>
-            <div class="game_border_corner corner4"></div>
             <div id="auto_build_title" style="cursor: pointer; filter: ${
 				this.enable ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : ''
-			}" class="game_header bold" onclick="window.autoBuild.triggerAutoBuild()"> Auto Build <span class="command_count"></span>
+			}" class="game_header bold" onclick="window.modernBot.autoBuild.toggle()"> Auto Build <span class="command_count"></span>
                 <div style="position: absolute; right: 10px; top: 4px; font-size: 10px;"> (click to toggle) </div>
             </div>
             <div id="buildings_lvl_buttons"></div>    
@@ -302,8 +439,8 @@ class AutoBuild extends ModernUtil {
 			return `
                 <div class="auto_build_box">
                 <div class="item_icon auto_build_building" style="background-position: -${bg[0]}px -${bg[1]}px;">
-                    <div class="auto_build_up_arrow" onclick="window.autoBuild.editBuildingLevel(${town_id}, '${building}', 1)" ></div>
-                    <div class="auto_build_down_arrow" onclick="window.autoBuild.editBuildingLevel(${town_id}, '${building}', -1)"></div>
+                    <div class="auto_build_up_arrow" onclick="window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', 1)" ></div>
+                    <div class="auto_build_down_arrow" onclick="window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', -1)"></div>
                     <p style="color: ${color}" id="build_lvl_${building}" class="auto_build_lvl"> ${town_buildings[building]} <p>
                 </div>
             </div>`;
@@ -339,32 +476,6 @@ class AutoBuild extends ModernUtil {
                 ${getBuildingHtml('wall', [50, 100])}
             </div>
         </div>`);
-	};
-
-	/* Call to trigger the autogratis */
-	triggerAutoGratis = () => {
-		if (!this.autogratis) {
-			$('#auto_gratis_title').css(
-				'filter',
-				'brightness(100%) saturate(186%) hue-rotate(241deg)',
-			);
-			this.autogratis = setInterval(this.autogratisMain, 4000);
-			botConsole.log('Auto Gratis -> On');
-		} else {
-			$('#auto_gratis_title').css('filter', '');
-			clearInterval(this.autogratis);
-			this.autogratis = null;
-			botConsole.log('Auto Gratis -> Off');
-		}
-		this.save('enable_autogratis', !!this.autogratis);
-	};
-
-	/* Main loop for the autogratis bot */
-	autogratisMain = () => {
-		let el = $('.type_building_queue.type_free').not('#dummy_free');
-		if (!el.length) return;
-		el.click();
-		botConsole.log('Clicked gratis button');
 	};
 
 	/* call with town_id, building type and level to be added */
@@ -418,12 +529,12 @@ class AutoBuild extends ModernUtil {
 		}
 	};
 
-	/* Call to toggle on and off (trigger the current town */
-	triggerAutoBuild = () => {
+	/* Call to toggle on and off (trigger the current town) */
+	toggle = () => {
 		let town = ITowns.getCurrentTown();
 
 		if (!(town.id.toString() in this.towns_buildings)) {
-			botConsole.log(`${town.name}: Auto Build On`);
+			this.console.log(`${town.name}: Auto Build On`);
 			this.towns_buildings[town.id] = {};
 			let buildins = [
 				'main',
@@ -447,15 +558,10 @@ class AutoBuild extends ModernUtil {
 			this.save('auto_build_levels', this.towns_buildings);
 		} else {
 			delete this.towns_buildings[town.id];
-			botConsole.log(`${town.name}: Auto Build Off`);
+			this.console.log(`${town.name}: Auto Build Off`);
 		}
 
 		this.updateTitle();
-	};
-
-	/* Usage async this.sleep(ms) -> stop the code for ms */
-	sleep = (ms) => {
-		return new Promise((resolve) => setTimeout(resolve, ms));
 	};
 
 	/* Main loop for building */
@@ -475,7 +581,7 @@ class AutoBuild extends ModernUtil {
 				this.save('auto_build_levels', this.towns_buildings);
 				this.updateTitle();
 				const town = ITowns.towns[town_id];
-				botConsole.log(`${town.name}: Auto Build Done`);
+				this.console.log(`${town.name}: Auto Build Done`);
 				continue;
 			}
 			await this.getNextBuild(town_id);
@@ -499,7 +605,7 @@ class AutoBuild extends ModernUtil {
 			town_id: town_id,
 		};
 		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
-		botConsole.log(`${town.getName()}: buildUp ${type}`);
+		this.console.log(`${town.getName()}: buildUp ${type}`);
 		await this.sleep(500);
 	};
 
@@ -631,6 +737,7 @@ class AutoBuild extends ModernUtil {
 		if (await check(['docks', 'barracks', 'market'], 30)) return;
 		if (await check(['lumber', 'stoner', 'ironer'], 40)) return;
 		if (await check('temple', 30)) return;
+		if (await check('storage', 35)) return;
 
 		/* Demolish */
 		let lista = [
@@ -659,36 +766,27 @@ class AutoBuild extends ModernUtil {
     - AutoFarm: check for time to start
 */
 class AutoFarm extends ModernUtil {
-	constructor() {
+	constructor(console) {
 		super();
-		/* Settings Autofarm */
+		this.console = console;
+
 		this.delta_time = 5000;
 		this.farm_timing = this.load('enable_autofarm_level', 1);
-		if (this.load('enable_autofarm')) this.triggerAutoFarm();
-
-		/* Settings auto_rurals */
-		this.rural_level = this.load('enable_autorural_level', 1);
 		this.rural_percentual = this.load('enable_autofarm_percentuals', 3);
-		if (this.load('enable_autorural_level_active')) this.triggerAutoRuralLevel();
+		if (this.load('enable_autofarm')) this.toggle();
 	}
 
-	/* Called when the settings is fired, render the page */
-	renderSettings = () => {
+	settings = () => {
 		requestAnimationFrame(() => {
-			this.setRuralLevel(this.rural_level);
 			this.setAutoFarmLevel(this.farm_timing);
 			this.setAutoFarmPercentual(this.rural_percentual);
 		});
-
-		// ${this.getButtonHtml('farming_lvl_4', '20 min', this.setAutoFarmLevel, 4)}
-		// ${this.getButtonHtml('farming_lvl_8', '40 min', this.setAutoFarmLevel, 8)}
-
 		return `
         <div class="game_border" style="margin-bottom: 20px">
             ${this.getTitleHtml(
 				'auto_farm',
 				'Auto Farm',
-				this.triggerAutoFarm,
+				this.toggle,
 				'',
 				this.enable_auto_farming,
 			)}
@@ -705,66 +803,6 @@ class AutoFarm extends ModernUtil {
             </div>
             </div>    
         </div> 
-
-        <div class="game_border" style="margin-bottom: 20px;">
-                ${this.getTitleHtml(
-					'auto_rural_level',
-					'Auto Rural level',
-					this.triggerAutoRuralLevel,
-					'',
-					this.enable_auto_rural,
-				)}
-            
-            <div id="rural_lvl_buttons" style="padding: 5px">
-                ${this.getButtonHtml('rural_lvl_1', 'lvl 1', this.setRuralLevel, 1)}
-                ${this.getButtonHtml('rural_lvl_2', 'lvl 2', this.setRuralLevel, 2)}
-                ${this.getButtonHtml('rural_lvl_3', 'lvl 3', this.setRuralLevel, 3)}
-                ${this.getButtonHtml('rural_lvl_4', 'lvl 4', this.setRuralLevel, 4)}
-                ${this.getButtonHtml('rural_lvl_5', 'lvl 5', this.setRuralLevel, 5)}
-                ${this.getButtonHtml('rural_lvl_6', 'lvl 6', this.setRuralLevel, 6)}
-            </div>
-        </div>
-
-        <div class="game_border">
-            <div class="game_border_top"></div>
-            <div class="game_border_bottom"></div>
-            <div class="game_border_left"></div>
-            <div class="game_border_right"></div>
-            <div class="game_border_corner corner1"></div>
-            <div class="game_border_corner corner2"></div>
-            <div class="game_border_corner corner3"></div>
-            <div class="game_border_corner corner4"></div>
-            <div class="game_header bold" style="position: relative; cursor: pointer" onclick="window.autoFarm.triggerTradeWithAllRurals()"> 
-            <span style="z-index: 10; position: relative;">Auto Trade resouces </span>
-            <div id="res_progress_bar" class="progress_bar_auto"></div>
-            <div style="position: absolute; right: 10px; top: 4px; font-size: 10px; z-index: 10"> (click to stop) </div>
-            <span class="command_count"></span></div>
-
-            <div id="autotrade_lvl_buttons" style="padding: 5px">
-                <!-- 1 -->
-                ${this.getButtonHtml(
-					'autotrade_lvl_1',
-					'Iron',
-					this.triggerTradeWithAllRurals,
-					'iron',
-				)}
-
-                ${this.getButtonHtml(
-					'autotrade_lvl_2',
-					'Stone',
-					this.triggerTradeWithAllRurals,
-					'stone',
-				)}
-
-                ${this.getButtonHtml(
-					'autotrade_lvl_3',
-					'Wood',
-					this.triggerTradeWithAllRurals,
-					'wood',
-				)}
-            </div>
-            
-        </div>
         `;
 	};
 
@@ -787,10 +825,7 @@ class AutoFarm extends ModernUtil {
 		return polis_list;
 	};
 
-	/* 
-        Autofarm
-    */
-	triggerAutoFarm = () => {
+	toggle = () => {
 		const buttonHtml =
 			'<div class="divider"id="autofarm_timer_divider" ></div><div onclick="window.autoFarm.triggerAutoFarm()" class="activity" id="autofarm_timer" style="filter: brightness(110%) sepia(100%) hue-rotate(100deg) saturate(1500%) contrast(0.8); background: url(https://i.ibb.co/gm8NDFS/backgound-timer.png); height: 26px; width: 40px"><p id="autofarm_timer_p" style="z-index: 6; top: -8px; position: relative; font-weight: bold;"></p></div>';
 
@@ -802,25 +837,21 @@ class AutoFarm extends ModernUtil {
 			}
 			this.lastTime = Date.now();
 			this.timer = 0; // TODO: check if it's really 0
-			this.enable_auto_farming = setInterval(this.mainFarmBot, 1000);
-			botConsole.log('Auto Farm -> On');
+			this.enable_auto_farming = setInterval(this.main, 1000);
+			this.console.log('Auto Farm -> On');
 		} else {
 			$('#autofarm_timer').remove();
 			$('#autofarm_timer_divider').remove();
 			$('#auto_farm').css('filter', '');
 			clearInterval(this.enable_auto_farming);
 			this.enable_auto_farming = null;
-			botConsole.log('Auto Farm -> Off');
+			this.console.log('Auto Farm -> Off');
 		}
 		this.save('enable_autofarm', !!this.enable_auto_farming);
 	};
 
 	setAutoFarmLevel = (n) => {
-		let box = document.getElementById('farming_lvl_buttons');
-		let buttons = box.getElementsByClassName('button_new');
-		for (let i = 0; i < buttons.length; i++) {
-			buttons[i].classList.add('disabled');
-		}
+		$('#farming_lvl_buttons .button_new').addClass('disabled');
 		$(`#farming_lvl_${n}`).removeClass('disabled');
 		this.farm_timing = n;
 		this.save('enable_autofarm_level', n);
@@ -866,12 +897,15 @@ class AutoFarm extends ModernUtil {
 		this.timer -= currentTime - this.lastTime;
 		this.lastTime = currentTime;
 
-		var bt = document.getElementById('autofarm_timer_p');
-		if (this.timer > 0) bt.innerHTML = parseInt(this.timer / 1000);
-		else bt.innerHTML = '0';
+		const timerDisplay = document.getElementById('autofarm_timer_p');
+		if (this.timer > 0) {
+			timerDisplay.innerHTML = Math.round(this.timer / 1000);
+		} else {
+			timerDisplay.innerHTML = '0';
+		}
 	};
 
-	mainFarmBot = () => {
+	main = () => {
 		/* Fix time if out ot timing */
 		// let next = this.getNextCollection();
 		// if (this.timer + 2 * this.delta_time < next) {
@@ -919,7 +953,7 @@ class AutoFarm extends ModernUtil {
 			}
 
 			this.claim(Polislist);
-			botConsole.log('Claimed all rurals');
+			this.console.log('Claimed all rurals');
 			let rand = Math.floor(Math.random() * this.delta_time);
 			this.timer = this.farm_timing * 300000 + rand;
 			setTimeout(() => WMap.removeFarmTownLootCooldownIconAndRefreshLootTimers(), 2000);
@@ -928,62 +962,168 @@ class AutoFarm extends ModernUtil {
 		/* update the timer */
 		this.updateTimer();
 	};
+}
 
-	/* 
-        Auto rural level
-    */
-	setRuralLevel = (n) => {
-		let box = document.getElementById('rural_lvl_buttons');
-		let buttons = box.getElementsByClassName('button_new');
-		for (let i = 0; i < buttons.length; i++) {
-			buttons[i].classList.add('disabled');
+class AutoGratis extends ModernUtil {
+	constructor(console) {
+		super();
+		this.console = console;
+
+		if (this.load('enable_autogratis', false)) this.toggle();
+	}
+
+	settings = () => {
+		return `
+        <div class="game_border" style="margin-bottom: 20px">
+            <div class="game_border_top"></div>
+            <div class="game_border_bottom"></div>
+            <div class="game_border_left"></div>
+            <div class="game_border_right"></div>
+            <div class="game_border_corner corner1"></div>
+            <div class="game_border_corner corner2"></div>
+            <div class="game_border_corner corner3"></div>
+            <div class="game_border_corner corner4"></div>
+            <div id="auto_gratis_title" style="cursor: pointer; filter: ${
+				this.autogratis ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : ''
+			}" class="game_header bold" onclick="window.modernBot.autoGratis.toggle()"> Auto Build <span class="command_count"></span>
+                <div style="position: absolute; right: 10px; top: 4px; font-size: 10px;"> (click to toggle) </div>
+            </div>
+            <div style="padding: 5px; font-weight: 600">
+                Trigger to automatically press the <div id="dummy_free" class="btn_time_reduction button_new js-item-btn-premium-action js-tutorial-queue-item-btn-premium-action type_building_queue type_instant_buy instant_buy type_free">
+                <div class="left"></div>
+                <div class="right"></div>
+                <div class="caption js-caption">Gratis<div class="effect js-effect"></div></div>
+            </div> button (try every 4 seconds)
+            </div>    
+        </div>
+        `;
+	};
+
+	/* Call to trigger the autogratis */
+	toggle = () => {
+		if (!this.autogratis) {
+			$('#auto_gratis_title').css(
+				'filter',
+				'brightness(100%) saturate(186%) hue-rotate(241deg)',
+			);
+			this.autogratis = setInterval(this.main, 4000);
+			this.console.log('Auto Gratis -> On');
+		} else {
+			$('#auto_gratis_title').css('filter', '');
+			clearInterval(this.autogratis);
+			this.autogratis = null;
+			this.console.log('Auto Gratis -> Off');
 		}
+		this.save('enable_autogratis', !!this.autogratis);
+	};
+
+	/* Main loop for the autogratis bot */
+	main = () => {
+		const el = $('.type_building_queue.type_free').not('#dummy_free');
+		if (!el.length) return;
+		el.click();
+		this.console.log('Clicked gratis button');
+	};
+}
+
+class AutoRuralLevel extends ModernUtil {
+	constructor(console) {
+		super();
+		this.console = console;
+
+		this.rural_level = this.load('enable_autorural_level', 1);
+		if (this.load('enable_autorural_level_active')) this.toggle();
+	}
+
+	settings = () => {
+		requestAnimationFrame(() => {
+			this.setRuralLevel(this.rural_level);
+		});
+
+		return `
+        <div class="game_border" style="margin-bottom: 20px;">
+                ${this.getTitleHtml(
+					'auto_rural_level',
+					'Auto Rural level',
+					this.toggle,
+					'',
+					this.enable_auto_rural,
+				)}
+            
+            <div id="rural_lvl_buttons" style="padding: 5px">
+                ${this.getButtonHtml('rural_lvl_1', 'lvl 1', this.setRuralLevel, 1)}
+                ${this.getButtonHtml('rural_lvl_2', 'lvl 2', this.setRuralLevel, 2)}
+                ${this.getButtonHtml('rural_lvl_3', 'lvl 3', this.setRuralLevel, 3)}
+                ${this.getButtonHtml('rural_lvl_4', 'lvl 4', this.setRuralLevel, 4)}
+                ${this.getButtonHtml('rural_lvl_5', 'lvl 5', this.setRuralLevel, 5)}
+                ${this.getButtonHtml('rural_lvl_6', 'lvl 6', this.setRuralLevel, 6)}
+            </div>
+        </div>`;
+	};
+
+	/* generate the list containing 1 polis per island */
+	generateList = () => {
+		let islands_list = [];
+		let polis_list = [];
+
+		let town_list = MM.getOnlyCollectionByName('Town').models;
+
+		for (let town of town_list) {
+			if (town.attributes.on_small_island) continue;
+			let { island_id, id } = town.attributes;
+			if (!islands_list.includes(island_id)) {
+				islands_list.push(island_id);
+				polis_list.push(id);
+			}
+		}
+
+		return polis_list;
+	};
+
+	setRuralLevel = (n) => {
+		$('#rural_lvl_buttons .button_new').addClass('disabled');
 		$(`#rural_lvl_${n}`).removeClass('disabled');
 		this.rural_level = n;
 		this.save('enable_autorural_level', this.rural_level);
 	};
 
-	triggerAutoRuralLevel = () => {
+	toggle = () => {
 		if (!this.enable_auto_rural) {
 			$('#auto_rural_level').css(
 				'filter',
 				'brightness(100%) saturate(186%) hue-rotate(241deg)',
 			);
-			this.enable_auto_rural = setInterval(this.mainAutoRuralLevel, 20000);
-			botConsole.log('Auto Rural Level -> On');
+			this.enable_auto_rural = setInterval(this.main, 20000);
+			this.console.log('Auto Rural Level -> On');
 		} else {
 			$('#auto_rural_level').css('filter', '');
-			botConsole.log('Auto Rural Level -> Off');
+			this.console.log('Auto Rural Level -> Off');
 			clearInterval(this.enable_auto_rural);
 			this.enable_auto_rural = null;
 		}
 		this.save('enable_autorural_level_active', !!this.enable_auto_rural);
 	};
 
-	mainAutoRuralLevel = async () => {
+	main = async () => {
 		let player_relation_models = MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
 		let farm_town_models = MM.getOnlyCollectionByName('FarmTown').models;
+		let killpoints = MM.getModelByNameAndPlayerId('PlayerKillpoints').attributes;
 
 		/* Get array with all locked rurals */
-		let locked = [];
-		player_relation_models.forEach((model) => {
-			if (model.attributes.relation_status == 0) locked.push(model.attributes);
-		});
+		const locked = player_relation_models.filter(
+			(model) => model.attributes.relation_status === 0,
+		);
 
 		/* Get killpoints */
-		let killpoints = MM.getModelByNameAndPlayerId('PlayerKillpoints').attributes;
+
 		let available = killpoints.att + killpoints.def - killpoints.used;
 		let unlocked = player_relation_models.length - locked.length;
 
 		/* If some rurals still have to be unlocked */
 		if (locked.length > 0) {
 			/* The first 5 rurals have discount */
-			if (unlocked == 0 && available < 2) return;
-			if (unlocked == 1 && available < 8) return;
-			if (unlocked == 2 && available < 10) return;
-			if (unlocked == 3 && available < 30) return;
-			if (unlocked == 4 && available < 50) return;
-			if (unlocked >= 5 && available < 100) return;
+			const discounts = [2, 8, 10, 30, 50, 100];
+			if (unlocked < discounts.length && available < discounts[unlocked - 1]) return;
 
 			let towns = this.generateList();
 			for (let town_id of towns) {
@@ -998,7 +1138,7 @@ class AutoFarm extends ModernUtil {
 					for (let relation of locked) {
 						if (farmtown.attributes.id != relation.farm_town_id) continue;
 						this.unlockRural(town_id, relation.farm_town_id, relation.id);
-						botConsole.log(
+						this.console.log(
 							`Island ${farmtown.attributes.island_xy}: unlocked ${farmtown.attributes.name}`,
 						);
 						return;
@@ -1009,12 +1149,9 @@ class AutoFarm extends ModernUtil {
 			/* else check each level once at the time */
 			let towns = this.generateList();
 
+			const levelCosts = [1, 5, 25, 50, 100];
 			for (let level = 1; level < this.rural_level; level++) {
-				if (level == 1 && available < 1) return;
-				if (level == 2 && available < 5) return;
-				if (level == 3 && available < 25) return;
-				if (level == 4 && available < 50) return;
-				if (level == 5 && available < 100) return;
+				if (available < levelCosts[level - 1]) return;
 
 				for (let town_id of towns) {
 					let town = ITowns.towns[town_id];
@@ -1035,7 +1172,7 @@ class AutoFarm extends ModernUtil {
 								relation.attributes.farm_town_id,
 								relation.attributes.id,
 							);
-							botConsole.log(
+							this.console.log(
 								`Island ${farmtown.attributes.island_xy}: upgraded ${farmtown.attributes.name}`,
 							);
 							return;
@@ -1046,13 +1183,70 @@ class AutoFarm extends ModernUtil {
 		}
 
 		/* Auto turn off when the level is reached */
-		this.triggerAutoRuralLevel();
+		this.toggle();
+	};
+}
+
+class AutoRuralTrade extends ModernUtil {
+	constructor(console) {
+		super();
+		this.console = console;
+
+		this.min_rural_ratio = this.load('min_rural_ratio', 5);
+	}
+
+	settings = () => {
+		requestAnimationFrame(() => {
+			this.setMinRatioLevel(this.min_rural_ratio);
+		});
+
+		return `
+        <div class="game_border">
+            <div class="game_border_top"></div>
+            <div class="game_border_bottom"></div>
+            <div class="game_border_left"></div>
+            <div class="game_border_right"></div>
+            <div class="game_border_corner corner1"></div>
+            <div class="game_border_corner corner2"></div>
+            <div class="game_border_corner corner3"></div>
+            <div class="game_border_corner corner4"></div>
+            <div class="game_header bold" style="position: relative; cursor: pointer" onclick="window.modernBot.autoRuralTrade.main()"> 
+            <span style="z-index: 10; position: relative;">Auto Trade resouces </span>
+            <div id="res_progress_bar" class="progress_bar_auto"></div>
+            <div style="position: absolute; right: 10px; top: 4px; font-size: 10px; z-index: 10"> (click to stop) </div>
+            <span class="command_count"></span></div>
+
+            <div style="display: inline-flex">
+                <div id="autotrade_lvl_buttons" style="padding: 5px; margin-right: 233px">
+                    <!-- 1 -->
+                    ${this.getButtonHtml('autotrade_lvl_1', 'Iron', this.main, 'iron')}
+
+                    ${this.getButtonHtml('autotrade_lvl_2', 'Stone', this.main, 'stone')}
+
+                    ${this.getButtonHtml('autotrade_lvl_3', 'Wood', this.main, 'wood')}
+                </div>
+
+                <div id="min_rural_ratio" style="padding: 5px">
+                    ${this.getButtonHtml('min_rural_ratio_1', '0.25', this.setMinRatioLevel, 1)}
+                    ${this.getButtonHtml('min_rural_ratio_2', '0.5', this.setMinRatioLevel, 2)}
+                    ${this.getButtonHtml('min_rural_ratio_3', '0.75', this.setMinRatioLevel, 3)}
+                    ${this.getButtonHtml('min_rural_ratio_4', '1.0', this.setMinRatioLevel, 4)}
+                    ${this.getButtonHtml('min_rural_ratio_5', '1.25', this.setMinRatioLevel, 5)}
+                </div>
+            </div>
+        </div>
+        `;
 	};
 
-	/* 
-        Trade with all rurals
-    */
-	triggerTradeWithAllRurals = async (resouce) => {
+	setMinRatioLevel = (n) => {
+		$('#min_rural_ratio .button_new').addClass('disabled');
+		$(`#min_rural_ratio_${n}`).removeClass('disabled');
+		this.min_rural_ratio = n;
+		this.save('min_rural_ratio', n);
+	};
+
+	/*  Trade with all rurals*/
+	main = async (resouce) => {
 		if (resouce) {
 			/* Set button disabled */
 			if ($(`#autotrade_lvl_${i}`).hasClass('disabled')) return;
@@ -1081,6 +1275,7 @@ class AutoFarm extends ModernUtil {
 
 	tradeWithRural = async (polis_id) => {
 		let town = ITowns.towns[polis_id];
+		if (!town) return;
 		if (town.getAvailableTradeCapacity() < 3000) return;
 		//if (this.check_for_hide && town.getBuildings().attributes.hide < 10) return;
 
@@ -1088,48 +1283,44 @@ class AutoFarm extends ModernUtil {
 		let player_relation_models = MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
 
 		/* Create list with all the farmtown in current island polis */
-		let farmtown_in_island = [];
 		let x = town.getIslandCoordinateX(),
 			y = town.getIslandCoordinateY();
 		let resources = town.resources();
 
-		farm_town_models.forEach((farmtown) => {
-			if (farmtown.attributes.island_x != x || farmtown.attributes.island_y != y) return;
-			if (farmtown.attributes.resource_offer != this.trade_resouce) return;
-			if (resources[farmtown.attributes.resource_demand] < 3000) return;
+		for (const farmtown of farm_town_models) {
+			if (farmtown.attributes.island_x != x || farmtown.attributes.island_y != y) continue;
+			if (farmtown.attributes.resource_offer != this.trade_resouce) continue;
+			if (resources[farmtown.attributes.resource_demand] < 3000) continue;
 
-			player_relation_models.forEach((relation) => {
-				if (farmtown.attributes.id != relation.attributes.farm_town_id) return;
-				//if (relation.attributes.current_trade_ratio < 1.2) return;
-				farmtown_in_island.push(relation);
-				return;
-			});
-		});
-
-		for (let tradable of farmtown_in_island) {
-			if (town.getAvailableTradeCapacity() < 3000) return;
-
-			this.tradeRuralPost(
-				tradable.attributes.farm_town_id,
-				tradable.attributes.id,
-				town.getAvailableTradeCapacity(),
-				town.id,
-			);
-			await this.sleep(750);
+			for (const relation of player_relation_models) {
+				if (farmtown.attributes.id != relation.attributes.farm_town_id) continue;
+				if (relation.attributes.current_trade_ratio < this.min_rural_ratio) continue;
+				if (town.getAvailableTradeCapacity() < 3000) continue;
+				this.tradeRuralPost(
+					relation.attributes.farm_town_id,
+					relation.attributes.id,
+					town.getAvailableTradeCapacity(),
+					town.id,
+				);
+				await this.sleep(750);
+			}
 		}
 	};
 
 	mainTradeLoop = async () => {
+		/* If last polis, then trigger to stop */
+		if (this.done_trade >= this.total_trade) {
+			this.main();
+			return;
+		}
 		/* perform trade with current index */
 		let towns = Object.keys(ITowns.towns);
 		await this.tradeWithRural(towns[this.done_trade]);
 
 		/* update progress bar */
-		this.done_trade += 1;
 		$('#res_progress_bar').css('width', `${(this.done_trade / this.total_trade) * 100}%`);
 
-		/* If last polis, then trigger to stop */
-		if (this.done_trade == this.total_trade) this.triggerTradeWithAllRurals();
+		this.done_trade += 1;
 	};
 }
 
@@ -1429,73 +1620,82 @@ class MixedBot extends ModernUtil {
 
 /* Setup autofarm in the window object */
 
+class ModernBot {
+	constructor() {
+		this.console = new BotConsole();
+		this.autoGratis = new AutoGratis(this.console);
+		this.autoFarm = new AutoFarm(this.console);
+		this.autoRuralLevel = new AutoRuralLevel(this.console);
+		this.autoBuild = new AutoBuild(this.console);
+		this.autoRuralTrade = new AutoRuralTrade(this.console);
+		this.autoBootcamp = new AutoBootcamp(this.console);
+
+		this.settingsFactory = new createGrepoWindow({
+			id: 'MODERN_BOT',
+			title: 'ModernBot',
+			size: [800, 300],
+			tabs: [
+				{
+					title: 'Farm',
+					id: 'farm',
+					render: this.settingsFarm,
+				},
+				{
+					title: 'Build',
+					id: 'build',
+					render: this.settingsBuild,
+				},
+				{
+					title: 'Mix',
+					id: 'mix',
+					render: this.settingsMix,
+				},
+				{
+					title: 'Console',
+					id: 'console',
+					render: this.console.renderSettings,
+				},
+			],
+			start_tab: 0,
+		});
+		this.settingsFactory.activate();
+		// TODO: Fix this button for the time attacch the settings event
+		// TODO: change the icon with the one of the Modernbot
+		$('.gods_area_buttons').append(
+			"<div class='btn_settings circle_button settings modern_bot_settings' onclick='window.modernBot.settingsFactory.openWindow()'><div style='background: url(https://raw.githubusercontent.com/Sau1707/ModernBot/main/img/gear.png) no-repeat 6px 5px' class='icon js-caption'></div></div>",
+		);
+	}
+
+	settingsFarm = () => {
+		let html = '';
+		html += this.autoFarm.settings();
+		html += this.autoRuralLevel.settings();
+		html += this.autoRuralTrade.settings();
+		return html;
+	};
+
+	settingsBuild = () => {
+		let html = '';
+		html += this.autoGratis.settings();
+		html += this.autoBuild.settings();
+		return html;
+	};
+	settingsMix = () => {
+		let html = '';
+		html += this.autoBootcamp.settings();
+		return html;
+	};
+}
+
 setTimeout(() => {
-    let uw;
-    if (typeof unsafeWindow === 'undefined') {
-        uw = window;
-    } else {
-        uw = unsafeWindow;
-    }
+	let uw;
+	if (typeof unsafeWindow === 'undefined') {
+		uw = window;
+	} else {
+		uw = unsafeWindow;
+	}
 
-    uw.modernBot = true;
-    uw.botConsole = new BotConsole();
-    uw.autoFarm = new AutoFarm();
-    uw.autoBuild = new AutoBuild();
-    uw.mixedBot = new MixedBot();
-
-    let tabs = [
-        {
-            title: 'Farm',
-            id: 'farm',
-            render: uw.autoFarm.renderSettings,
-        },
-        {
-            title: 'Build',
-            id: 'build',
-            render: uw.autoBuild.renderSettings,
-        },/*
-		{
-			title: 'Train',
-			id: 'train',
-			render: () => `
-            <ul>
-                <li> todo: list polis + troops count </li>
-                <li> todo: usa richiamo </li>
-                <li> todo: move hero </li>
-            </ul>
-            `,
-		},
-		{
-			title: 'Trade',
-			id: 'trade',
-			render: () => `
-            `,
-		},*/
-        {
-            title: 'Mix',
-            id: 'mix',
-            render: uw.mixedBot.renderSettings,
-        },
-        {
-            title: 'Console',
-            id: 'console',
-            render: uw.botConsole.renderSettings,
-        },
-    ];
-
-    uw.modernWindow = new createGrepoWindow({
-        id: 'MODERN_BOT',
-        title: 'ModernBot',
-        size: [800, 300],
-        tabs: tabs,
-        start_tab: 0,
-    });
-
-    uw.modernWindow.activate();
-
-    $('.gods_area_buttons').append(
-        "<div class='btn_settings circle_button settings modern_bot_settings' onclick='window.modernWindow.openWindow()'><div style='filter: grayscale(100%)' class='icon js-caption'></div></div>",
-    );
-
-    setTimeout(() => uw.modernWindow.openWindow(), 500);
+	console.log('here');
+	uw.modernBot = new ModernBot();
+	setTimeout(() => uw.modernBot.settingsFactory.openWindow(), 500);
 }, 1000);
