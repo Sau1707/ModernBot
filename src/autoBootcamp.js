@@ -89,6 +89,13 @@ class AutoBootcamp extends ModernUtil {
 		}
 
 		var units = { ...ITowns.towns[Game.townId].units() };
+
+		/* Stop if no units are avalable anymore */
+		if (units === {}) {
+			this.toggle();
+			return;
+		}
+
 		delete units.militia;
 		for (let unit in units) {
 			if (GameData.units[unit].is_naval) delete units[unit];
