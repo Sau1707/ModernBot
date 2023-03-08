@@ -66,7 +66,7 @@ class AutoFarm extends ModernUtil {
 
 	toggle = () => {
 		const buttonHtml =
-			'<div class="divider"id="autofarm_timer_divider" ></div><div onclick="window.autoFarm.triggerAutoFarm()" class="activity" id="autofarm_timer" style="filter: brightness(110%) sepia(100%) hue-rotate(100deg) saturate(1500%) contrast(0.8); background: url(https://i.ibb.co/gm8NDFS/backgound-timer.png); height: 26px; width: 40px"><p id="autofarm_timer_p" style="z-index: 6; top: -8px; position: relative; font-weight: bold;"></p></div>';
+			'<div class="divider"id="autofarm_timer_divider" ></div><div onclick="window.modernBot.autoFarm.toggle()" class="activity" id="autofarm_timer" style="filter: brightness(110%) sepia(100%) hue-rotate(100deg) saturate(1500%) contrast(0.8); background: url(https://i.ibb.co/gm8NDFS/backgound-timer.png); height: 26px; width: 40px"><p id="autofarm_timer_p" style="z-index: 6; top: -8px; position: relative; font-weight: bold;"></p></div>';
 
 		if (!this.enable_auto_farming) {
 			$('#auto_farm').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
