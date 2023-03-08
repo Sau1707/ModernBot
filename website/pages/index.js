@@ -16,130 +16,139 @@ import GrepoButton from '../components/GrepoButton';
 const postsDirectory = '../markdown';
 
 export async function getStaticProps() {
-    const fileNames = fs.readdirSync(postsDirectory);
+	const fileNames = fs.readdirSync(postsDirectory);
 
-    const posts = await Promise.all(
-        fileNames.map(async (fileName) => {
-            const fullPath = path.join(postsDirectory, fileName);
-            const fileContents = fs.readFileSync(fullPath, 'utf8');
-            const matterResult = matter(fileContents);
-            const { data } = matter(fileContents);
+	const posts = await Promise.all(
+		fileNames.map(async (fileName) => {
+			const fullPath = path.join(postsDirectory, fileName);
+			const fileContents = fs.readFileSync(fullPath, 'utf8');
+			const matterResult = matter(fileContents);
+			const { data } = matter(fileContents);
 
-            if (matterResult.data.publish === false) return null;
+			if (matterResult.data.publish === false) return null;
 
-            const processedContent = await remark().use(html).process(matterResult.content);
-            const contentHtml = processedContent.toString();
+			const processedContent = await remark().use(html).process(matterResult.content);
+			const contentHtml = processedContent.toString();
 
-            return {
-                id: fileName.replace(/\.md$/, ''),
-                contentHtml,
-                ...matterResult.data
-            };
-        })
-    );
+			return {
+				id: fileName.replace(/\.md$/, ''),
+				contentHtml,
+				...matterResult.data,
+			};
+		}),
+	);
 
-    const filteredPosts = posts.filter(Boolean);
+	const filteredPosts = posts.filter(Boolean);
 
-    return {
-        props: {
-            data: filteredPosts,
-        },
-    };
+	return {
+		props: {
+			data: filteredPosts,
+		},
+	};
 }
-
 
 const MERGED = 'https://github.com/Sau1707/ModernBot/raw/main/dist/merged.user.js';
 
 export default function Home({ data }) {
+	return (
+		<>
+			<Head>
+				<title>ModernBot</title>
+				<meta name='description' content='bot for grepolis' />
+				<link rel='icon' href='/favicon.ico' />
+			</Head>
 
-    return (
-        <>
-            <Head>
-                <title>ModernBot</title>
-                <meta name='description' content='bot for grepolis' />
-                <link rel='icon' href='/favicon.ico' />
-            </Head>
+			<Main>
+				{/* <Particle /> */}
+				<div
+					style={{
+						background:
+							'url(https://gpit-glps.innogamescdn.com/media/grepo/images/background-grepo-city-building-section.9cab004f.jpg) no-repeat 0px 0px',
+						width: 'auto',
+						backgroundSize: 'cover',
+						backgroundPosition: 'center',
+						height: 500,
+						position: 'relative',
+						paddingTop: 100,
+					}}
+				>
+					<GrepoScroll />
+					<div style={{ margin: 'auto', textAlign: 'center', marginTop: 10 }}>
+						<h4 style={{ color: 'white', marginBottom: 0 }}>
+							Open source on{' '}
+							<a
+								style={{ color: 'white' }}
+								href='https://github.com/Sau1707/ModernBot'
+								target={'_blank'}
+							>
+								Github
+							</a>
+						</h4>
+						<h6 style={{ color: 'white' }}> Created by Sau1707 </h6>
+						<div style={{ margin: 'auto', marginTop: 0, width: 'fit-content' }}>
+							<GrepoButton color='red' href={MERGED}>
+								Install
+							</GrepoButton>
+						</div>
+					</div>
+				</div>
+				<GrepoHr />
 
-            <Main>
-                {/* <Particle /> */}
-                <div
-                    style={{
-                        background:
-                            'url(https://gpit-glps.innogamescdn.com/media/grepo/images/background-grepo-city-building-section.9cab004f.jpg) no-repeat 0px 0px',
-                        width: 'auto',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        height: 500,
-                        position: 'relative',
-                        paddingTop: 100,
-                    }}
-                >
-                    <GrepoScroll />
-                    <div style={{ margin: 'auto', textAlign: 'center', marginTop: 10 }}>
-                        <h4 style={{ color: 'white', marginBottom: 0 }}>
-                            Open source on{' '}
-                            <a
-                                style={{ color: 'white' }}
-                                href='https://github.com/Sau1707/ModernBot'
-                                target={'_blank'}
-                            >
-                                Github
-                            </a>
-                        </h4>
-                        <h6 style={{ color: 'white' }}> Created by Sau1707 </h6>
-                        <div style={{ margin: 'auto', marginTop: 0, width: 'fit-content' }}>
-                            <GrepoButton color='red' href={MERGED}>
-                                Install
-                            </GrepoButton>
-                        </div>
-                    </div>
-                </div>
-                <GrepoHr />
+				<ToolGrid style={{ marginBottom: 100 }}>
+					<h4
+						style={{
+							color: 'white',
+							marginBottom: 0,
+							width: '100%',
+							textAlign: 'center',
+						}}
+					>
+						Features
+					</h4>
+					{data.map((e, i) => (
+						<Tool key={e} {...e} />
+					))}
+				</ToolGrid>
 
-                <ToolGrid style={{ marginBottom: 100 }}>
-                    <h4
-                        style={{
-                            color: 'white',
-                            marginBottom: 0,
-                            width: '100%',
-                            textAlign: 'center',
-                        }}
-                    >
-                        Features
-                    </h4>
-                    {data.map((e, i) => (
-                        <Tool key={e} {...e} />
-                    ))}
-                </ToolGrid>
+				<GrepoHr />
+			</Main>
 
-                <GrepoHr />
-            </Main>
-
-            <footer>
-                <div
-                    style={{
-                        background:
-                            '#000 url(//gpit-glps.innogamescdn.com/media/grepo/images/footer-grepo.663f1609.jpg) no-repeat',
-                        width: 'auto',
-                        height: 500,
-                        position: 'relative',
-                        paddingTop: 100,
-                        color: 'white',
-                        textAlign: 'center',
-                        padding: 100,
-                    }}
-                >
-                    <h5 style={{ maxWidth: 800, margin: 'auto' }}>
-                        This page is not official but just a personal project.
-                        <br />
-                        <br />
-                        Any responsibility for use of scripts and consequences is disclaimed.
-                        <br />
-                        The scripts are not approved and therefore it is possible that your account
-                        may be banned while using them
-                    </h5>
-                </div>
-            </footer>
-        </>
-    );
+			<footer>
+				<div
+					style={{
+						background:
+							'#000 url(//gpit-glps.innogamescdn.com/media/grepo/images/footer-grepo.663f1609.jpg) repeat',
+						width: 'auto',
+						height: 'auto',
+						position: 'relative',
+						paddingTop: 100,
+						color: 'white',
+						textAlign: 'center',
+						padding: 100,
+					}}
+				>
+					<h5> Disclaimer </h5>
+					<p style={{ maxWidth: 800, margin: 'auto' }}>
+						This open-source bot is designed for use with Grepolis, a video game
+						developed by InnoGames. However, please note that this bot is not endorsed
+						or approved by InnoGames, and the use of this bot may be against the game's
+						terms of service. We do not encourage or condone the use of this bot to gain
+						an unfair advantage or violate the game's rules. The use of this bot is
+						entirely at your own risk, and we accept no liability for any consequences
+						that may arise from its use. By using this bot, you acknowledge and accept
+						that InnoGames may take action against your account for violating their
+						terms of service. We strongly recommend that you read and understand the
+						game's rules before using this bot. Additionally, this bot is provided as
+						open-source software, and we do not offer any technical support or
+						assistance in its installation, configuration, or use. You are solely
+						responsible for any modifications or customizations you make to the bot's
+						code, and we accept no responsibility for any issues that may arise as a
+						result. By using this bot, you acknowledge and accept these terms and
+						conditions and agree to use it responsibly and in accordance with the
+						applicable laws and regulations.
+					</p>
+				</div>
+			</footer>
+		</>
+	);
 }
