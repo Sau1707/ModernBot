@@ -86,7 +86,7 @@ export default function Home({ data }) {
 						</h4>
 						<h6 style={{ color: 'white' }}> Created by Sau1707 </h6>
 						<div style={{ margin: 'auto', marginTop: 0, width: 'fit-content' }}>
-							<GrepoButton color='red' href={MERGED}>
+							<GrepoButton color='yellow' href={MERGED}>
 								Install
 							</GrepoButton>
 						</div>

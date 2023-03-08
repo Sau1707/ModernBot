@@ -60,6 +60,7 @@ class ModernBot {
 		html += this.autoBuild.settings();
 		return html;
 	};
+
 	settingsMix = () => {
 		let html = '';
 		html += this.autoBootcamp.settings();
