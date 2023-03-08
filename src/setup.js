@@ -42,7 +42,7 @@ class ModernBot {
 		// TODO: Fix this button for the time attacch the settings event
 		// TODO: change the icon with the one of the Modernbot
 		$('.gods_area_buttons').append(
-			"<div class='btn_settings circle_button settings modern_bot_settings' onclick='window.modernBot.settingsFactory.openWindow()'><div style='background: url(https://raw.githubusercontent.com/Sau1707/ModernBot/main/img/gear.png) no-repeat 6px 5px' class='icon js-caption'></div></div>",
+			"<div class='circle_button modern_bot_settings' onclick='window.modernBot.settingsFactory.openWindow()'><div style='width: 27px; height: 27px; background: url(https://raw.githubusercontent.com/Sau1707/ModernBot/main/img/gear.png) no-repeat 6px 5px' class='icon js-caption'></div></div>",
 		);
 	}
 

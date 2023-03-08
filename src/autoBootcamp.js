@@ -91,7 +91,7 @@ class AutoBootcamp extends ModernUtil {
 		var units = { ...ITowns.towns[Game.townId].units() };
 
 		/* Stop if no units are avalable anymore */
-		if (units === {}) {
+		if (Object.keys(units).length === 0) {
 			this.toggle();
 			return;
 		}
