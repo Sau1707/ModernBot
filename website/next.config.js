@@ -5,7 +5,7 @@ const env = process.env.NODE_ENV;
 const nextConfig = {
 	reactStrictMode: true,
 	swcMinify: true,
-	basePath: env == 'development' ? null : '/Grepolis',
+	basePath: env == 'development' ? null : '/ModernBot',
 	images: {
 		unoptimized: true,
 	},
