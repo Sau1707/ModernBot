@@ -69,14 +69,6 @@ class ModernBot {
 }
 
 setTimeout(() => {
-	let uw;
-	if (typeof unsafeWindow === 'undefined') {
-		uw = window;
-	} else {
-		uw = unsafeWindow;
-	}
-
-	console.log('here');
 	uw.modernBot = new ModernBot();
 	setTimeout(() => uw.modernBot.settingsFactory.openWindow(), 500);
 }, 1000);
