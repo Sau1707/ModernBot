@@ -38,7 +38,7 @@ class AutoRuralLevel extends ModernUtil {
 		let islands_list = [];
 		let polis_list = [];
 
-		let town_list = MM.getOnlyCollectionByName('Town').models;
+		let town_list = uw.MM.getOnlyCollectionByName('Town').models;
 
 		for (let town of town_list) {
 			if (town.attributes.on_small_island) continue;
@@ -53,22 +53,22 @@ class AutoRuralLevel extends ModernUtil {
 	};
 
 	setRuralLevel = (n) => {
-		$('#rural_lvl_buttons .button_new').addClass('disabled');
-		$(`#rural_lvl_${n}`).removeClass('disabled');
+		uw.$('#rural_lvl_buttons .button_new').addClass('disabled');
+		uw.$(`#rural_lvl_${n}`).removeClass('disabled');
 		this.rural_level = n;
 		this.save('enable_autorural_level', this.rural_level);
 	};
 
 	toggle = () => {
 		if (!this.enable_auto_rural) {
-			$('#auto_rural_level').css(
+			uw.$('#auto_rural_level').css(
 				'filter',
 				'brightness(100%) saturate(186%) hue-rotate(241deg)',
 			);
 			this.enable_auto_rural = setInterval(this.main, 20000);
 			this.console.log('Auto Rural Level -> On');
 		} else {
-			$('#auto_rural_level').css('filter', '');
+			uw.$('#auto_rural_level').css('filter', '');
 			this.console.log('Auto Rural Level -> Off');
 			clearInterval(this.enable_auto_rural);
 			this.enable_auto_rural = null;
@@ -77,9 +77,9 @@ class AutoRuralLevel extends ModernUtil {
 	};
 
 	main = async () => {
-		let player_relation_models = MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
-		let farm_town_models = MM.getOnlyCollectionByName('FarmTown').models;
-		let killpoints = MM.getModelByNameAndPlayerId('PlayerKillpoints').attributes;
+		let player_relation_models = uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
+		let farm_town_models = uw.MM.getOnlyCollectionByName('FarmTown').models;
+		let killpoints = uw.MM.getModelByNameAndPlayerId('PlayerKillpoints').attributes;
 
 		/* Get array with all locked rurals */
 		const locked = player_relation_models.filter(
@@ -99,13 +99,14 @@ class AutoRuralLevel extends ModernUtil {
 
 			let towns = this.generateList();
 			for (let town_id of towns) {
-				let town = ITowns.towns[town_id];
+				let town = uw.ITowns.towns[town_id];
 				let x = town.getIslandCoordinateX(),
 					y = town.getIslandCoordinateY();
 
 				for (let farmtown of farm_town_models) {
-					if (farmtown.attributes.island_x != x || farmtown.attributes.island_y != y)
+					if (farmtown.attributes.island_x != x || farmtown.attributes.island_y != y) {
 						continue;
+					}
 
 					for (let relation of locked) {
 						if (farmtown.attributes.id != relation.farm_town_id) continue;
@@ -126,17 +127,22 @@ class AutoRuralLevel extends ModernUtil {
 				if (available < levelCosts[level - 1]) return;
 
 				for (let town_id of towns) {
-					let town = ITowns.towns[town_id];
+					let town = uw.ITowns.towns[town_id];
 					let x = town.getIslandCoordinateX(),
 						y = town.getIslandCoordinateY();
 
 					for (let farmtown of farm_town_models) {
-						if (farmtown.attributes.island_x != x || farmtown.attributes.island_y != y)
+						if (
+							farmtown.attributes.island_x != x ||
+							farmtown.attributes.island_y != y
+						) {
 							continue;
+						}
 
 						for (let relation of player_relation_models) {
-							if (farmtown.attributes.id != relation.attributes.farm_town_id)
+							if (farmtown.attributes.id != relation.attributes.farm_town_id) {
 								continue;
+							}
 							if (relation.attributes.expansion_at) continue;
 							if (relation.attributes.expansion_stage > level) continue;
 							this.upgradeRural(

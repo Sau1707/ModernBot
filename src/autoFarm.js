@@ -51,7 +51,7 @@ class AutoFarm extends ModernUtil {
 		let islands_list = [];
 		let polis_list = [];
 
-		let town_list = MM.getOnlyCollectionByName('Town').models;
+		let town_list = uw.MM.getOnlyCollectionByName('Town').models;
 
 		for (let town of town_list) {
 			if (town.attributes.on_small_island) continue;
@@ -67,19 +67,19 @@ class AutoFarm extends ModernUtil {
 
 	toggle = () => {
 		if (!this.enable_auto_farming) {
-			$('#auto_farm').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
+			uw.$('#auto_farm').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
 			let btbutton = document.getElementById('autofarm_timer');
 			if (btbutton == null) {
-				$('.tb_activities, .toolbar_activities').find('.middle').append(this.buttonHtml);
+				uw.$('.tb_activities, .toolbar_activities').find('.middle').append(this.buttonHtml);
 			}
 			this.lastTime = Date.now();
 			this.timer = 0; // TODO: check if it's really 0
 			this.enable_auto_farming = setInterval(this.main, 1000);
 			this.console.log('Auto Farm -> On');
 		} else {
-			$('#autofarm_timer').remove();
-			$('#autofarm_timer_divider').remove();
-			$('#auto_farm').css('filter', '');
+			uw.$('#autofarm_timer').remove();
+			uw.$('#autofarm_timer_divider').remove();
+			uw.$('#auto_farm').css('filter', '');
 			clearInterval(this.enable_auto_farming);
 			this.enable_auto_farming = null;
 			this.console.log('Auto Farm -> Off');
@@ -88,8 +88,8 @@ class AutoFarm extends ModernUtil {
 	};
 
 	setAutoFarmLevel = (n) => {
-		$('#farming_lvl_buttons .button_new').addClass('disabled');
-		$(`#farming_lvl_${n}`).removeClass('disabled');
+		uw.$('#farming_lvl_buttons .button_new').addClass('disabled');
+		uw.$(`#farming_lvl_${n}`).removeClass('disabled');
 		this.farm_timing = n;
 		this.save('enable_autofarm_level', n);
 	};
@@ -100,13 +100,13 @@ class AutoFarm extends ModernUtil {
 		for (let i = 0; i < buttons.length; i++) {
 			buttons[i].classList.add('disabled');
 		}
-		$(`#rural_percentuals_${n}`).removeClass('disabled');
+		uw.$(`#rural_percentuals_${n}`).removeClass('disabled');
 		this.rural_percentual = n;
 		this.save('enable_autofarm_percentuals', n);
 	};
 
 	getNextCollection = () => {
-		let models = MM.getCollections().FarmTownPlayerRelation[0].models;
+		let models = uw.MM.getCollections().FarmTownPlayerRelation[0].models;
 		let lootable_at_values = {};
 		for (let model of models) {
 			let lootable_time = model.attributes.lootable_at;
@@ -136,7 +136,7 @@ class AutoFarm extends ModernUtil {
 
 		const timerDisplay = document.getElementById('autofarm_timer_p');
 		if (timerDisplay == null) {
-			$('.tb_activities, .toolbar_activities').find('.middle').append(this.buttonHtml);
+			uw.$('.tb_activities, .toolbar_activities').find('.middle').append(this.buttonHtml);
 		}
 		if (this.timer > 0) {
 			timerDisplay.innerHTML = Math.round(this.timer / 1000);
@@ -165,7 +165,7 @@ class AutoFarm extends ModernUtil {
 			};
 
 			for (let town_id of Polislist) {
-				let town = ITowns.towns[town_id];
+				let town = uw.ITowns.towns[town_id];
 				let resources = town.resources();
 				total.wood += resources.wood;
 				total.stone += resources.stone;
@@ -196,7 +196,7 @@ class AutoFarm extends ModernUtil {
 			this.console.log('Claimed all rurals');
 			let rand = Math.floor(Math.random() * this.delta_time);
 			this.timer = this.farm_timing * 300000 + rand;
-			setTimeout(() => WMap.removeFarmTownLootCooldownIconAndRefreshLootTimers(), 2000);
+			setTimeout(() => uw.WMap.removeFarmTownLootCooldownIconAndRefreshLootTimers(), 2000);
 		}
 
 		/* update the timer */

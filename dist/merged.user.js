@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.12.1
+// @version      1.11.0
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -12,12 +12,12 @@
 // @require		 http://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js
 // ==/UserScript==
 
+var uw;
 if (typeof unsafeWindow == 'undefined') {
-	var uw = window;
+	uw = window;
 } else {
-	var uw = unsafeWindow;
+	uw = unsafeWindow;
 }
-$ = uw.jQuery || jQuery;
 
 var style = document.createElement("style");
 style.textContent = `.auto_build_up_arrow{background:url(https://gpit.innogamescdn.com/images/game/academy/up.png) no-repeat -2px -2px;width:18px;height:18px;position:absolute;right:-2px;bottom:12px;transform:scale(.8);cursor:pointer}.auto_build_down_arrow{background:url(https://gpit.innogamescdn.com/images/game/academy/up.png) no-repeat -2px -2px;width:18px;height:18px;position:absolute;right:-2px;bottom:-3px;transform:scale(.8) rotate(180deg);cursor:pointer}.auto_build_box{background:url(https://gpit.innogamescdn.com/images/game/academy/tech_frame.png) no-repeat 0 0;width:58px;height:59px;position:relative;overflow:hidden;display:inline-block;vertical-align:middle}.auto_build_building{position:absolute;top:4px;left:4px;width:50px;height:50px;background:url(https://gpit.innogamescdn.com/images/game/main/buildings_sprite_50x50.png) no-repeat 0 0}.auto_build_lvl{position:absolute;bottom:3px;left:3px;margin:0;font-weight:700;font-size:12px;color:#fff;text-shadow:0 0 2px #000,1px 1px 2px #000,0 2px 2px #000}#buildings_lvl_buttons{padding:5px;max-height:400px;user-select:none}.progress_bar_auto{position:absolute;z-index:1;height:100%;left:0;top:0;background-image:url(https://gpit.innogamescdn.com/images/game/border/header.png);background-position:0 -1px;filter:brightness(100%) saturate(186%) hue-rotate(241deg)}.modern_bot_settings{z-index:10;position:absolute;top:52px!important;right:116px!important}.console_modernbot{width:100%;height:100%;background-color:#000;color:#fff;font-family:monospace;font-size:16px;padding:20px;box-sizing:border-box;overflow-y:scroll;display:flex;flex-direction:column-reverse}#MODERN_BOT_content{height:100%}.console_modernbot p{margin:1px}`;
@@ -31,7 +31,7 @@ class ModernUtil {
 
 	/* Save content in localstorage */
 	save(id, content) {
-		const key = `${id}_${Game.world_id}`;
+		const key = `${id}_${uw.Game.world_id}`;
 
 		try {
 			localStorage.setItem(key, JSON.stringify(content));
@@ -44,7 +44,7 @@ class ModernUtil {
 
 	/* Load from localstorage, return null if don't exist */
 	load(id, defaultValue = null) {
-		const key = `${id}_${Game.world_id}`;
+		const key = `${id}_${uw.Game.world_id}`;
 		const savedValue = localStorage.getItem(key);
 
 		if (savedValue === null || savedValue === undefined) {
@@ -64,7 +64,7 @@ class ModernUtil {
 		let islands_list = [];
 		let polis_list = [];
 
-		let town_list = MM.getOnlyCollectionByName('Town').models;
+		let town_list = uw.MM.getOnlyCollectionByName('Town').models;
 
 		for (let town of town_list) {
 			if (town.attributes.on_small_island) continue;
@@ -135,25 +135,25 @@ class ModernUtil {
 			time_option_booty: 600,
 			claim_factor: 'normal',
 		};
-		gpAjax.ajaxPost('farm_town_overviews', 'claim_loads_multiple', data);
+		uw.gpAjax.ajaxPost('farm_town_overviews', 'claim_loads_multiple', data);
 	}
 
 	useBootcampReward() {
 		var data = {
-			model_url: `PlayerAttackSpot/${Game.player_id}`,
+			model_url: `PlayerAttackSpot/${uw.Game.player_id}`,
 			action_name: 'useReward',
 			arguments: {},
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	}
 
 	stashBootcampReward() {
 		var data = {
-			model_url: `PlayerAttackSpot/${Game.player_id}`,
+			model_url: `PlayerAttackSpot/${uw.Game.player_id}`,
 			action_name: 'stashReward',
 			arguments: {},
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data, 0, {
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data, 0, {
 			error: this.useBootcampReward,
 		});
 	}
@@ -166,7 +166,7 @@ class ModernUtil {
 			arguments: { farm_town_id: farm_town_id, amount: count > 3000 ? 3000 : count },
 			town_id: town_id,
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 
 	unlockRural = (town_id, farm_town_id, relation_id) => {
@@ -178,7 +178,7 @@ class ModernUtil {
 			},
 			town_id: town_id,
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 
 	upgradeRural = (town_id, farm_town_id, relation_id) => {
@@ -190,7 +190,7 @@ class ModernUtil {
 			},
 			town_id: town_id,
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 
 	//
@@ -199,13 +199,13 @@ class ModernUtil {
 			let data = {
 				celebration_type: type,
 			};
-			gpAjax.ajaxPost('town_overviews', 'start_all_celebrations', data);
+			uw.gpAjax.ajaxPost('town_overviews', 'start_all_celebrations', data);
 		} else {
 			let data = {
 				celebration_type: type,
 				town_id: town_id,
 			};
-			gpAjax.ajaxPost('building_place', 'start_celebration', data);
+			uw.gpAjax.ajaxPost('building_place', 'start_celebration', data);
 		}
 	};
 }
@@ -222,11 +222,11 @@ class AutoBootcamp extends ModernUtil {
 	settings = () => {
 		requestAnimationFrame(() => {
 			if (this.use_def) {
-				$('#autobootcamp_off').addClass('disabled');
-				$('#autobootcamp_def').removeClass('disabled');
+				uw.$('#autobootcamp_off').addClass('disabled');
+				uw.$('#autobootcamp_def').removeClass('disabled');
 			} else {
-				$('#autobootcamp_def').addClass('disabled');
-				$('#autobootcamp_off').removeClass('disabled');
+				uw.$('#autobootcamp_def').addClass('disabled');
+				uw.$('#autobootcamp_off').removeClass('disabled');
 			}
 		});
 
@@ -254,25 +254,25 @@ class AutoBootcamp extends ModernUtil {
 	triggerUseDef = () => {
 		this.use_def = !this.use_def;
 		if (this.use_def) {
-			$('#autobootcamp_off').addClass('disabled');
-			$('#autobootcamp_def').removeClass('disabled');
+			uw.$('#autobootcamp_off').addClass('disabled');
+			uw.$('#autobootcamp_def').removeClass('disabled');
 		} else {
-			$('#autobootcamp_def').addClass('disabled');
-			$('#autobootcamp_off').removeClass('disabled');
+			uw.$('#autobootcamp_def').addClass('disabled');
+			uw.$('#autobootcamp_off').removeClass('disabled');
 		}
 		this.save('bootcamp_use_def', this.use_def);
 	};
 
 	toggle = () => {
 		if (!this.enable_auto_bootcamp) {
-			$('#auto_autobootcamp').css(
+			uw.$('#auto_autobootcamp').css(
 				'filter',
 				'brightness(100%) saturate(186%) hue-rotate(241deg)',
 			);
 			this.enable_auto_bootcamp = setInterval(this.main, 4000);
 			this.console.log('Auto Bootcamp -> On');
 		} else {
-			$('#auto_autobootcamp').css('filter', '');
+			uw.$('#auto_autobootcamp').css('filter', '');
 			clearInterval(this.enable_auto_bootcamp);
 			this.enable_auto_bootcamp = null;
 			this.console.log('Auto Bootcamp -> Off');
@@ -281,24 +281,27 @@ class AutoBootcamp extends ModernUtil {
 	};
 
 	attackBootcamp = () => {
-		let cooldown = MM.getModelByNameAndPlayerId('PlayerAttackSpot').getCooldownDuration();
+		let cooldown = uw.MM.getModelByNameAndPlayerId('PlayerAttackSpot').getCooldownDuration();
 		if (cooldown > 0) return false;
 
-		let movements = MM.getModels().MovementsUnits;
+		let movements = uw.MM.getModels().MovementsUnits;
 
 		/* Check if there isn't already an active attack */
 		if (movements != null) {
 			if (Object.keys(movements).length > 0) {
 				var attack_list = Object.keys(movements);
 				for (var i = 0; i < Object.keys(movements).length; i++) {
-					if (movements[attack_list[i]].attributes.destination_is_attack_spot)
+					if (movements[attack_list[i]].attributes.destination_is_attack_spot) {
 						return false;
-					if (movements[attack_list[i]].attributes.origin_is_attack_spot) return false;
+					}
+					if (movements[attack_list[i]].attributes.origin_is_attack_spot) {
+						return false;
+					}
 				}
 			}
 		}
 
-		var units = { ...ITowns.towns[Game.townId].units() };
+		var units = { ...uw.ITowns.towns[uw.Game.townId].units() };
 
 		/* Stop if no units are avalable anymore */
 		if (Object.keys(units).length === 0) {
@@ -308,7 +311,7 @@ class AutoBootcamp extends ModernUtil {
 
 		delete units.militia;
 		for (let unit in units) {
-			if (GameData.units[unit].is_naval) delete units[unit];
+			if (uw.GameData.units[unit].is_naval) delete units[unit];
 		}
 
 		if (!this.use_def) {
@@ -316,18 +319,18 @@ class AutoBootcamp extends ModernUtil {
 			delete units.archer;
 		}
 
-		var model_url = 'PlayerAttackSpot/' + Game.player_id;
+		var model_url = 'PlayerAttackSpot/' + uw.Game.player_id;
 		var data = {
 			model_url: model_url,
 			action_name: 'attack',
 			arguments: units,
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 		return true;
 	};
 
 	rewardBootcamp = () => {
-		let model = MM.getModelByNameAndPlayerId('PlayerAttackSpot');
+		let model = uw.MM.getModelByNameAndPlayerId('PlayerAttackSpot');
 
 		/* Stop if level is not found */
 		if (typeof model.getLevel() == 'undefined') {
@@ -390,25 +393,27 @@ class AutoBuild extends ModernUtil {
 		/* Attach event to towns list */
 		setTimeout(() => {
 			var i = 0;
-			while (layout_main_controller.sub_controllers[i].name != 'town_name_area') {
+			while (uw.layout_main_controller.sub_controllers[i].name != 'town_name_area') {
 				i++;
 			}
 
-			layout_main_controller.sub_controllers[
+			uw.layout_main_controller.sub_controllers[
 				i
 			].controller.town_groups_list_view.render_old_modern =
-				layout_main_controller.sub_controllers[i].controller.town_groups_list_view.render;
+				uw.layout_main_controller.sub_controllers[
+					i
+				].controller.town_groups_list_view.render;
 
-			layout_main_controller.sub_controllers[i].controller.town_groups_list_view.render =
+			uw.layout_main_controller.sub_controllers[i].controller.town_groups_list_view.render =
 				function () {
-					layout_main_controller.sub_controllers[
+					uw.layout_main_controller.sub_controllers[
 						i
 					].controller.town_groups_list_view.render_old_modern();
-					var town_ids = Object.keys(modernBot.autoBuild.towns_buildings);
-					$('.town_group_town').each(function () {
-						var townId = parseInt($(this).attr('data-townid'));
+					var town_ids = Object.keys(uw.modernBot.autoBuild.towns_buildings);
+					uw.$('.town_group_town').each(function () {
+						var townId = parseInt(uw.$(this).attr('data-townid'));
 						if (!town_ids.includes(townId.toString())) return;
-						$(this).append(
+						uw.$(this).append(
 							"<div style='background-image: url(https://i.ibb.co/G5DfgbZ/gear.png); scale: 0.9; background-repeat: no-repeat; position: relative; height: 20px; width: 25px; float: left;'></div>",
 						);
 					});
@@ -419,15 +424,15 @@ class AutoBuild extends ModernUtil {
 	settings = () => {
 		/* Apply event to shift */
 		requestAnimationFrame(() => {
-			$('#buildings_lvl_buttons').on('mousedown', (e) => {
+			uw.$('#buildings_lvl_buttons').on('mousedown', (e) => {
 				this.shiftHeld = e.shiftKey;
 			});
 
-			this.setPolisInSettings(ITowns.getCurrentTown().id);
+			this.setPolisInSettings(uw.ITowns.getCurrentTown().id);
 			this.updateTitle();
 
-			$.Observer(GameEvents.town.town_switch).subscribe(() => {
-				this.setPolisInSettings(ITowns.getCurrentTown().id);
+			uw.$.Observer(uw.GameEvents.town.town_switch).subscribe(() => {
+				this.setPolisInSettings(uw.ITowns.getCurrentTown().id);
 				this.updateTitle();
 			});
 		});
@@ -453,7 +458,7 @@ class AutoBuild extends ModernUtil {
 
 	/* Given the town id, set the polis in the settings menu */
 	setPolisInSettings = (town_id) => {
-		let town = ITowns.towns[town_id];
+		let town = uw.ITowns.towns[town_id];
 
 		/* If the town is in the active list set*/
 		let town_buildings =
@@ -477,12 +482,12 @@ class AutoBuild extends ModernUtil {
 
 		/* If the town is in a group, the the groups */
 		const groups =
-			`(${Object.values(ITowns.getTownGroups())
+			`(uw.${Object.values(uw.ITowns.getTownGroups())
 				.filter((group) => group.id > 0 && group.id !== -1 && group.towns[town_id])
 				.map((group) => group.name)
 				.join(', ')})` || '';
 
-		$('#buildings_lvl_buttons').html(`
+		uw.$('#buildings_lvl_buttons').html(`
         <div id="build_settings_${town_id}">
             <div style="width: 600px; margin-bottom: 3px; display: inline-flex">
             <a class="gp_town_link" href="${town.getLinkFragment()}">${town.getName()}</a> 
@@ -510,12 +515,12 @@ class AutoBuild extends ModernUtil {
 	/* call with town_id, building type and level to be added */
 	editBuildingLevel = (town_id, name, d) => {
 		/* if shift is pressed, add or remove 10 */
-		const current_lvl = parseInt($(`#build_lvl_${name}`).text());
+		const current_lvl = parseInt(uw.$(`#build_lvl_${name}`).text());
 		d = this.shiftHeld ? d * 10 : d;
 
-		const { max_level, min_level } = GameData.buildings[name];
+		const { max_level, min_level } = uw.GameData.buildings[name];
 
-		const town = ITowns.towns[town_id];
+		const town = uw.ITowns.towns[town_id];
 
 		const town_buildings =
 			this.towns_buildings?.[town_id] ?? { ...town.buildings()?.attributes } ?? {};
@@ -531,7 +536,7 @@ class AutoBuild extends ModernUtil {
 				? 'red'
 				: 'lime';
 
-		$(`#build_settings_${town_id} #build_lvl_${name}`)
+		uw.$(`#build_settings_${town_id} #build_lvl_${name}`)
 			.css('color', color)
 			.text(town_buildings[name]);
 
@@ -542,25 +547,25 @@ class AutoBuild extends ModernUtil {
 	};
 
 	isActive = (town_id) => {
-		let town = ITowns.towns[town_id];
+		let town = uw.ITowns.towns[town_id];
 		return !this.towns_buildings?.[town.id];
 	};
 
 	updateTitle = () => {
-		let town = ITowns.getCurrentTown();
-		if (town.id.toString() in this.towns_buildings) {
-			$('#auto_build_title').css(
+		let town = uw.ITowns.getCurrentTown();
+		if (uw.town.id.toString() in this.towns_buildings) {
+			uw.$('#auto_build_title').css(
 				'filter',
 				'brightness(100%) saturate(186%) hue-rotate(241deg)',
 			);
 		} else {
-			$('#auto_build_title').css('filter', '');
+			uw.$('#auto_build_title').css('filter', '');
 		}
 	};
 
 	/* Call to toggle on and off (trigger the current town) */
 	toggle = () => {
-		let town = ITowns.getCurrentTown();
+		let town = uw.ITowns.getCurrentTown();
 
 		if (!(town.id.toString() in this.towns_buildings)) {
 			this.console.log(`${town.name}: Auto Build On`);
@@ -581,7 +586,7 @@ class AutoBuild extends ModernUtil {
 				'wall',
 			];
 			buildins.forEach((e) => {
-				let lvl = parseInt($(`#build_lvl_${e}`).text());
+				let lvl = parseInt(uw.$(`#build_lvl_${e}`).text());
 				this.towns_buildings[town.id][e] = lvl;
 			});
 			this.save('auto_build_levels', this.towns_buildings);
@@ -597,7 +602,7 @@ class AutoBuild extends ModernUtil {
 	main = async () => {
 		for (let town_id of Object.keys(this.towns_buildings)) {
 			/* If the town don't exists in list, remove it to prevent errors */
-			if (!ITowns.towns[town_id]) {
+			if (!uw.ITowns.towns[town_id]) {
 				delete this.towns_buildings[town_id];
 				this.save('auto_build_levels', this.towns_buildings);
 				continue;
@@ -609,7 +614,7 @@ class AutoBuild extends ModernUtil {
 				delete this.towns_buildings[town_id];
 				this.save('auto_build_levels', this.towns_buildings);
 				this.updateTitle();
-				const town = ITowns.towns[town_id];
+				const town = uw.ITowns.towns[town_id];
 				this.console.log(`${town.name}: Auto Build Done`);
 				continue;
 			}
@@ -619,51 +624,57 @@ class AutoBuild extends ModernUtil {
 
 	/* Make post request to the server to buildup the building */
 	postBuild = async (type, town_id) => {
-		let town = ITowns.towns[town_id];
+		let town = uw.ITowns.towns[town_id];
 		let { wood, stone, iron } = town.resources();
 		let { resources_for, population_for } =
-			MM.getModels().BuildingBuildData[town_id].attributes.building_data[type];
+			uw.MM.getModels().BuildingBuildData[town_id].attributes.building_data[type];
 
 		if (town.getAvailablePopulation() < population_for) return;
-		if (wood < resources_for.wood || stone < resources_for.stone || iron < resources_for.iron)
+		if (wood < resources_for.wood || stone < resources_for.stone || iron < resources_for.iron) {
 			return;
+		}
 		let data = {
 			model_url: 'BuildingOrder',
 			action_name: 'buildUp',
 			arguments: { building_id: type },
 			town_id: town_id,
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 		this.console.log(`${town.getName()}: buildUp ${type}`);
 		await this.sleep(500);
 	};
 
 	/* Make post request to tear building down */
 	postTearDown = async (type, town_id) => {
-		let town = ITowns.towns[town_id];
+		let town = uw.ITowns.towns[town_id];
 		let data = {
 			model_url: 'BuildingOrder',
 			action_name: 'tearDown',
 			arguments: { building_id: type },
 			town_id: town_id,
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 		await this.sleep(500);
 	};
 
 	/* return true if the quee is full */
 	isFullQueue = (town_id) => {
-		let town = ITowns.towns[town_id];
-		if (GameDataPremium.isAdvisorActivated('curator') && town.buildingOrders().length >= 7)
+		let town = uw.ITowns.towns[town_id];
+		if (uw.GameDataPremium.isAdvisorActivated('curator') && town.buildingOrders().length >= 7) {
 			return true;
-		if (!GameDataPremium.isAdvisorActivated('curator') && town.buildingOrders().length >= 2)
+		}
+		if (
+			!uw.GameDataPremium.isAdvisorActivated('curator') &&
+			town.buildingOrders().length >= 2
+		) {
 			return true;
+		}
 		return false;
 	};
 
 	/* return true if building match polis */
 	isDone = (town_id) => {
-		let town = ITowns.towns[town_id];
+		let town = uw.ITowns.towns[town_id];
 		let buildings = town.getBuildings().attributes;
 		for (let build of Object.keys(this.towns_buildings[town_id])) {
 			if (this.towns_buildings[town_id][build] != buildings[build]) {
@@ -675,7 +686,7 @@ class AutoBuild extends ModernUtil {
 
 	/* */
 	getNextBuild = async (town_id) => {
-		let town = ITowns.towns[town_id];
+		let town = uw.ITowns.towns[town_id];
 
 		/* livello attuale */
 		let buildings = { ...town.getBuildings().attributes };
@@ -842,7 +853,7 @@ class AutoFarm extends ModernUtil {
 		let islands_list = [];
 		let polis_list = [];
 
-		let town_list = MM.getOnlyCollectionByName('Town').models;
+		let town_list = uw.MM.getOnlyCollectionByName('Town').models;
 
 		for (let town of town_list) {
 			if (town.attributes.on_small_island) continue;
@@ -858,19 +869,19 @@ class AutoFarm extends ModernUtil {
 
 	toggle = () => {
 		if (!this.enable_auto_farming) {
-			$('#auto_farm').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
+			uw.$('#auto_farm').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
 			let btbutton = document.getElementById('autofarm_timer');
 			if (btbutton == null) {
-				$('.tb_activities, .toolbar_activities').find('.middle').append(this.buttonHtml);
+				uw.$('.tb_activities, .toolbar_activities').find('.middle').append(this.buttonHtml);
 			}
 			this.lastTime = Date.now();
 			this.timer = 0; // TODO: check if it's really 0
 			this.enable_auto_farming = setInterval(this.main, 1000);
 			this.console.log('Auto Farm -> On');
 		} else {
-			$('#autofarm_timer').remove();
-			$('#autofarm_timer_divider').remove();
-			$('#auto_farm').css('filter', '');
+			uw.$('#autofarm_timer').remove();
+			uw.$('#autofarm_timer_divider').remove();
+			uw.$('#auto_farm').css('filter', '');
 			clearInterval(this.enable_auto_farming);
 			this.enable_auto_farming = null;
 			this.console.log('Auto Farm -> Off');
@@ -879,8 +890,8 @@ class AutoFarm extends ModernUtil {
 	};
 
 	setAutoFarmLevel = (n) => {
-		$('#farming_lvl_buttons .button_new').addClass('disabled');
-		$(`#farming_lvl_${n}`).removeClass('disabled');
+		uw.$('#farming_lvl_buttons .button_new').addClass('disabled');
+		uw.$(`#farming_lvl_${n}`).removeClass('disabled');
 		this.farm_timing = n;
 		this.save('enable_autofarm_level', n);
 	};
@@ -891,13 +902,13 @@ class AutoFarm extends ModernUtil {
 		for (let i = 0; i < buttons.length; i++) {
 			buttons[i].classList.add('disabled');
 		}
-		$(`#rural_percentuals_${n}`).removeClass('disabled');
+		uw.$(`#rural_percentuals_${n}`).removeClass('disabled');
 		this.rural_percentual = n;
 		this.save('enable_autofarm_percentuals', n);
 	};
 
 	getNextCollection = () => {
-		let models = MM.getCollections().FarmTownPlayerRelation[0].models;
+		let models = uw.MM.getCollections().FarmTownPlayerRelation[0].models;
 		let lootable_at_values = {};
 		for (let model of models) {
 			let lootable_time = model.attributes.lootable_at;
@@ -927,7 +938,7 @@ class AutoFarm extends ModernUtil {
 
 		const timerDisplay = document.getElementById('autofarm_timer_p');
 		if (timerDisplay == null) {
-			$('.tb_activities, .toolbar_activities').find('.middle').append(this.buttonHtml);
+			uw.$('.tb_activities, .toolbar_activities').find('.middle').append(this.buttonHtml);
 		}
 		if (this.timer > 0) {
 			timerDisplay.innerHTML = Math.round(this.timer / 1000);
@@ -956,7 +967,7 @@ class AutoFarm extends ModernUtil {
 			};
 
 			for (let town_id of Polislist) {
-				let town = ITowns.towns[town_id];
+				let town = uw.ITowns.towns[town_id];
 				let resources = town.resources();
 				total.wood += resources.wood;
 				total.stone += resources.stone;
@@ -987,7 +998,7 @@ class AutoFarm extends ModernUtil {
 			this.console.log('Claimed all rurals');
 			let rand = Math.floor(Math.random() * this.delta_time);
 			this.timer = this.farm_timing * 300000 + rand;
-			setTimeout(() => WMap.removeFarmTownLootCooldownIconAndRefreshLootTimers(), 2000);
+			setTimeout(() => uw.WMap.removeFarmTownLootCooldownIconAndRefreshLootTimers(), 2000);
 		}
 
 		/* update the timer */
@@ -1033,14 +1044,14 @@ class AutoGratis extends ModernUtil {
 	/* Call to trigger the autogratis */
 	toggle = () => {
 		if (!this.autogratis) {
-			$('#auto_gratis_title').css(
+			uw.$('#auto_gratis_title').css(
 				'filter',
 				'brightness(100%) saturate(186%) hue-rotate(241deg)',
 			);
 			this.autogratis = setInterval(this.main, 4000);
 			this.console.log('Auto Gratis -> On');
 		} else {
-			$('#auto_gratis_title').css('filter', '');
+			uw.$('#auto_gratis_title').css('filter', '');
 			clearInterval(this.autogratis);
 			this.autogratis = null;
 			this.console.log('Auto Gratis -> Off');
@@ -1050,7 +1061,7 @@ class AutoGratis extends ModernUtil {
 
 	/* Main loop for the autogratis bot */
 	main = () => {
-		const el = $('.type_building_queue.type_free').not('#dummy_free');
+		const el = uw.$('.type_building_queue.type_free').not('#dummy_free');
 		if (!el.length) return;
 		el.click();
 		this.console.log('Clicked gratis button');
@@ -1112,9 +1123,9 @@ class AutoParty extends ModernUtil {
 
 	trigger = (type) => {
 		if (this.active_types[type]) {
-			$(`#autoparty_${type}`).addClass('disabled');
+			uw.$(`#autoparty_${type}`).addClass('disabled');
 		} else {
-			$(`#autoparty_${type}`).removeClass('disabled');
+			uw.$(`#autoparty_${type}`).removeClass('disabled');
 		}
 		this.active_types[type] = !this.active_types[type];
 		this.save('autoparty_types', this.active_types);
@@ -1122,12 +1133,12 @@ class AutoParty extends ModernUtil {
 
 	triggerSingle = (type) => {
 		if (type === 'false') {
-			$(`#autoparty_single`).addClass('disabled');
-			$(`#autoparty_multiple`).removeClass('disabled');
+			uw.$(`#autoparty_single`).addClass('disabled');
+			uw.$(`#autoparty_multiple`).removeClass('disabled');
 			this.single = false;
 		} else {
-			$(`#autoparty_multiple`).addClass('disabled');
-			$(`#autoparty_single`).removeClass('disabled');
+			uw.$(`#autoparty_multiple`).addClass('disabled');
+			uw.$(`#autoparty_single`).removeClass('disabled');
 			this.single = true;
 		}
 		this.save('autoparty_single', this.single);
@@ -1135,14 +1146,14 @@ class AutoParty extends ModernUtil {
 
 	toggle = () => {
 		if (!this.autoparty) {
-			$('#auto_party_title').css(
+			uw.$('#auto_party_title').css(
 				'filter',
 				'brightness(100%) saturate(186%) hue-rotate(241deg)',
 			);
 			this.autoparty = setInterval(this.main, 30000);
 			this.console.log('Auto Party -> On');
 		} else {
-			$('#auto_party_title').css('filter', '');
+			uw.$('#auto_party_title').css('filter', '');
 			clearInterval(this.autoparty);
 			this.autoparty = null;
 			this.console.log('Auto Party -> Off');
@@ -1152,7 +1163,7 @@ class AutoParty extends ModernUtil {
 
 	/* Return list of town with active celebration */
 	getCelebrationsList = (type) => {
-		const celebrationModels = MM.getModels().Celebration;
+		const celebrationModels = uw.MM.getModels().Celebration;
 		const triumphs = Object.values(celebrationModels)
 			.filter((celebration) => celebration.attributes.celebration_type === type)
 			.map((triumph) => triumph.attributes.town_id);
@@ -1163,9 +1174,9 @@ class AutoParty extends ModernUtil {
 		let max = 10;
 		let party = this.getCelebrationsList('party');
 		if (this.single) {
-			for (let town_id in ITowns.towns) {
+			for (let town_id in uw.ITowns.towns) {
 				if (party.includes(parseInt(town_id))) continue;
-				let town = ITowns.towns[town_id];
+				let town = uw.ITowns.towns[town_id];
 				if (town.getBuildings().attributes.academy < 30) continue;
 				let { wood, stone, iron } = town.resources();
 				if (wood < 15000 || stone < 18000 || iron < 15000) continue;
@@ -1183,13 +1194,13 @@ class AutoParty extends ModernUtil {
 
 	checkTriumph = async () => {
 		let max = 10;
-		let killpoints = MM.getModelByNameAndPlayerId('PlayerKillpoints').attributes;
+		let killpoints = uw.MM.getModelByNameAndPlayerId('PlayerKillpoints').attributes;
 		let available = killpoints.att + killpoints.def - killpoints.used;
 		if (available < 300) return;
 
 		let triumph = this.getCelebrationsList('triumph');
 		if (this.single) {
-			for (let town_id in ITowns.towns) {
+			for (let town_id in uw.ITowns.towns) {
 				if (triumph.includes(parseInt(town_id))) continue;
 				console.log(town_id);
 				this.makeCelebration('triumph', town_id);
@@ -1252,7 +1263,7 @@ class AutoRuralLevel extends ModernUtil {
 		let islands_list = [];
 		let polis_list = [];
 
-		let town_list = MM.getOnlyCollectionByName('Town').models;
+		let town_list = uw.MM.getOnlyCollectionByName('Town').models;
 
 		for (let town of town_list) {
 			if (town.attributes.on_small_island) continue;
@@ -1267,22 +1278,22 @@ class AutoRuralLevel extends ModernUtil {
 	};
 
 	setRuralLevel = (n) => {
-		$('#rural_lvl_buttons .button_new').addClass('disabled');
-		$(`#rural_lvl_${n}`).removeClass('disabled');
+		uw.$('#rural_lvl_buttons .button_new').addClass('disabled');
+		uw.$(`#rural_lvl_${n}`).removeClass('disabled');
 		this.rural_level = n;
 		this.save('enable_autorural_level', this.rural_level);
 	};
 
 	toggle = () => {
 		if (!this.enable_auto_rural) {
-			$('#auto_rural_level').css(
+			uw.$('#auto_rural_level').css(
 				'filter',
 				'brightness(100%) saturate(186%) hue-rotate(241deg)',
 			);
 			this.enable_auto_rural = setInterval(this.main, 20000);
 			this.console.log('Auto Rural Level -> On');
 		} else {
-			$('#auto_rural_level').css('filter', '');
+			uw.$('#auto_rural_level').css('filter', '');
 			this.console.log('Auto Rural Level -> Off');
 			clearInterval(this.enable_auto_rural);
 			this.enable_auto_rural = null;
@@ -1291,9 +1302,9 @@ class AutoRuralLevel extends ModernUtil {
 	};
 
 	main = async () => {
-		let player_relation_models = MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
-		let farm_town_models = MM.getOnlyCollectionByName('FarmTown').models;
-		let killpoints = MM.getModelByNameAndPlayerId('PlayerKillpoints').attributes;
+		let player_relation_models = uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
+		let farm_town_models = uw.MM.getOnlyCollectionByName('FarmTown').models;
+		let killpoints = uw.MM.getModelByNameAndPlayerId('PlayerKillpoints').attributes;
 
 		/* Get array with all locked rurals */
 		const locked = player_relation_models.filter(
@@ -1313,13 +1324,14 @@ class AutoRuralLevel extends ModernUtil {
 
 			let towns = this.generateList();
 			for (let town_id of towns) {
-				let town = ITowns.towns[town_id];
+				let town = uw.ITowns.towns[town_id];
 				let x = town.getIslandCoordinateX(),
 					y = town.getIslandCoordinateY();
 
 				for (let farmtown of farm_town_models) {
-					if (farmtown.attributes.island_x != x || farmtown.attributes.island_y != y)
+					if (farmtown.attributes.island_x != x || farmtown.attributes.island_y != y) {
 						continue;
+					}
 
 					for (let relation of locked) {
 						if (farmtown.attributes.id != relation.farm_town_id) continue;
@@ -1340,17 +1352,22 @@ class AutoRuralLevel extends ModernUtil {
 				if (available < levelCosts[level - 1]) return;
 
 				for (let town_id of towns) {
-					let town = ITowns.towns[town_id];
+					let town = uw.ITowns.towns[town_id];
 					let x = town.getIslandCoordinateX(),
 						y = town.getIslandCoordinateY();
 
 					for (let farmtown of farm_town_models) {
-						if (farmtown.attributes.island_x != x || farmtown.attributes.island_y != y)
+						if (
+							farmtown.attributes.island_x != x ||
+							farmtown.attributes.island_y != y
+						) {
 							continue;
+						}
 
 						for (let relation of player_relation_models) {
-							if (farmtown.attributes.id != relation.attributes.farm_town_id)
+							if (farmtown.attributes.id != relation.attributes.farm_town_id) {
 								continue;
+							}
 							if (relation.attributes.expansion_at) continue;
 							if (relation.attributes.expansion_stage > level) continue;
 							this.upgradeRural(
@@ -1425,8 +1442,8 @@ class AutoRuralTrade extends ModernUtil {
 	};
 
 	setMinRatioLevel = (n) => {
-		$('#min_rural_ratio .button_new').addClass('disabled');
-		$(`#min_rural_ratio_${n}`).removeClass('disabled');
+		uw.$('#min_rural_ratio .button_new').addClass('disabled');
+		uw.$(`#min_rural_ratio_${n}`).removeClass('disabled');
 		this.min_rural_ratio = n;
 		this.save('min_rural_ratio', n);
 	};
@@ -1435,14 +1452,14 @@ class AutoRuralTrade extends ModernUtil {
 	main = async (resouce) => {
 		if (resouce) {
 			/* Set button disabled */
-			if ($(`#autotrade_lvl_${i}`).hasClass('disabled')) return;
+			if (uw.$(`#autotrade_lvl_${i}`).hasClass('disabled')) return;
 			[1, 2, 3, 4].forEach((i) => {
-				$(`#autotrade_lvl_${i}`).addClass('disabled').css('cursor', 'auto');
+				uw.$(`#autotrade_lvl_${i}`).addClass('disabled').css('cursor', 'auto');
 			});
 			this.trade_resouce = resouce;
 
 			/* Set the current trade to polis at index 0 */
-			this.total_trade = Object.keys(ITowns.towns).length;
+			this.total_trade = Object.keys(uw.ITowns.towns).length;
 			this.done_trade = 0;
 
 			/* Set the interval */
@@ -1452,21 +1469,21 @@ class AutoRuralTrade extends ModernUtil {
 			clearInterval(this.auto_trade_resouces_loop);
 
 			/* Re-enable buttons and set progress to 0 */
-			$('#res_progress_bar').css('width', 0);
+			uw.$('#res_progress_bar').css('width', 0);
 			[1, 2, 3, 4].forEach((i) => {
-				$(`#autotrade_lvl_${i}`).removeClass('disabled').css('cursor', 'pointer');
+				uw.$(`#autotrade_lvl_${i}`).removeClass('disabled').css('cursor', 'pointer');
 			});
 		}
 	};
 
 	tradeWithRural = async (polis_id) => {
-		let town = ITowns.towns[polis_id];
+		let town = uw.ITowns.towns[polis_id];
 		if (!town) return;
 		if (town.getAvailableTradeCapacity() < 3000) return;
 		//if (this.check_for_hide && town.getBuildings().attributes.hide < 10) return;
 
-		let farm_town_models = MM.getOnlyCollectionByName('FarmTown').models;
-		let player_relation_models = MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
+		let farm_town_models = uw.MM.getOnlyCollectionByName('FarmTown').models;
+		let player_relation_models = uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
 
 		/* Create list with all the farmtown in current island polis */
 		let x = town.getIslandCoordinateX(),
@@ -1500,11 +1517,11 @@ class AutoRuralTrade extends ModernUtil {
 			return;
 		}
 		/* perform trade with current index */
-		let towns = Object.keys(ITowns.towns);
+		let towns = Object.keys(uw.ITowns.towns);
 		await this.tradeWithRural(towns[this.done_trade]);
 
 		/* update progress bar */
-		$('#res_progress_bar').css('width', `${(this.done_trade / this.total_trade) * 100}%`);
+		uw.$('#res_progress_bar').css('width', `${(this.done_trade / this.total_trade) * 100}%`);
 
 		this.done_trade += 1;
 	};
@@ -1527,7 +1544,7 @@ class BotConsole {
 			this.updateSettings();
 			let interval = setInterval(() => {
 				this.updateSettings();
-				if (!$('#modern_console').length) clearInterval(interval);
+				if (!uw.$('#modern_console').length) clearInterval(interval);
 			}, 1000);
 		}, 100);
 		return `<div class="console_modernbot" id="modern_console"><div>`;
@@ -1540,9 +1557,9 @@ class BotConsole {
 	};
 
 	updateSettings = () => {
-		let console = $('#modern_console');
+		let console = uw.$('#modern_console');
 		this.string.forEach((e, i) => {
-			if ($(`#log_id_${i}`).length) return;
+			if (uw.$(`#log_id_${i}`).length) return;
 			console.prepend(`<p id="log_id_${i}">${e}</p>`);
 		});
 	};
@@ -1566,7 +1583,7 @@ class createGrepoWindow {
 			function WndHandler(wndhandle) {
 				this.wnd = wndhandle;
 			}
-			Function.prototype.inherits.call(WndHandler, WndHandlerDefault);
+			Function.prototype.inherits.call(WndHandler, uw.WndHandlerDefault);
 			WndHandler.prototype.getDefaultWindowOptions = function () {
 				return {
 					position: ['center', 'center', 100, 100],
@@ -1576,7 +1593,7 @@ class createGrepoWindow {
 					title: title,
 				};
 			};
-			GPWindowMgr.addWndType(name, `${name}_75624`, WndHandler, 1);
+			uw.GPWindowMgr.addWndType(name, `${name}_75624`, WndHandler, 1);
 		};
 
 		const getTabById = (id) => {
@@ -1585,7 +1602,7 @@ class createGrepoWindow {
 
 		this.activate = function () {
 			createWindowType(this.id, this.title, this.width, this.height, this.minimizable); //
-			$(
+			uw.$(
 				`<style id="${this.id}_custom_window_style">
                  #${this.id} .tab_icon { left: 23px;}
                  #${this.id} {top: -36px; right: 95px;}
@@ -1598,15 +1615,15 @@ class createGrepoWindow {
 		};
 
 		this.deactivate = function () {
-			if (Layout.wnd.getOpenFirst(GPWindowMgr[`TYPE_${this.id}`])) {
-				Layout.wnd.getOpenFirst(GPWindowMgr[`TYPE_${this.id}`]).close();
+			if (uw.Layout.wnd.getOpenFirst(uw.GPWindowMgr[`TYPE_${this.id}`])) {
+				uw.Layout.wnd.getOpenFirst(uw.GPWindowMgr[`TYPE_${this.id}`]).close();
 			}
-			$(`#${this.id}_custom_window_style`).remove();
+			uw.$(`#${this.id}_custom_window_style`).remove();
 		};
 
 		/* open the window */
 		this.openWindow = function () {
-			let wn = Layout.wnd.getOpenFirst(GPWindowMgr[`TYPE_${this.id}`]);
+			let wn = uw.Layout.wnd.getOpenFirst(uw.GPWindowMgr[`TYPE_${this.id}`]);
 
 			/* if open is called but window it's alreay open minimized, maximize that */
 			if (wn) {
@@ -1617,7 +1634,7 @@ class createGrepoWindow {
 			}
 
 			let content = `<ul id="${this.id}" class="menu_inner"></ul><div id="${this.id}_content"> </div>`;
-			Layout.wnd.Create(GPWindowMgr[`TYPE_${this.id}`]).setContent(content);
+			uw.Layout.wnd.Create(GPWindowMgr[`TYPE_${this.id}`]).setContent(content);
 			/* Add and reder tabs */
 			this.tabs.forEach((e) => {
 				let html = `
@@ -1625,7 +1642,7 @@ class createGrepoWindow {
                     <span class="tab_label"> ${e.title} </span>
                     </span></span></span></a></li>
                 `;
-				$(html).appendTo(`#${this.id}`);
+				uw.$(html).appendTo(`#${this.id}`);
 			});
 
 			/* Add events to tabs */
@@ -1635,7 +1652,7 @@ class createGrepoWindow {
 			});
 			tabs = tabs.slice(0, -2);
 			let self = this;
-			$(tabs).click(function () {
+			uw.$(tabs).click(function () {
 				self.renderTab(this.id);
 			});
 			/* render default tab*/
@@ -1643,165 +1660,18 @@ class createGrepoWindow {
 		};
 
 		this.closeWindow = function () {
-			Layout.wnd.getOpenFirst(GPWindowMgr[`TYPE_${this.id}`]).close();
+			uw.Layout.wnd.getOpenFirst(GPWindowMgr[`TYPE_${this.id}`]).close();
 		};
 
 		/* Handle active tab */
 		this.renderTab = function (id) {
 			let tab = getTabById(id);
-			$(`#${this.id}_content`).html(getTabById(id).render());
-			$(`#${this.id} .active`).removeClass('active');
-			$(`#${id}`).addClass('active');
+			uw.$(`#${this.id}_content`).html(getTabById(id).render());
+			uw.$(`#${this.id} .active`).removeClass('active');
+			uw.$(`#${id}`).addClass('active');
 			getTabById(id).afterRender ? getTabById(id).afterRender() : '';
 		};
 	}
-}
-
-class MixedBot extends ModernUtil {
-    constructor() {
-        super();
-
-        if (this.load('enable_autobootcamp')) this.triggerAutoBootcamp();
-        if (this.load('bootcamp_use_def')) this.triggerUseDef();
-    }
-
-    renderSettings = () => {
-        requestAnimationFrame(() => {
-            if (this.use_def) {
-                $('#autobootcamp_off').addClass('disabled');
-                $('#autobootcamp_def').removeClass('disabled');
-            } else {
-                $('#autobootcamp_def').addClass('disabled');
-                $('#autobootcamp_off').removeClass('disabled');
-            }
-        });
-
-        // ${this.getButtonHtml('autobootcamp_rewards_1', 'Use Rewards', this.triggerAutoBootcamp)}
-        // ${this.getButtonHtml('autobootcamp_rewards_2', 'Store', this.triggerAutoBootcamp)}
-        return `
-        <div class="game_border" style="margin-bottom: 20px">
-            ${this.getTitleHtml(
-            'auto_autobootcamp',
-            'Auto Bootcamp',
-            this.triggerAutoBootcamp,
-            '',
-            this.enable_auto_bootcamp,
-        )}
-        
-        <div id="autobootcamp_lvl_buttons" style="padding: 5px; display: inline-flex;">
-            <!-- temp -->
-            <div style="margin-right: 40px">
-                ${this.getButtonHtml('autobootcamp_off', 'Only off', this.triggerUseDef)}
-                ${this.getButtonHtml('autobootcamp_def', 'Off & Def', this.triggerUseDef)}
-            </div>
-        </div >    
-    </div> 
-        `;
-    };
-
-
-
-    /* Call to trigger the usage of the def */
-    triggerUseDef = () => {
-        this.use_def = !this.use_def;
-
-        if (this.use_def) {
-            $('#autobootcamp_off').addClass('disabled');
-            $('#autobootcamp_def').removeClass('disabled');
-        } else {
-            $('#autobootcamp_def').addClass('disabled');
-            $('#autobootcamp_off').removeClass('disabled');
-        }
-        this.save('bootcamp_use_def', this.use_def);
-    };
-
-    /* Call to trigger autobootcamp on/off */
-    triggerAutoBootcamp = () => {
-        if (!this.enable_auto_bootcamp) {
-            $('#auto_autobootcamp').css(
-                'filter',
-                'brightness(100%) saturate(186%) hue-rotate(241deg)',
-            );
-            this.enable_auto_bootcamp = setInterval(this.mainAutoBootcamp, 4000);
-            botConsole.log('Auto Bootcamp -> On');
-        } else {
-            $('#auto_autobootcamp').css('filter', '');
-            clearInterval(this.enable_auto_bootcamp);
-            this.enable_auto_bootcamp = null;
-            botConsole.log('Auto Bootcamp -> Off');
-        }
-        this.save('enable_autobootcamp', !!this.enable_auto_bootcamp);
-    };
-
-    /* Main loop for autobootcamp */
-    mainAutoBootcamp = () => {
-        if (this.rewardBootcamp()) return;
-        if (this.attackBootcamp()) return;
-    };
-
-    attackBootcamp = () => {
-        let cooldown = MM.getModelByNameAndPlayerId('PlayerAttackSpot').getCooldownDuration();
-        if (cooldown > 0) return false;
-
-        let movements = MM.getModels().MovementsUnits;
-
-        /* Check if there isn't already an active attack */
-        if (movements != null) {
-            if (Object.keys(movements).length > 0) {
-                var attack_list = Object.keys(movements);
-                for (var i = 0; i < Object.keys(movements).length; i++) {
-                    if (movements[attack_list[i]].attributes.destination_is_attack_spot)
-                        return false;
-                    if (movements[attack_list[i]].attributes.origin_is_attack_spot) return false;
-                }
-            }
-        }
-
-        // else send the attack with everything in polis
-        var units = { ...ITowns.towns[Game.townId].units() };
-        delete units.militia;
-
-        if (!this.use_def) {
-            delete units.sword;
-            delete units.archer;
-        }
-
-        var model_url = 'PlayerAttackSpot/' + Game.player_id;
-        var data = {
-            model_url: model_url,
-            action_name: 'attack',
-            arguments: units,
-        };
-        gpAjax.ajaxPost('frontend_bridge', 'execute', data);
-        return true;
-    };
-
-    rewardBootcamp = () => {
-        let model = MM.getModelByNameAndPlayerId('PlayerAttackSpot');
-
-        /* Stop if level is not found */
-        if (!model.getLevel()) {
-            botConsole.log('Auto Bootcamp not found');
-            this.triggerAutoBootcamp();
-            return true;
-        }
-
-        let hasReward = model.hasReward();
-        if (!hasReward) return false;
-
-        let reward = model.getReward();
-        if (reward.power_id.includes('instant') && !reward.power_id.includes('favor')) {
-            this.useBootcampReward();
-            return true;
-        }
-
-        if (reward.stashable) {
-            this.stashBootcampReward();
-        } else {
-            this.useBootcampReward();
-        }
-        return true;
-    };
 }
 
 /* Setup autofarm in the window object */
@@ -1848,7 +1718,7 @@ class ModernBot {
 		this.settingsFactory.activate();
 		// TODO: Fix this button for the time attacch the settings event
 		// TODO: change the icon with the one of the Modernbot
-		$('.gods_area_buttons').append(
+		uw.$('.gods_area_buttons').append(
 			"<div class='circle_button modern_bot_settings' onclick='window.modernBot.settingsFactory.openWindow()'><div style='width: 27px; height: 27px; background: url(https://raw.githubusercontent.com/Sau1707/ModernBot/main/img/gear.png) no-repeat 6px 5px' class='icon js-caption'></div></div>",
 		);
 	}

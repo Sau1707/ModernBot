@@ -15,7 +15,7 @@ class BotConsole {
 			this.updateSettings();
 			let interval = setInterval(() => {
 				this.updateSettings();
-				if (!$('#modern_console').length) clearInterval(interval);
+				if (!uw.$('#modern_console').length) clearInterval(interval);
 			}, 1000);
 		}, 100);
 		return `<div class="console_modernbot" id="modern_console"><div>`;
@@ -28,9 +28,9 @@ class BotConsole {
 	};
 
 	updateSettings = () => {
-		let console = $('#modern_console');
+		let console = uw.$('#modern_console');
 		this.string.forEach((e, i) => {
-			if ($(`#log_id_${i}`).length) return;
+			if (uw.$(`#log_id_${i}`).length) return;
 			console.prepend(`<p id="log_id_${i}">${e}</p>`);
 		});
 	};

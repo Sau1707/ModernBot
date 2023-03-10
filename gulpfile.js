@@ -50,12 +50,12 @@ HEADER = `
 // @require		 http://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js
 // ==/UserScript==
 
+var uw;
 if (typeof unsafeWindow == 'undefined') {
-	var uw = window;
+	uw = window;
 } else {
-	var uw = unsafeWindow;
+	uw = unsafeWindow;
 }
-$ = uw.jQuery || jQuery;
 
 `;
 // Gulp task to minify JavaScript files

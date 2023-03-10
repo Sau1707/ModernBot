@@ -50,8 +50,8 @@ class AutoRuralTrade extends ModernUtil {
 	};
 
 	setMinRatioLevel = (n) => {
-		$('#min_rural_ratio .button_new').addClass('disabled');
-		$(`#min_rural_ratio_${n}`).removeClass('disabled');
+		uw.$('#min_rural_ratio .button_new').addClass('disabled');
+		uw.$(`#min_rural_ratio_${n}`).removeClass('disabled');
 		this.min_rural_ratio = n;
 		this.save('min_rural_ratio', n);
 	};
@@ -60,14 +60,14 @@ class AutoRuralTrade extends ModernUtil {
 	main = async (resouce) => {
 		if (resouce) {
 			/* Set button disabled */
-			if ($(`#autotrade_lvl_${i}`).hasClass('disabled')) return;
+			if (uw.$(`#autotrade_lvl_${i}`).hasClass('disabled')) return;
 			[1, 2, 3, 4].forEach((i) => {
-				$(`#autotrade_lvl_${i}`).addClass('disabled').css('cursor', 'auto');
+				uw.$(`#autotrade_lvl_${i}`).addClass('disabled').css('cursor', 'auto');
 			});
 			this.trade_resouce = resouce;
 
 			/* Set the current trade to polis at index 0 */
-			this.total_trade = Object.keys(ITowns.towns).length;
+			this.total_trade = Object.keys(uw.ITowns.towns).length;
 			this.done_trade = 0;
 
 			/* Set the interval */
@@ -77,21 +77,21 @@ class AutoRuralTrade extends ModernUtil {
 			clearInterval(this.auto_trade_resouces_loop);
 
 			/* Re-enable buttons and set progress to 0 */
-			$('#res_progress_bar').css('width', 0);
+			uw.$('#res_progress_bar').css('width', 0);
 			[1, 2, 3, 4].forEach((i) => {
-				$(`#autotrade_lvl_${i}`).removeClass('disabled').css('cursor', 'pointer');
+				uw.$(`#autotrade_lvl_${i}`).removeClass('disabled').css('cursor', 'pointer');
 			});
 		}
 	};
 
 	tradeWithRural = async (polis_id) => {
-		let town = ITowns.towns[polis_id];
+		let town = uw.ITowns.towns[polis_id];
 		if (!town) return;
 		if (town.getAvailableTradeCapacity() < 3000) return;
 		//if (this.check_for_hide && town.getBuildings().attributes.hide < 10) return;
 
-		let farm_town_models = MM.getOnlyCollectionByName('FarmTown').models;
-		let player_relation_models = MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
+		let farm_town_models = uw.MM.getOnlyCollectionByName('FarmTown').models;
+		let player_relation_models = uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
 
 		/* Create list with all the farmtown in current island polis */
 		let x = town.getIslandCoordinateX(),
@@ -125,11 +125,11 @@ class AutoRuralTrade extends ModernUtil {
 			return;
 		}
 		/* perform trade with current index */
-		let towns = Object.keys(ITowns.towns);
+		let towns = Object.keys(uw.ITowns.towns);
 		await this.tradeWithRural(towns[this.done_trade]);
 
 		/* update progress bar */
-		$('#res_progress_bar').css('width', `${(this.done_trade / this.total_trade) * 100}%`);
+		uw.$('#res_progress_bar').css('width', `${(this.done_trade / this.total_trade) * 100}%`);
 
 		this.done_trade += 1;
 	};

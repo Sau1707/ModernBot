@@ -29,25 +29,27 @@ class AutoBuild extends ModernUtil {
 		/* Attach event to towns list */
 		setTimeout(() => {
 			var i = 0;
-			while (layout_main_controller.sub_controllers[i].name != 'town_name_area') {
+			while (uw.layout_main_controller.sub_controllers[i].name != 'town_name_area') {
 				i++;
 			}
 
-			layout_main_controller.sub_controllers[
+			uw.layout_main_controller.sub_controllers[
 				i
 			].controller.town_groups_list_view.render_old_modern =
-				layout_main_controller.sub_controllers[i].controller.town_groups_list_view.render;
+				uw.layout_main_controller.sub_controllers[
+					i
+				].controller.town_groups_list_view.render;
 
-			layout_main_controller.sub_controllers[i].controller.town_groups_list_view.render =
+			uw.layout_main_controller.sub_controllers[i].controller.town_groups_list_view.render =
 				function () {
-					layout_main_controller.sub_controllers[
+					uw.layout_main_controller.sub_controllers[
 						i
 					].controller.town_groups_list_view.render_old_modern();
-					var town_ids = Object.keys(modernBot.autoBuild.towns_buildings);
-					$('.town_group_town').each(function () {
-						var townId = parseInt($(this).attr('data-townid'));
+					var town_ids = Object.keys(uw.modernBot.autoBuild.towns_buildings);
+					uw.$('.town_group_town').each(function () {
+						var townId = parseInt(uw.$(this).attr('data-townid'));
 						if (!town_ids.includes(townId.toString())) return;
-						$(this).append(
+						uw.$(this).append(
 							"<div style='background-image: url(https://i.ibb.co/G5DfgbZ/gear.png); scale: 0.9; background-repeat: no-repeat; position: relative; height: 20px; width: 25px; float: left;'></div>",
 						);
 					});
@@ -58,15 +60,15 @@ class AutoBuild extends ModernUtil {
 	settings = () => {
 		/* Apply event to shift */
 		requestAnimationFrame(() => {
-			$('#buildings_lvl_buttons').on('mousedown', (e) => {
+			uw.$('#buildings_lvl_buttons').on('mousedown', (e) => {
 				this.shiftHeld = e.shiftKey;
 			});
 
-			this.setPolisInSettings(ITowns.getCurrentTown().id);
+			this.setPolisInSettings(uw.ITowns.getCurrentTown().id);
 			this.updateTitle();
 
-			$.Observer(GameEvents.town.town_switch).subscribe(() => {
-				this.setPolisInSettings(ITowns.getCurrentTown().id);
+			uw.$.Observer(uw.GameEvents.town.town_switch).subscribe(() => {
+				this.setPolisInSettings(uw.ITowns.getCurrentTown().id);
 				this.updateTitle();
 			});
 		});
@@ -92,7 +94,7 @@ class AutoBuild extends ModernUtil {
 
 	/* Given the town id, set the polis in the settings menu */
 	setPolisInSettings = (town_id) => {
-		let town = ITowns.towns[town_id];
+		let town = uw.ITowns.towns[town_id];
 
 		/* If the town is in the active list set*/
 		let town_buildings =
@@ -116,12 +118,12 @@ class AutoBuild extends ModernUtil {
 
 		/* If the town is in a group, the the groups */
 		const groups =
-			`(${Object.values(ITowns.getTownGroups())
+			`(uw.${Object.values(uw.ITowns.getTownGroups())
 				.filter((group) => group.id > 0 && group.id !== -1 && group.towns[town_id])
 				.map((group) => group.name)
 				.join(', ')})` || '';
 
-		$('#buildings_lvl_buttons').html(`
+		uw.$('#buildings_lvl_buttons').html(`
         <div id="build_settings_${town_id}">
             <div style="width: 600px; margin-bottom: 3px; display: inline-flex">
             <a class="gp_town_link" href="${town.getLinkFragment()}">${town.getName()}</a> 
@@ -149,12 +151,12 @@ class AutoBuild extends ModernUtil {
 	/* call with town_id, building type and level to be added */
 	editBuildingLevel = (town_id, name, d) => {
 		/* if shift is pressed, add or remove 10 */
-		const current_lvl = parseInt($(`#build_lvl_${name}`).text());
+		const current_lvl = parseInt(uw.$(`#build_lvl_${name}`).text());
 		d = this.shiftHeld ? d * 10 : d;
 
-		const { max_level, min_level } = GameData.buildings[name];
+		const { max_level, min_level } = uw.GameData.buildings[name];
 
-		const town = ITowns.towns[town_id];
+		const town = uw.ITowns.towns[town_id];
 
 		const town_buildings =
 			this.towns_buildings?.[town_id] ?? { ...town.buildings()?.attributes } ?? {};
@@ -170,7 +172,7 @@ class AutoBuild extends ModernUtil {
 				? 'red'
 				: 'lime';
 
-		$(`#build_settings_${town_id} #build_lvl_${name}`)
+		uw.$(`#build_settings_${town_id} #build_lvl_${name}`)
 			.css('color', color)
 			.text(town_buildings[name]);
 
@@ -181,25 +183,25 @@ class AutoBuild extends ModernUtil {
 	};
 
 	isActive = (town_id) => {
-		let town = ITowns.towns[town_id];
+		let town = uw.ITowns.towns[town_id];
 		return !this.towns_buildings?.[town.id];
 	};
 
 	updateTitle = () => {
-		let town = ITowns.getCurrentTown();
-		if (town.id.toString() in this.towns_buildings) {
-			$('#auto_build_title').css(
+		let town = uw.ITowns.getCurrentTown();
+		if (uw.town.id.toString() in this.towns_buildings) {
+			uw.$('#auto_build_title').css(
 				'filter',
 				'brightness(100%) saturate(186%) hue-rotate(241deg)',
 			);
 		} else {
-			$('#auto_build_title').css('filter', '');
+			uw.$('#auto_build_title').css('filter', '');
 		}
 	};
 
 	/* Call to toggle on and off (trigger the current town) */
 	toggle = () => {
-		let town = ITowns.getCurrentTown();
+		let town = uw.ITowns.getCurrentTown();
 
 		if (!(town.id.toString() in this.towns_buildings)) {
 			this.console.log(`${town.name}: Auto Build On`);
@@ -220,7 +222,7 @@ class AutoBuild extends ModernUtil {
 				'wall',
 			];
 			buildins.forEach((e) => {
-				let lvl = parseInt($(`#build_lvl_${e}`).text());
+				let lvl = parseInt(uw.$(`#build_lvl_${e}`).text());
 				this.towns_buildings[town.id][e] = lvl;
 			});
 			this.save('auto_build_levels', this.towns_buildings);
@@ -236,7 +238,7 @@ class AutoBuild extends ModernUtil {
 	main = async () => {
 		for (let town_id of Object.keys(this.towns_buildings)) {
 			/* If the town don't exists in list, remove it to prevent errors */
-			if (!ITowns.towns[town_id]) {
+			if (!uw.ITowns.towns[town_id]) {
 				delete this.towns_buildings[town_id];
 				this.save('auto_build_levels', this.towns_buildings);
 				continue;
@@ -248,7 +250,7 @@ class AutoBuild extends ModernUtil {
 				delete this.towns_buildings[town_id];
 				this.save('auto_build_levels', this.towns_buildings);
 				this.updateTitle();
-				const town = ITowns.towns[town_id];
+				const town = uw.ITowns.towns[town_id];
 				this.console.log(`${town.name}: Auto Build Done`);
 				continue;
 			}
@@ -258,51 +260,57 @@ class AutoBuild extends ModernUtil {
 
 	/* Make post request to the server to buildup the building */
 	postBuild = async (type, town_id) => {
-		let town = ITowns.towns[town_id];
+		let town = uw.ITowns.towns[town_id];
 		let { wood, stone, iron } = town.resources();
 		let { resources_for, population_for } =
-			MM.getModels().BuildingBuildData[town_id].attributes.building_data[type];
+			uw.MM.getModels().BuildingBuildData[town_id].attributes.building_data[type];
 
 		if (town.getAvailablePopulation() < population_for) return;
-		if (wood < resources_for.wood || stone < resources_for.stone || iron < resources_for.iron)
+		if (wood < resources_for.wood || stone < resources_for.stone || iron < resources_for.iron) {
 			return;
+		}
 		let data = {
 			model_url: 'BuildingOrder',
 			action_name: 'buildUp',
 			arguments: { building_id: type },
 			town_id: town_id,
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 		this.console.log(`${town.getName()}: buildUp ${type}`);
 		await this.sleep(500);
 	};
 
 	/* Make post request to tear building down */
 	postTearDown = async (type, town_id) => {
-		let town = ITowns.towns[town_id];
+		let town = uw.ITowns.towns[town_id];
 		let data = {
 			model_url: 'BuildingOrder',
 			action_name: 'tearDown',
 			arguments: { building_id: type },
 			town_id: town_id,
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 		await this.sleep(500);
 	};
 
 	/* return true if the quee is full */
 	isFullQueue = (town_id) => {
-		let town = ITowns.towns[town_id];
-		if (GameDataPremium.isAdvisorActivated('curator') && town.buildingOrders().length >= 7)
+		let town = uw.ITowns.towns[town_id];
+		if (uw.GameDataPremium.isAdvisorActivated('curator') && town.buildingOrders().length >= 7) {
 			return true;
-		if (!GameDataPremium.isAdvisorActivated('curator') && town.buildingOrders().length >= 2)
+		}
+		if (
+			!uw.GameDataPremium.isAdvisorActivated('curator') &&
+			town.buildingOrders().length >= 2
+		) {
 			return true;
+		}
 		return false;
 	};
 
 	/* return true if building match polis */
 	isDone = (town_id) => {
-		let town = ITowns.towns[town_id];
+		let town = uw.ITowns.towns[town_id];
 		let buildings = town.getBuildings().attributes;
 		for (let build of Object.keys(this.towns_buildings[town_id])) {
 			if (this.towns_buildings[town_id][build] != buildings[build]) {
@@ -314,7 +322,7 @@ class AutoBuild extends ModernUtil {
 
 	/* */
 	getNextBuild = async (town_id) => {
-		let town = ITowns.towns[town_id];
+		let town = uw.ITowns.towns[town_id];
 
 		/* livello attuale */
 		let buildings = { ...town.getBuildings().attributes };

@@ -6,7 +6,7 @@ class ModernUtil {
 
 	/* Save content in localstorage */
 	save(id, content) {
-		const key = `${id}_${Game.world_id}`;
+		const key = `${id}_${uw.Game.world_id}`;
 
 		try {
 			localStorage.setItem(key, JSON.stringify(content));
@@ -19,7 +19,7 @@ class ModernUtil {
 
 	/* Load from localstorage, return null if don't exist */
 	load(id, defaultValue = null) {
-		const key = `${id}_${Game.world_id}`;
+		const key = `${id}_${uw.Game.world_id}`;
 		const savedValue = localStorage.getItem(key);
 
 		if (savedValue === null || savedValue === undefined) {
@@ -39,7 +39,7 @@ class ModernUtil {
 		let islands_list = [];
 		let polis_list = [];
 
-		let town_list = MM.getOnlyCollectionByName('Town').models;
+		let town_list = uw.MM.getOnlyCollectionByName('Town').models;
 
 		for (let town of town_list) {
 			if (town.attributes.on_small_island) continue;
@@ -110,25 +110,25 @@ class ModernUtil {
 			time_option_booty: 600,
 			claim_factor: 'normal',
 		};
-		gpAjax.ajaxPost('farm_town_overviews', 'claim_loads_multiple', data);
+		uw.gpAjax.ajaxPost('farm_town_overviews', 'claim_loads_multiple', data);
 	}
 
 	useBootcampReward() {
 		var data = {
-			model_url: `PlayerAttackSpot/${Game.player_id}`,
+			model_url: `PlayerAttackSpot/${uw.Game.player_id}`,
 			action_name: 'useReward',
 			arguments: {},
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	}
 
 	stashBootcampReward() {
 		var data = {
-			model_url: `PlayerAttackSpot/${Game.player_id}`,
+			model_url: `PlayerAttackSpot/${uw.Game.player_id}`,
 			action_name: 'stashReward',
 			arguments: {},
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data, 0, {
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data, 0, {
 			error: this.useBootcampReward,
 		});
 	}
@@ -141,7 +141,7 @@ class ModernUtil {
 			arguments: { farm_town_id: farm_town_id, amount: count > 3000 ? 3000 : count },
 			town_id: town_id,
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 
 	unlockRural = (town_id, farm_town_id, relation_id) => {
@@ -153,7 +153,7 @@ class ModernUtil {
 			},
 			town_id: town_id,
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 
 	upgradeRural = (town_id, farm_town_id, relation_id) => {
@@ -165,7 +165,7 @@ class ModernUtil {
 			},
 			town_id: town_id,
 		};
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 
 	//
@@ -174,13 +174,13 @@ class ModernUtil {
 			let data = {
 				celebration_type: type,
 			};
-			gpAjax.ajaxPost('town_overviews', 'start_all_celebrations', data);
+			uw.gpAjax.ajaxPost('town_overviews', 'start_all_celebrations', data);
 		} else {
 			let data = {
 				celebration_type: type,
 				town_id: town_id,
 			};
-			gpAjax.ajaxPost('building_place', 'start_celebration', data);
+			uw.gpAjax.ajaxPost('building_place', 'start_celebration', data);
 		}
 	};
 }

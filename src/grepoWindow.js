@@ -16,7 +16,7 @@ class createGrepoWindow {
 			function WndHandler(wndhandle) {
 				this.wnd = wndhandle;
 			}
-			Function.prototype.inherits.call(WndHandler, WndHandlerDefault);
+			Function.prototype.inherits.call(WndHandler, uw.WndHandlerDefault);
 			WndHandler.prototype.getDefaultWindowOptions = function () {
 				return {
 					position: ['center', 'center', 100, 100],
@@ -26,7 +26,7 @@ class createGrepoWindow {
 					title: title,
 				};
 			};
-			GPWindowMgr.addWndType(name, `${name}_75624`, WndHandler, 1);
+			uw.GPWindowMgr.addWndType(name, `${name}_75624`, WndHandler, 1);
 		};
 
 		const getTabById = (id) => {
@@ -35,7 +35,7 @@ class createGrepoWindow {
 
 		this.activate = function () {
 			createWindowType(this.id, this.title, this.width, this.height, this.minimizable); //
-			$(
+			uw.$(
 				`<style id="${this.id}_custom_window_style">
                  #${this.id} .tab_icon { left: 23px;}
                  #${this.id} {top: -36px; right: 95px;}
@@ -48,15 +48,15 @@ class createGrepoWindow {
 		};
 
 		this.deactivate = function () {
-			if (Layout.wnd.getOpenFirst(GPWindowMgr[`TYPE_${this.id}`])) {
-				Layout.wnd.getOpenFirst(GPWindowMgr[`TYPE_${this.id}`]).close();
+			if (uw.Layout.wnd.getOpenFirst(uw.GPWindowMgr[`TYPE_${this.id}`])) {
+				uw.Layout.wnd.getOpenFirst(uw.GPWindowMgr[`TYPE_${this.id}`]).close();
 			}
-			$(`#${this.id}_custom_window_style`).remove();
+			uw.$(`#${this.id}_custom_window_style`).remove();
 		};
 
 		/* open the window */
 		this.openWindow = function () {
-			let wn = Layout.wnd.getOpenFirst(GPWindowMgr[`TYPE_${this.id}`]);
+			let wn = uw.Layout.wnd.getOpenFirst(uw.GPWindowMgr[`TYPE_${this.id}`]);
 
 			/* if open is called but window it's alreay open minimized, maximize that */
 			if (wn) {
@@ -67,7 +67,7 @@ class createGrepoWindow {
 			}
 
 			let content = `<ul id="${this.id}" class="menu_inner"></ul><div id="${this.id}_content"> </div>`;
-			Layout.wnd.Create(GPWindowMgr[`TYPE_${this.id}`]).setContent(content);
+			uw.Layout.wnd.Create(GPWindowMgr[`TYPE_${this.id}`]).setContent(content);
 			/* Add and reder tabs */
 			this.tabs.forEach((e) => {
 				let html = `
@@ -75,7 +75,7 @@ class createGrepoWindow {
                     <span class="tab_label"> ${e.title} </span>
                     </span></span></span></a></li>
                 `;
-				$(html).appendTo(`#${this.id}`);
+				uw.$(html).appendTo(`#${this.id}`);
 			});
 
 			/* Add events to tabs */
@@ -85,7 +85,7 @@ class createGrepoWindow {
 			});
 			tabs = tabs.slice(0, -2);
 			let self = this;
-			$(tabs).click(function () {
+			uw.$(tabs).click(function () {
 				self.renderTab(this.id);
 			});
 			/* render default tab*/
@@ -93,15 +93,15 @@ class createGrepoWindow {
 		};
 
 		this.closeWindow = function () {
-			Layout.wnd.getOpenFirst(GPWindowMgr[`TYPE_${this.id}`]).close();
+			uw.Layout.wnd.getOpenFirst(GPWindowMgr[`TYPE_${this.id}`]).close();
 		};
 
 		/* Handle active tab */
 		this.renderTab = function (id) {
 			let tab = getTabById(id);
-			$(`#${this.id}_content`).html(getTabById(id).render());
-			$(`#${this.id} .active`).removeClass('active');
-			$(`#${id}`).addClass('active');
+			uw.$(`#${this.id}_content`).html(getTabById(id).render());
+			uw.$(`#${this.id} .active`).removeClass('active');
+			uw.$(`#${id}`).addClass('active');
 			getTabById(id).afterRender ? getTabById(id).afterRender() : '';
 		};
 	}

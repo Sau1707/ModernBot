@@ -36,14 +36,14 @@ class AutoGratis extends ModernUtil {
 	/* Call to trigger the autogratis */
 	toggle = () => {
 		if (!this.autogratis) {
-			$('#auto_gratis_title').css(
+			uw.$('#auto_gratis_title').css(
 				'filter',
 				'brightness(100%) saturate(186%) hue-rotate(241deg)',
 			);
 			this.autogratis = setInterval(this.main, 4000);
 			this.console.log('Auto Gratis -> On');
 		} else {
-			$('#auto_gratis_title').css('filter', '');
+			uw.$('#auto_gratis_title').css('filter', '');
 			clearInterval(this.autogratis);
 			this.autogratis = null;
 			this.console.log('Auto Gratis -> Off');
@@ -53,7 +53,7 @@ class AutoGratis extends ModernUtil {
 
 	/* Main loop for the autogratis bot */
 	main = () => {
-		const el = $('.type_building_queue.type_free').not('#dummy_free');
+		const el = uw.$('.type_building_queue.type_free').not('#dummy_free');
 		if (!el.length) return;
 		el.click();
 		this.console.log('Clicked gratis button');

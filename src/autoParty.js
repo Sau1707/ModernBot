@@ -53,9 +53,9 @@ class AutoParty extends ModernUtil {
 
 	trigger = (type) => {
 		if (this.active_types[type]) {
-			$(`#autoparty_${type}`).addClass('disabled');
+			uw.$(`#autoparty_${type}`).addClass('disabled');
 		} else {
-			$(`#autoparty_${type}`).removeClass('disabled');
+			uw.$(`#autoparty_${type}`).removeClass('disabled');
 		}
 		this.active_types[type] = !this.active_types[type];
 		this.save('autoparty_types', this.active_types);
@@ -63,12 +63,12 @@ class AutoParty extends ModernUtil {
 
 	triggerSingle = (type) => {
 		if (type === 'false') {
-			$(`#autoparty_single`).addClass('disabled');
-			$(`#autoparty_multiple`).removeClass('disabled');
+			uw.$(`#autoparty_single`).addClass('disabled');
+			uw.$(`#autoparty_multiple`).removeClass('disabled');
 			this.single = false;
 		} else {
-			$(`#autoparty_multiple`).addClass('disabled');
-			$(`#autoparty_single`).removeClass('disabled');
+			uw.$(`#autoparty_multiple`).addClass('disabled');
+			uw.$(`#autoparty_single`).removeClass('disabled');
 			this.single = true;
 		}
 		this.save('autoparty_single', this.single);
@@ -76,14 +76,14 @@ class AutoParty extends ModernUtil {
 
 	toggle = () => {
 		if (!this.autoparty) {
-			$('#auto_party_title').css(
+			uw.$('#auto_party_title').css(
 				'filter',
 				'brightness(100%) saturate(186%) hue-rotate(241deg)',
 			);
 			this.autoparty = setInterval(this.main, 30000);
 			this.console.log('Auto Party -> On');
 		} else {
-			$('#auto_party_title').css('filter', '');
+			uw.$('#auto_party_title').css('filter', '');
 			clearInterval(this.autoparty);
 			this.autoparty = null;
 			this.console.log('Auto Party -> Off');
@@ -93,7 +93,7 @@ class AutoParty extends ModernUtil {
 
 	/* Return list of town with active celebration */
 	getCelebrationsList = (type) => {
-		const celebrationModels = MM.getModels().Celebration;
+		const celebrationModels = uw.MM.getModels().Celebration;
 		const triumphs = Object.values(celebrationModels)
 			.filter((celebration) => celebration.attributes.celebration_type === type)
 			.map((triumph) => triumph.attributes.town_id);
@@ -104,9 +104,9 @@ class AutoParty extends ModernUtil {
 		let max = 10;
 		let party = this.getCelebrationsList('party');
 		if (this.single) {
-			for (let town_id in ITowns.towns) {
+			for (let town_id in uw.ITowns.towns) {
 				if (party.includes(parseInt(town_id))) continue;
-				let town = ITowns.towns[town_id];
+				let town = uw.ITowns.towns[town_id];
 				if (town.getBuildings().attributes.academy < 30) continue;
 				let { wood, stone, iron } = town.resources();
 				if (wood < 15000 || stone < 18000 || iron < 15000) continue;
@@ -124,13 +124,13 @@ class AutoParty extends ModernUtil {
 
 	checkTriumph = async () => {
 		let max = 10;
-		let killpoints = MM.getModelByNameAndPlayerId('PlayerKillpoints').attributes;
+		let killpoints = uw.MM.getModelByNameAndPlayerId('PlayerKillpoints').attributes;
 		let available = killpoints.att + killpoints.def - killpoints.used;
 		if (available < 300) return;
 
 		let triumph = this.getCelebrationsList('triumph');
 		if (this.single) {
-			for (let town_id in ITowns.towns) {
+			for (let town_id in uw.ITowns.towns) {
 				if (triumph.includes(parseInt(town_id))) continue;
 				console.log(town_id);
 				this.makeCelebration('triumph', town_id);
