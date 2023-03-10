@@ -1,4 +1,3 @@
-
 // ==UserScript==
 // @name         ModernBot
 // @author       Sau1707
@@ -19,17 +18,15 @@ if (typeof unsafeWindow == 'undefined') {
 }
 $ = uw.jQuery || jQuery;
 
-var style = document.createElement("style");
+var style = document.createElement('style');
 style.textContent = `.auto_build_up_arrow{background:url(https://gpit.innogamescdn.com/images/game/academy/up.png) no-repeat -2px -2px;width:18px;height:18px;position:absolute;right:-2px;bottom:12px;transform:scale(.8);cursor:pointer}.auto_build_down_arrow{background:url(https://gpit.innogamescdn.com/images/game/academy/up.png) no-repeat -2px -2px;width:18px;height:18px;position:absolute;right:-2px;bottom:-3px;transform:scale(.8) rotate(180deg);cursor:pointer}.auto_build_box{background:url(https://gpit.innogamescdn.com/images/game/academy/tech_frame.png) no-repeat 0 0;width:58px;height:59px;position:relative;overflow:hidden;display:inline-block;vertical-align:middle}.auto_build_building{position:absolute;top:4px;left:4px;width:50px;height:50px;background:url(https://gpit.innogamescdn.com/images/game/main/buildings_sprite_50x50.png) no-repeat 0 0}.auto_build_lvl{position:absolute;bottom:3px;left:3px;margin:0;font-weight:700;font-size:12px;color:#fff;text-shadow:0 0 2px #000,1px 1px 2px #000,0 2px 2px #000}#buildings_lvl_buttons{padding:5px;max-height:400px;user-select:none}.progress_bar_auto{position:absolute;z-index:1;height:100%;left:0;top:0;background-image:url(https://gpit.innogamescdn.com/images/game/border/header.png);background-position:0 -1px;filter:brightness(100%) saturate(186%) hue-rotate(241deg)}.modern_bot_settings{z-index:10;position:absolute;top:52px!important;right:116px!important}.console_modernbot{width:100%;height:100%;background-color:#000;color:#fff;font-family:monospace;font-size:16px;padding:20px;box-sizing:border-box;overflow-y:scroll;display:flex;flex-direction:column-reverse}#MODERN_BOT_content{height:100%}.console_modernbot p{margin:1px}`;
 document.head.appendChild(style);
 
 class ModernUtil {
-	/* Usage async this.sleep(ms) -> stop the code for ms */
 	sleep = (ms) => {
 		return new Promise((resolve) => setTimeout(resolve, ms));
 	};
 
-	/* Save content in localstorage */
 	save(id, content) {
 		const key = `${id}_${Game.world_id}`;
 
@@ -42,7 +39,6 @@ class ModernUtil {
 		}
 	}
 
-	/* Load from localstorage, return null if don't exist */
 	load(id, defaultValue = null) {
 		const key = `${id}_${Game.world_id}`;
 		const savedValue = localStorage.getItem(key);
@@ -1487,35 +1483,35 @@ class createGrepoWindow {
 }
 
 class MixedBot extends ModernUtil {
-    constructor() {
-        super();
+	constructor() {
+		super();
 
-        if (this.load('enable_autobootcamp')) this.triggerAutoBootcamp();
-        if (this.load('bootcamp_use_def')) this.triggerUseDef();
-    }
+		if (this.load('enable_autobootcamp')) this.triggerAutoBootcamp();
+		if (this.load('bootcamp_use_def')) this.triggerUseDef();
+	}
 
-    renderSettings = () => {
-        requestAnimationFrame(() => {
-            if (this.use_def) {
-                $('#autobootcamp_off').addClass('disabled');
-                $('#autobootcamp_def').removeClass('disabled');
-            } else {
-                $('#autobootcamp_def').addClass('disabled');
-                $('#autobootcamp_off').removeClass('disabled');
-            }
-        });
+	renderSettings = () => {
+		requestAnimationFrame(() => {
+			if (this.use_def) {
+				$('#autobootcamp_off').addClass('disabled');
+				$('#autobootcamp_def').removeClass('disabled');
+			} else {
+				$('#autobootcamp_def').addClass('disabled');
+				$('#autobootcamp_off').removeClass('disabled');
+			}
+		});
 
-        // ${this.getButtonHtml('autobootcamp_rewards_1', 'Use Rewards', this.triggerAutoBootcamp)}
-        // ${this.getButtonHtml('autobootcamp_rewards_2', 'Store', this.triggerAutoBootcamp)}
-        return `
+		// ${this.getButtonHtml('autobootcamp_rewards_1', 'Use Rewards', this.triggerAutoBootcamp)}
+		// ${this.getButtonHtml('autobootcamp_rewards_2', 'Store', this.triggerAutoBootcamp)}
+		return `
         <div class="game_border" style="margin-bottom: 20px">
             ${this.getTitleHtml(
-            'auto_autobootcamp',
-            'Auto Bootcamp',
-            this.triggerAutoBootcamp,
-            '',
-            this.enable_auto_bootcamp,
-        )}
+				'auto_autobootcamp',
+				'Auto Bootcamp',
+				this.triggerAutoBootcamp,
+				'',
+				this.enable_auto_bootcamp,
+			)}
         
         <div id="autobootcamp_lvl_buttons" style="padding: 5px; display: inline-flex;">
             <!-- temp -->
@@ -1526,111 +1522,109 @@ class MixedBot extends ModernUtil {
         </div >    
     </div> 
         `;
-    };
+	};
 
+	/* Call to trigger the usage of the def */
+	triggerUseDef = () => {
+		this.use_def = !this.use_def;
 
+		if (this.use_def) {
+			$('#autobootcamp_off').addClass('disabled');
+			$('#autobootcamp_def').removeClass('disabled');
+		} else {
+			$('#autobootcamp_def').addClass('disabled');
+			$('#autobootcamp_off').removeClass('disabled');
+		}
+		this.save('bootcamp_use_def', this.use_def);
+	};
 
-    /* Call to trigger the usage of the def */
-    triggerUseDef = () => {
-        this.use_def = !this.use_def;
+	/* Call to trigger autobootcamp on/off */
+	triggerAutoBootcamp = () => {
+		if (!this.enable_auto_bootcamp) {
+			$('#auto_autobootcamp').css(
+				'filter',
+				'brightness(100%) saturate(186%) hue-rotate(241deg)',
+			);
+			this.enable_auto_bootcamp = setInterval(this.mainAutoBootcamp, 4000);
+			botConsole.log('Auto Bootcamp -> On');
+		} else {
+			$('#auto_autobootcamp').css('filter', '');
+			clearInterval(this.enable_auto_bootcamp);
+			this.enable_auto_bootcamp = null;
+			botConsole.log('Auto Bootcamp -> Off');
+		}
+		this.save('enable_autobootcamp', !!this.enable_auto_bootcamp);
+	};
 
-        if (this.use_def) {
-            $('#autobootcamp_off').addClass('disabled');
-            $('#autobootcamp_def').removeClass('disabled');
-        } else {
-            $('#autobootcamp_def').addClass('disabled');
-            $('#autobootcamp_off').removeClass('disabled');
-        }
-        this.save('bootcamp_use_def', this.use_def);
-    };
+	/* Main loop for autobootcamp */
+	mainAutoBootcamp = () => {
+		if (this.rewardBootcamp()) return;
+		if (this.attackBootcamp()) return;
+	};
 
-    /* Call to trigger autobootcamp on/off */
-    triggerAutoBootcamp = () => {
-        if (!this.enable_auto_bootcamp) {
-            $('#auto_autobootcamp').css(
-                'filter',
-                'brightness(100%) saturate(186%) hue-rotate(241deg)',
-            );
-            this.enable_auto_bootcamp = setInterval(this.mainAutoBootcamp, 4000);
-            botConsole.log('Auto Bootcamp -> On');
-        } else {
-            $('#auto_autobootcamp').css('filter', '');
-            clearInterval(this.enable_auto_bootcamp);
-            this.enable_auto_bootcamp = null;
-            botConsole.log('Auto Bootcamp -> Off');
-        }
-        this.save('enable_autobootcamp', !!this.enable_auto_bootcamp);
-    };
+	attackBootcamp = () => {
+		let cooldown = MM.getModelByNameAndPlayerId('PlayerAttackSpot').getCooldownDuration();
+		if (cooldown > 0) return false;
 
-    /* Main loop for autobootcamp */
-    mainAutoBootcamp = () => {
-        if (this.rewardBootcamp()) return;
-        if (this.attackBootcamp()) return;
-    };
+		let movements = MM.getModels().MovementsUnits;
 
-    attackBootcamp = () => {
-        let cooldown = MM.getModelByNameAndPlayerId('PlayerAttackSpot').getCooldownDuration();
-        if (cooldown > 0) return false;
+		/* Check if there isn't already an active attack */
+		if (movements != null) {
+			if (Object.keys(movements).length > 0) {
+				var attack_list = Object.keys(movements);
+				for (var i = 0; i < Object.keys(movements).length; i++) {
+					if (movements[attack_list[i]].attributes.destination_is_attack_spot)
+						return false;
+					if (movements[attack_list[i]].attributes.origin_is_attack_spot) return false;
+				}
+			}
+		}
 
-        let movements = MM.getModels().MovementsUnits;
+		// else send the attack with everything in polis
+		var units = { ...ITowns.towns[Game.townId].units() };
+		delete units.militia;
 
-        /* Check if there isn't already an active attack */
-        if (movements != null) {
-            if (Object.keys(movements).length > 0) {
-                var attack_list = Object.keys(movements);
-                for (var i = 0; i < Object.keys(movements).length; i++) {
-                    if (movements[attack_list[i]].attributes.destination_is_attack_spot)
-                        return false;
-                    if (movements[attack_list[i]].attributes.origin_is_attack_spot) return false;
-                }
-            }
-        }
+		if (!this.use_def) {
+			delete units.sword;
+			delete units.archer;
+		}
 
-        // else send the attack with everything in polis
-        var units = { ...ITowns.towns[Game.townId].units() };
-        delete units.militia;
+		var model_url = 'PlayerAttackSpot/' + Game.player_id;
+		var data = {
+			model_url: model_url,
+			action_name: 'attack',
+			arguments: units,
+		};
+		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		return true;
+	};
 
-        if (!this.use_def) {
-            delete units.sword;
-            delete units.archer;
-        }
+	rewardBootcamp = () => {
+		let model = MM.getModelByNameAndPlayerId('PlayerAttackSpot');
 
-        var model_url = 'PlayerAttackSpot/' + Game.player_id;
-        var data = {
-            model_url: model_url,
-            action_name: 'attack',
-            arguments: units,
-        };
-        gpAjax.ajaxPost('frontend_bridge', 'execute', data);
-        return true;
-    };
+		/* Stop if level is not found */
+		if (!model.getLevel()) {
+			botConsole.log('Auto Bootcamp not found');
+			this.triggerAutoBootcamp();
+			return true;
+		}
 
-    rewardBootcamp = () => {
-        let model = MM.getModelByNameAndPlayerId('PlayerAttackSpot');
+		let hasReward = model.hasReward();
+		if (!hasReward) return false;
 
-        /* Stop if level is not found */
-        if (!model.getLevel()) {
-            botConsole.log('Auto Bootcamp not found');
-            this.triggerAutoBootcamp();
-            return true;
-        }
+		let reward = model.getReward();
+		if (reward.power_id.includes('instant') && !reward.power_id.includes('favor')) {
+			this.useBootcampReward();
+			return true;
+		}
 
-        let hasReward = model.hasReward();
-        if (!hasReward) return false;
-
-        let reward = model.getReward();
-        if (reward.power_id.includes('instant') && !reward.power_id.includes('favor')) {
-            this.useBootcampReward();
-            return true;
-        }
-
-        if (reward.stashable) {
-            this.stashBootcampReward();
-        } else {
-            this.useBootcampReward();
-        }
-        return true;
-    };
+		if (reward.stashable) {
+			this.stashBootcampReward();
+		} else {
+			this.useBootcampReward();
+		}
+		return true;
+	};
 }
 
 /* Setup autofarm in the window object */
