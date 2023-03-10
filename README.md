@@ -58,6 +58,15 @@ npm install
 npm run dev
 ```
 
+### Version
+
+The version get automatically updated every time it's done a commit, the version works as follow:
+
+-   1.[src_file_count].[numbers_of_commits]
+
+If the file count it's the same, +1 to the numbers_of_commits it's added
+If the file count increase (a new module it's added) then the version will be 1.[src_file_count + 1].0
+
 ## Disclaimer
 
 This open-source bot is designed for use with Grepolis, a video game developed by InnoGames. However, please note that this bot is not endorsed or approved by InnoGames, and the use of this bot may be against the game's terms of service. We do not encourage or condone the use of this bot to gain an unfair advantage or violate the game's rules.
