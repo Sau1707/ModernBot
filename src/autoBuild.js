@@ -179,7 +179,7 @@ class AutoBuild extends ModernUtil {
 
 	updateTitle = () => {
 		let town = uw.ITowns.getCurrentTown();
-		if (uw.town.id.toString() in this.towns_buildings) {
+		if (town.id.toString() in this.towns_buildings) {
 			uw.$('#auto_build_title').css(
 				'filter',
 				'brightness(100%) saturate(186%) hue-rotate(241deg)',

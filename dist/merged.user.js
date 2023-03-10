@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.11.2
+// @version      1.11.3
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -543,7 +543,7 @@ class AutoBuild extends ModernUtil {
 
 	updateTitle = () => {
 		let town = uw.ITowns.getCurrentTown();
-		if (uw.town.id.toString() in this.towns_buildings) {
+		if (town.id.toString() in this.towns_buildings) {
 			uw.$('#auto_build_title').css(
 				'filter',
 				'brightness(100%) saturate(186%) hue-rotate(241deg)',
