@@ -5,13 +5,43 @@ const concat = require('gulp-concat');
 var cleanCSS = require('gulp-clean-css');
 const through2 = require('through2');
 
+function getVersion() {
+	const versionFilePath = './version.txt';
+	const currentVersion = fs.readFileSync(versionFilePath, 'utf-8').trim();
+
+	const updateVersion = process.argv.includes('--updateVersion');
+
+	if (!updateVersion) {
+		return currentVersion;
+	}
+
+	const files = fs.readdirSync('./src');
+	const count = files.length;
+
+	const versionParts = currentVersion.split('.');
+	if (Number(versionParts[1]) !== count) {
+		// Count is different, reset x to 0 and add 1 to count
+		const newVersion = `1.${count}.0`;
+		fs.writeFileSync(versionFilePath, newVersion);
+		return newVersion;
+	} else {
+		// Count is the same, increment x
+		const newX = Number(versionParts[2]) + 1;
+		const newVersion = `${versionParts[0]}.${versionParts[1]}.${newX}`;
+		fs.writeFileSync(versionFilePath, newVersion);
+		return newVersion;
+	}
+}
+
+version = getVersion();
+
 OUTPUT = 'merged.user.js';
 HEADER = `
 // ==UserScript==
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.0.0
+// @version      ${version}
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -69,15 +99,22 @@ gulp.task('merge', function () {
 		.pipe(gulp.dest('./dist/'));
 });
 
-// Gulp task to minify all files
-gulp.task('default', (cb) => {
-	gulp.watch('./src/**/*.js', gulp.series('scripts', 'styles', 'merge'));
-	gulp.watch('./styles/**/*.css', gulp.series('scripts', 'styles', 'merge'));
+const updateVersion = process.argv.includes('--updateVersion');
 
-	gulp.series('scripts', 'styles', 'merge')(cb);
-
-	process.on('SIGINT', () => {
-		console.log('Exiting...');
-		process.exit(0);
+if (updateVersion) {
+	gulp.task('default', (cb) => {
+		gulp.series('scripts', 'styles', 'merge')(cb);
 	});
-});
+} else {
+	gulp.task('default', (cb) => {
+		gulp.watch('./src/**/*.js', gulp.series('scripts', 'styles', 'merge'));
+		gulp.watch('./styles/**/*.css', gulp.series('scripts', 'styles', 'merge'));
+
+		gulp.series('scripts', 'styles', 'merge')(cb);
+
+		process.on('SIGINT', () => {
+			console.log('Exiting...');
+			process.exit(0);
+		});
+	});
+}

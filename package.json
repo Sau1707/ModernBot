@@ -5,7 +5,8 @@
 	"main": "main.js",
 	"type": "commonjs",
 	"scripts": {
-		"dev": "npx gulp"
+		"dev": "npx gulp",
+		"start": "npx gulp --updateVersion"
 	},
 	"author": "",
 	"license": "ISC",
