@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.11.1
+// @version      1.11.2
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -392,32 +392,22 @@ class AutoBuild extends ModernUtil {
 
 		/* Attach event to towns list */
 		setTimeout(() => {
-			var i = 0;
-			while (uw.layout_main_controller.sub_controllers[i].name != 'town_name_area') {
-				i++;
-			}
+			const townController = uw.layout_main_controller.sub_controllers.find(
+				(controller) => controller.name === 'town_name_area',
+			);
+			if (!townController) return;
 
-			uw.layout_main_controller.sub_controllers[
-				i
-			].controller.town_groups_list_view.render_old_modern =
-				uw.layout_main_controller.sub_controllers[
-					i
-				].controller.town_groups_list_view.render;
-
-			uw.layout_main_controller.sub_controllers[i].controller.town_groups_list_view.render =
-				function () {
-					uw.layout_main_controller.sub_controllers[
-						i
-					].controller.town_groups_list_view.render_old_modern();
-					var town_ids = Object.keys(uw.modernBot.autoBuild.towns_buildings);
-					uw.$('.town_group_town').each(function () {
-						var townId = parseInt(uw.$(this).attr('data-townid'));
-						if (!town_ids.includes(townId.toString())) return;
-						uw.$(this).append(
-							"<div style='background-image: url(https://i.ibb.co/G5DfgbZ/gear.png); scale: 0.9; background-repeat: no-repeat; position: relative; height: 20px; width: 25px; float: left;'></div>",
-						);
-					});
-				};
+			const oldRender = townController.controller.town_groups_list_view.render;
+			townController.controller.town_groups_list_view.render = function () {
+				oldRender.call(this);
+				const townIds = Object.keys(uw.modernBot.autoBuild.towns_buildings);
+				uw.$('.town_group_town').each(function () {
+					const townId = parseInt(uw.$(this).attr('data-townid'));
+					if (!townIds.includes(townId.toString())) return;
+					const html = `<div style='background-image: url(https://i.ibb.co/G5DfgbZ/gear.png); scale: 0.9; background-repeat: no-repeat; position: relative; height: 20px; width: 25px; float: left;'></div>`;
+					uw.$(this).append(html);
+				});
+			};
 		}, 2500);
 	}
 
@@ -686,7 +676,7 @@ class AutoBuild extends ModernUtil {
 
 	/* */
 	getNextBuild = async (town_id) => {
-		let town = uw.ITowns.towns[town_id];
+		let town = ITowns.towns[town_id];
 
 		/* livello attuale */
 		let buildings = { ...town.getBuildings().attributes };
@@ -1318,6 +1308,7 @@ class AutoRuralLevel extends ModernUtil {
 
 		/* If some rurals still have to be unlocked */
 		if (locked.length > 0) {
+			console.log('here');
 			/* The first 5 rurals have discount */
 			const discounts = [2, 8, 10, 30, 50, 100];
 			if (unlocked < discounts.length && available < discounts[unlocked - 1]) return;
@@ -1334,8 +1325,8 @@ class AutoRuralLevel extends ModernUtil {
 					}
 
 					for (let relation of locked) {
-						if (farmtown.attributes.id != relation.farm_town_id) continue;
-						this.unlockRural(town_id, relation.farm_town_id, relation.id);
+						if (farmtown.attributes.id != relation.attributes.farm_town_id) continue;
+						this.unlockRural(town_id, relation.attributesfarm_town_id, relation.id);
 						this.console.log(
 							`Island ${farmtown.attributes.island_xy}: unlocked ${farmtown.attributes.name}`,
 						);

@@ -93,6 +93,7 @@ class AutoRuralLevel extends ModernUtil {
 
 		/* If some rurals still have to be unlocked */
 		if (locked.length > 0) {
+			console.log('here');
 			/* The first 5 rurals have discount */
 			const discounts = [2, 8, 10, 30, 50, 100];
 			if (unlocked < discounts.length && available < discounts[unlocked - 1]) return;
@@ -109,8 +110,8 @@ class AutoRuralLevel extends ModernUtil {
 					}
 
 					for (let relation of locked) {
-						if (farmtown.attributes.id != relation.farm_town_id) continue;
-						this.unlockRural(town_id, relation.farm_town_id, relation.id);
+						if (farmtown.attributes.id != relation.attributes.farm_town_id) continue;
+						this.unlockRural(town_id, relation.attributesfarm_town_id, relation.id);
 						this.console.log(
 							`Island ${farmtown.attributes.island_xy}: unlocked ${farmtown.attributes.name}`,
 						);
