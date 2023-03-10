@@ -60,7 +60,7 @@ class AutoRuralTrade extends ModernUtil {
 	main = async (resouce) => {
 		if (resouce) {
 			/* Set button disabled */
-			if (uw.$(`#autotrade_lvl_${i}`).hasClass('disabled')) return;
+			// if (uw.$(`#autotrade_lvl_${i}`).hasClass('disabled')) return;
 			[1, 2, 3, 4].forEach((i) => {
 				uw.$(`#autotrade_lvl_${i}`).addClass('disabled').css('cursor', 'auto');
 			});

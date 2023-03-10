@@ -67,7 +67,7 @@ class createGrepoWindow {
 			}
 
 			let content = `<ul id="${this.id}" class="menu_inner"></ul><div id="${this.id}_content"> </div>`;
-			uw.Layout.wnd.Create(GPWindowMgr[`TYPE_${this.id}`]).setContent(content);
+			uw.Layout.wnd.Create(uw.GPWindowMgr[`TYPE_${this.id}`]).setContent(content);
 			/* Add and reder tabs */
 			this.tabs.forEach((e) => {
 				let html = `
@@ -93,7 +93,7 @@ class createGrepoWindow {
 		};
 
 		this.closeWindow = function () {
-			uw.Layout.wnd.getOpenFirst(GPWindowMgr[`TYPE_${this.id}`]).close();
+			uw.Layout.wnd.getOpenFirst(uw.GPWindowMgr[`TYPE_${this.id}`]).close();
 		};
 
 		/* Handle active tab */

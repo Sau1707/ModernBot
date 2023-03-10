@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.11.0
+// @version      1.11.1
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -1452,7 +1452,7 @@ class AutoRuralTrade extends ModernUtil {
 	main = async (resouce) => {
 		if (resouce) {
 			/* Set button disabled */
-			if (uw.$(`#autotrade_lvl_${i}`).hasClass('disabled')) return;
+			// if (uw.$(`#autotrade_lvl_${i}`).hasClass('disabled')) return;
 			[1, 2, 3, 4].forEach((i) => {
 				uw.$(`#autotrade_lvl_${i}`).addClass('disabled').css('cursor', 'auto');
 			});
@@ -1634,7 +1634,7 @@ class createGrepoWindow {
 			}
 
 			let content = `<ul id="${this.id}" class="menu_inner"></ul><div id="${this.id}_content"> </div>`;
-			uw.Layout.wnd.Create(GPWindowMgr[`TYPE_${this.id}`]).setContent(content);
+			uw.Layout.wnd.Create(uw.GPWindowMgr[`TYPE_${this.id}`]).setContent(content);
 			/* Add and reder tabs */
 			this.tabs.forEach((e) => {
 				let html = `
@@ -1660,7 +1660,7 @@ class createGrepoWindow {
 		};
 
 		this.closeWindow = function () {
-			uw.Layout.wnd.getOpenFirst(GPWindowMgr[`TYPE_${this.id}`]).close();
+			uw.Layout.wnd.getOpenFirst(uw.GPWindowMgr[`TYPE_${this.id}`]).close();
 		};
 
 		/* Handle active tab */
