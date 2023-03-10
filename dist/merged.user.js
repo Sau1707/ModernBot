@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.12.0
+// @version      1.12.1
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -755,6 +755,7 @@ class AutoBuild extends ModernUtil {
 		// WALLS!
 		if (await check('farm', 15)) return;
 		if (await check(['storage', 'main'], 25)) return;
+		if (await check('market', 4)) return;
 		if (await check('hide', 10)) return;
 		if (await check(['lumber', 'stoner', 'ironer'], 15)) return;
 		if (await check(['academy', 'farm'], 36)) return;
