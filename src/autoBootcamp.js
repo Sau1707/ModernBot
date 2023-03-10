@@ -18,8 +18,6 @@ class AutoBootcamp extends ModernUtil {
 			}
 		});
 
-		// ${this.getButtonHtml('autobootcamp_rewards_1', 'Use Rewards', this.triggerAutoBootcamp)}
-		// ${this.getButtonHtml('autobootcamp_rewards_2', 'Store', this.triggerAutoBootcamp)}
 		return `
         <div class="game_border" style="margin-bottom: 20px">
             ${this.getTitleHtml(
