@@ -105,7 +105,7 @@ class AutoRuralTrade extends ModernUtil {
 
 			for (const relation of player_relation_models) {
 				if (farmtown.attributes.id != relation.attributes.farm_town_id) continue;
-				if (relation.attributes.current_trade_ratio < this.min_rural_ratio) continue;
+				if (relation.attributes.current_trade_ratio < this.min_rural_ratio * 0.25) continue;
 				if (town.getAvailableTradeCapacity() < 3000) continue;
 				this.tradeRuralPost(
 					relation.attributes.farm_town_id,

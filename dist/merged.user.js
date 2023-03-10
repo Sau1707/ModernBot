@@ -12,7 +12,13 @@
 // @require		 http://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js
 // ==/UserScript==
 
-var uw = unsafeWindow || window, $ = uw.jQuery || jQuery;
+if (typeof unsafeWindow == 'undefined') {
+	var uw = window;
+} else {
+	var uw = unsafeWindow;
+}
+$ = uw.jQuery || jQuery;
+
 var style = document.createElement("style");
 style.textContent = `.auto_build_up_arrow{background:url(https://gpit.innogamescdn.com/images/game/academy/up.png) no-repeat -2px -2px;width:18px;height:18px;position:absolute;right:-2px;bottom:12px;transform:scale(.8);cursor:pointer}.auto_build_down_arrow{background:url(https://gpit.innogamescdn.com/images/game/academy/up.png) no-repeat -2px -2px;width:18px;height:18px;position:absolute;right:-2px;bottom:-3px;transform:scale(.8) rotate(180deg);cursor:pointer}.auto_build_box{background:url(https://gpit.innogamescdn.com/images/game/academy/tech_frame.png) no-repeat 0 0;width:58px;height:59px;position:relative;overflow:hidden;display:inline-block;vertical-align:middle}.auto_build_building{position:absolute;top:4px;left:4px;width:50px;height:50px;background:url(https://gpit.innogamescdn.com/images/game/main/buildings_sprite_50x50.png) no-repeat 0 0}.auto_build_lvl{position:absolute;bottom:3px;left:3px;margin:0;font-weight:700;font-size:12px;color:#fff;text-shadow:0 0 2px #000,1px 1px 2px #000,0 2px 2px #000}#buildings_lvl_buttons{padding:5px;max-height:400px;user-select:none}.progress_bar_auto{position:absolute;z-index:1;height:100%;left:0;top:0;background-image:url(https://gpit.innogamescdn.com/images/game/border/header.png);background-position:0 -1px;filter:brightness(100%) saturate(186%) hue-rotate(241deg)}.modern_bot_settings{z-index:10;position:absolute;top:52px!important;right:116px!important}.console_modernbot{width:100%;height:100%;background-color:#000;color:#fff;font-family:monospace;font-size:16px;padding:20px;box-sizing:border-box;overflow-y:scroll;display:flex;flex-direction:column-reverse}#MODERN_BOT_content{height:100%}.console_modernbot p{margin:1px}`;
 document.head.appendChild(style);
@@ -1303,7 +1309,7 @@ class AutoRuralTrade extends ModernUtil {
 
 			for (const relation of player_relation_models) {
 				if (farmtown.attributes.id != relation.attributes.farm_town_id) continue;
-				if (relation.attributes.current_trade_ratio < this.min_rural_ratio) continue;
+				if (relation.attributes.current_trade_ratio < this.min_rural_ratio * 0.25) continue;
 				if (town.getAvailableTradeCapacity() < 3000) continue;
 				this.tradeRuralPost(
 					relation.attributes.farm_town_id,
