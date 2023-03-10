@@ -8,7 +8,8 @@ class AutoFarm extends ModernUtil {
 	constructor(console) {
 		super();
 		this.console = console;
-
+		this.buttonHtml =
+			'<div class="divider"id="autofarm_timer_divider" ></div><div onclick="window.modernBot.autoFarm.toggle()" class="activity" id="autofarm_timer" style="filter: brightness(110%) sepia(100%) hue-rotate(100deg) saturate(1500%) contrast(0.8); background: url(https://i.ibb.co/gm8NDFS/backgound-timer.png); height: 26px; width: 40px"><p id="autofarm_timer_p" style="z-index: 6; top: -8px; position: relative; font-weight: bold;"></p></div>';
 		this.delta_time = 5000;
 		this.farm_timing = this.load('enable_autofarm_level', 1);
 		this.rural_percentual = this.load('enable_autofarm_percentuals', 3);
@@ -65,14 +66,11 @@ class AutoFarm extends ModernUtil {
 	};
 
 	toggle = () => {
-		const buttonHtml =
-			'<div class="divider"id="autofarm_timer_divider" ></div><div onclick="window.modernBot.autoFarm.toggle()" class="activity" id="autofarm_timer" style="filter: brightness(110%) sepia(100%) hue-rotate(100deg) saturate(1500%) contrast(0.8); background: url(https://i.ibb.co/gm8NDFS/backgound-timer.png); height: 26px; width: 40px"><p id="autofarm_timer_p" style="z-index: 6; top: -8px; position: relative; font-weight: bold;"></p></div>';
-
 		if (!this.enable_auto_farming) {
 			$('#auto_farm').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
 			let btbutton = document.getElementById('autofarm_timer');
 			if (btbutton == null) {
-				$('.tb_activities, .toolbar_activities').find('.middle').append(buttonHtml);
+				$('.tb_activities, .toolbar_activities').find('.middle').append(this.buttonHtml);
 			}
 			this.lastTime = Date.now();
 			this.timer = 0; // TODO: check if it's really 0
@@ -137,6 +135,9 @@ class AutoFarm extends ModernUtil {
 		this.lastTime = currentTime;
 
 		const timerDisplay = document.getElementById('autofarm_timer_p');
+		if (timerDisplay == null) {
+			$('.tb_activities, .toolbar_activities').find('.middle').append(this.buttonHtml);
+		}
 		if (this.timer > 0) {
 			timerDisplay.innerHTML = Math.round(this.timer / 1000);
 		} else {

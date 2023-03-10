@@ -9,6 +9,7 @@ class ModernBot {
 		this.autoBuild = new AutoBuild(this.console);
 		this.autoRuralTrade = new AutoRuralTrade(this.console);
 		this.autoBootcamp = new AutoBootcamp(this.console);
+		this.autoParty = new AutoParty(this.console);
 
 		this.settingsFactory = new createGrepoWindow({
 			id: 'MODERN_BOT',
@@ -64,6 +65,7 @@ class ModernBot {
 	settingsMix = () => {
 		let html = '';
 		html += this.autoBootcamp.settings();
+		html += this.autoParty.settings();
 		return html;
 	};
 }

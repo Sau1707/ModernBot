@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.11.2
+// @version      1.12.0
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -191,6 +191,22 @@ class ModernUtil {
 			town_id: town_id,
 		};
 		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+	};
+
+	//
+	makeCelebration = (type, town_id) => {
+		if (typeof town_id === 'undefined') {
+			let data = {
+				celebration_type: type,
+			};
+			gpAjax.ajaxPost('town_overviews', 'start_all_celebrations', data);
+		} else {
+			let data = {
+				celebration_type: type,
+				town_id: town_id,
+			};
+			gpAjax.ajaxPost('building_place', 'start_celebration', data);
+		}
 	};
 }
 
@@ -782,7 +798,8 @@ class AutoFarm extends ModernUtil {
 	constructor(console) {
 		super();
 		this.console = console;
-
+		this.buttonHtml =
+			'<div class="divider"id="autofarm_timer_divider" ></div><div onclick="window.modernBot.autoFarm.toggle()" class="activity" id="autofarm_timer" style="filter: brightness(110%) sepia(100%) hue-rotate(100deg) saturate(1500%) contrast(0.8); background: url(https://i.ibb.co/gm8NDFS/backgound-timer.png); height: 26px; width: 40px"><p id="autofarm_timer_p" style="z-index: 6; top: -8px; position: relative; font-weight: bold;"></p></div>';
 		this.delta_time = 5000;
 		this.farm_timing = this.load('enable_autofarm_level', 1);
 		this.rural_percentual = this.load('enable_autofarm_percentuals', 3);
@@ -839,14 +856,11 @@ class AutoFarm extends ModernUtil {
 	};
 
 	toggle = () => {
-		const buttonHtml =
-			'<div class="divider"id="autofarm_timer_divider" ></div><div onclick="window.modernBot.autoFarm.toggle()" class="activity" id="autofarm_timer" style="filter: brightness(110%) sepia(100%) hue-rotate(100deg) saturate(1500%) contrast(0.8); background: url(https://i.ibb.co/gm8NDFS/backgound-timer.png); height: 26px; width: 40px"><p id="autofarm_timer_p" style="z-index: 6; top: -8px; position: relative; font-weight: bold;"></p></div>';
-
 		if (!this.enable_auto_farming) {
 			$('#auto_farm').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
 			let btbutton = document.getElementById('autofarm_timer');
 			if (btbutton == null) {
-				$('.tb_activities, .toolbar_activities').find('.middle').append(buttonHtml);
+				$('.tb_activities, .toolbar_activities').find('.middle').append(this.buttonHtml);
 			}
 			this.lastTime = Date.now();
 			this.timer = 0; // TODO: check if it's really 0
@@ -911,6 +925,9 @@ class AutoFarm extends ModernUtil {
 		this.lastTime = currentTime;
 
 		const timerDisplay = document.getElementById('autofarm_timer_p');
+		if (timerDisplay == null) {
+			$('.tb_activities, .toolbar_activities').find('.middle').append(this.buttonHtml);
+		}
 		if (this.timer > 0) {
 			timerDisplay.innerHTML = Math.round(this.timer / 1000);
 		} else {
@@ -1036,6 +1053,161 @@ class AutoGratis extends ModernUtil {
 		if (!el.length) return;
 		el.click();
 		this.console.log('Clicked gratis button');
+	};
+}
+
+class AutoParty extends ModernUtil {
+	constructor(console) {
+		super();
+		this.console = console;
+
+		this.active_types = this.load('autoparty_types', { festival: false, procession: false });
+		this.single = this.load('autoparty_single', true);
+		if (this.load('enable_autoparty', false)) this.toggle();
+	}
+
+	// ${this.getButtonHtml('autoparty_lvl_1', 'Olympic', this.setRuralLevel, 1)}
+
+	settings = () => {
+		requestAnimationFrame(() => {
+			this.active_types['festival'] = !this.active_types['festival'];
+			this.active_types['procession'] = !this.active_types['procession'];
+			this.trigger('festival');
+			this.trigger('procession');
+
+			this.triggerSingle(this.single.toString());
+		});
+
+		return `
+        <div class="game_border" style="margin-bottom: 20px">
+            <div class="game_border_top"></div>
+            <div class="game_border_bottom"></div>
+            <div class="game_border_left"></div>
+            <div class="game_border_right"></div>
+            <div class="game_border_corner corner1"></div>
+            <div class="game_border_corner corner2"></div>
+            <div class="game_border_corner corner3"></div>
+            <div class="game_border_corner corner4"></div>
+            <div id="auto_party_title" style="cursor: pointer; filter: ${
+				this.autoparty ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : ''
+			}" class="game_header bold" onclick="window.modernBot.autoParty.toggle()"> Auto Party <span class="command_count"></span>
+                <div style="position: absolute; right: 10px; top: 4px; font-size: 10px;"> (click to toggle) </div>
+            </div>
+
+            <div id="autoparty_types" style="padding: 5px; display: inline-flex">
+            <div style="margin-right: 494px">
+            ${this.getButtonHtml('autoparty_festival', 'Party', this.trigger, 'festival')}
+            ${this.getButtonHtml('autoparty_procession', 'Parade', this.trigger, 'procession')}
+            </div>
+
+            <div>
+            ${this.getButtonHtml('autoparty_single', 'Single', this.triggerSingle, 'true')}
+            ${this.getButtonHtml('autoparty_multiple', 'All', this.triggerSingle, 'false')}
+            </div>
+            </div>
+        </div>
+        `;
+	};
+
+	trigger = (type) => {
+		if (this.active_types[type]) {
+			$(`#autoparty_${type}`).addClass('disabled');
+		} else {
+			$(`#autoparty_${type}`).removeClass('disabled');
+		}
+		this.active_types[type] = !this.active_types[type];
+		this.save('autoparty_types', this.active_types);
+	};
+
+	triggerSingle = (type) => {
+		if (type === 'false') {
+			$(`#autoparty_single`).addClass('disabled');
+			$(`#autoparty_multiple`).removeClass('disabled');
+			this.single = false;
+		} else {
+			$(`#autoparty_multiple`).addClass('disabled');
+			$(`#autoparty_single`).removeClass('disabled');
+			this.single = true;
+		}
+		this.save('autoparty_single', this.single);
+	};
+
+	toggle = () => {
+		if (!this.autoparty) {
+			$('#auto_party_title').css(
+				'filter',
+				'brightness(100%) saturate(186%) hue-rotate(241deg)',
+			);
+			this.autoparty = setInterval(this.main, 30000);
+			this.console.log('Auto Party -> On');
+		} else {
+			$('#auto_party_title').css('filter', '');
+			clearInterval(this.autoparty);
+			this.autoparty = null;
+			this.console.log('Auto Party -> Off');
+		}
+		this.save('enable_autoparty', !!this.autoparty);
+	};
+
+	/* Return list of town with active celebration */
+	getCelebrationsList = (type) => {
+		const celebrationModels = MM.getModels().Celebration;
+		const triumphs = Object.values(celebrationModels)
+			.filter((celebration) => celebration.attributes.celebration_type === type)
+			.map((triumph) => triumph.attributes.town_id);
+		return triumphs;
+	};
+
+	checkParty = async () => {
+		let max = 10;
+		let party = this.getCelebrationsList('party');
+		if (this.single) {
+			for (let town_id in ITowns.towns) {
+				if (party.includes(parseInt(town_id))) continue;
+				let town = ITowns.towns[town_id];
+				if (town.getBuildings().attributes.academy < 30) continue;
+				let { wood, stone, iron } = town.resources();
+				if (wood < 15000 || stone < 18000 || iron < 15000) continue;
+				this.makeCelebration('party', town_id);
+				await this.sleep(750);
+				max -= 1;
+				/* Prevent that the promise it's to long */
+				if (max <= 0) return;
+			}
+		} else {
+			if (party.length > 1) return;
+			this.makeCelebration('party');
+		}
+	};
+
+	checkTriumph = async () => {
+		let max = 10;
+		let killpoints = MM.getModelByNameAndPlayerId('PlayerKillpoints').attributes;
+		let available = killpoints.att + killpoints.def - killpoints.used;
+		if (available < 300) return;
+
+		let triumph = this.getCelebrationsList('triumph');
+		if (this.single) {
+			for (let town_id in ITowns.towns) {
+				if (triumph.includes(parseInt(town_id))) continue;
+				console.log(town_id);
+				this.makeCelebration('triumph', town_id);
+				await this.sleep(500);
+				available -= 300;
+				if (available < 300) return;
+				max -= 1;
+				/* Prevent that the promise it's to long */
+				if (max <= 0) return;
+			}
+		} else {
+			if (triumph.length > 1) return;
+			this.makeCelebration('triumph');
+		}
+	};
+
+	main = async () => {
+		if (this.active_types['procession']) await this.checkTriumph();
+		if (this.active_types['festival']) await this.checkParty();
 	};
 }
 
@@ -1642,6 +1814,7 @@ class ModernBot {
 		this.autoBuild = new AutoBuild(this.console);
 		this.autoRuralTrade = new AutoRuralTrade(this.console);
 		this.autoBootcamp = new AutoBootcamp(this.console);
+		this.autoParty = new AutoParty(this.console);
 
 		this.settingsFactory = new createGrepoWindow({
 			id: 'MODERN_BOT',
@@ -1697,6 +1870,7 @@ class ModernBot {
 	settingsMix = () => {
 		let html = '';
 		html += this.autoBootcamp.settings();
+		html += this.autoParty.settings();
 		return html;
 	};
 }

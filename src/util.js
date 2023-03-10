@@ -167,4 +167,20 @@ class ModernUtil {
 		};
 		gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
+
+	//
+	makeCelebration = (type, town_id) => {
+		if (typeof town_id === 'undefined') {
+			let data = {
+				celebration_type: type,
+			};
+			gpAjax.ajaxPost('town_overviews', 'start_all_celebrations', data);
+		} else {
+			let data = {
+				celebration_type: type,
+				town_id: town_id,
+			};
+			gpAjax.ajaxPost('building_place', 'start_celebration', data);
+		}
+	};
 }
