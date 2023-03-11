@@ -111,7 +111,7 @@ class AutoRuralLevel extends ModernUtil {
 
 					for (let relation of locked) {
 						if (farmtown.attributes.id != relation.attributes.farm_town_id) continue;
-						this.unlockRural(town_id, relation.attributesfarm_town_id, relation.id);
+						this.unlockRural(town_id, relation.attributes.farm_town_id, relation.id);
 						this.console.log(
 							`Island ${farmtown.attributes.island_xy}: unlocked ${farmtown.attributes.name}`,
 						);

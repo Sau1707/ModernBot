@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.11.4
+// @version      1.11.5
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -1327,7 +1327,7 @@ class AutoRuralLevel extends ModernUtil {
 
 					for (let relation of locked) {
 						if (farmtown.attributes.id != relation.attributes.farm_town_id) continue;
-						this.unlockRural(town_id, relation.attributesfarm_town_id, relation.id);
+						this.unlockRural(town_id, relation.attributes.farm_town_id, relation.id);
 						this.console.log(
 							`Island ${farmtown.attributes.island_xy}: unlocked ${farmtown.attributes.name}`,
 						);
