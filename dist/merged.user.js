@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.11.3
+// @version      1.11.4
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -1154,6 +1154,7 @@ class AutoParty extends ModernUtil {
 	/* Return list of town with active celebration */
 	getCelebrationsList = (type) => {
 		const celebrationModels = uw.MM.getModels().Celebration;
+		if (typeof celebrationModels === 'undefined') return [];
 		const triumphs = Object.values(celebrationModels)
 			.filter((celebration) => celebration.attributes.celebration_type === type)
 			.map((triumph) => triumph.attributes.town_id);

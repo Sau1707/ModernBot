@@ -94,6 +94,7 @@ class AutoParty extends ModernUtil {
 	/* Return list of town with active celebration */
 	getCelebrationsList = (type) => {
 		const celebrationModels = uw.MM.getModels().Celebration;
+		if (typeof celebrationModels === 'undefined') return [];
 		const triumphs = Object.values(celebrationModels)
 			.filter((celebration) => celebration.attributes.celebration_type === type)
 			.map((triumph) => triumph.attributes.town_id);
