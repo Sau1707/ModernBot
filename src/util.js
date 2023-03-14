@@ -103,16 +103,6 @@ class ModernUtil {
         POST REQUEST TO THE SERVER
     */
 	/* Send post request to the server to get resourses */
-	claim(polisList) {
-		let data = {
-			towns: polisList,
-			time_option_base: 300,
-			time_option_booty: 600,
-			claim_factor: 'normal',
-		};
-		uw.gpAjax.ajaxPost('farm_town_overviews', 'claim_loads_multiple', data);
-	}
-
 	useBootcampReward() {
 		var data = {
 			model_url: `PlayerAttackSpot/${uw.Game.player_id}`,

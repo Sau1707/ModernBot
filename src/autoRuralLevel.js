@@ -93,10 +93,9 @@ class AutoRuralLevel extends ModernUtil {
 
 		/* If some rurals still have to be unlocked */
 		if (locked.length > 0) {
-			console.log('here');
 			/* The first 5 rurals have discount */
 			const discounts = [2, 8, 10, 30, 50, 100];
-			if (unlocked < discounts.length && available < discounts[unlocked - 1]) return;
+			if (unlocked < discounts.length && available < discounts[unlocked]) return;
 
 			let towns = this.generateList();
 			for (let town_id of towns) {
@@ -122,29 +121,28 @@ class AutoRuralLevel extends ModernUtil {
 		} else {
 			/* else check each level once at the time */
 			let towns = this.generateList();
-
+			let expansion = false;
 			const levelCosts = [1, 5, 25, 50, 100];
 			for (let level = 1; level < this.rural_level; level++) {
 				if (available < levelCosts[level - 1]) return;
 
 				for (let town_id of towns) {
 					let town = uw.ITowns.towns[town_id];
-					let x = town.getIslandCoordinateX(),
-						y = town.getIslandCoordinateY();
+					let x = town.getIslandCoordinateX();
+					let y = town.getIslandCoordinateY();
 
 					for (let farmtown of farm_town_models) {
-						if (
-							farmtown.attributes.island_x != x ||
-							farmtown.attributes.island_y != y
-						) {
-							continue;
-						}
+						if (farmtown.attributes.island_x != x) continue;
+						if (farmtown.attributes.island_y != y) continue;
 
 						for (let relation of player_relation_models) {
 							if (farmtown.attributes.id != relation.attributes.farm_town_id) {
 								continue;
 							}
-							if (relation.attributes.expansion_at) continue;
+							if (relation.attributes.expansion_at) {
+								expansion = true;
+								continue;
+							}
 							if (relation.attributes.expansion_stage > level) continue;
 							this.upgradeRural(
 								town_id,
@@ -159,6 +157,8 @@ class AutoRuralLevel extends ModernUtil {
 					}
 				}
 			}
+
+			if (expansion) return;
 		}
 
 		/* Auto turn off when the level is reached */

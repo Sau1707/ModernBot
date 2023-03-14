@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.11.5
+// @version      1.11.6
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -128,16 +128,6 @@ class ModernUtil {
         POST REQUEST TO THE SERVER
     */
 	/* Send post request to the server to get resourses */
-	claim(polisList) {
-		let data = {
-			towns: polisList,
-			time_option_base: 300,
-			time_option_booty: 600,
-			claim_factor: 'normal',
-		};
-		uw.gpAjax.ajaxPost('farm_town_overviews', 'claim_loads_multiple', data);
-	}
-
 	useBootcampReward() {
 		var data = {
 			model_url: `PlayerAttackSpot/${uw.Game.player_id}`,
@@ -806,6 +796,8 @@ class AutoFarm extends ModernUtil {
 		this.farm_timing = this.load('enable_autofarm_level', 1);
 		this.rural_percentual = this.load('enable_autofarm_percentuals', 3);
 		if (this.load('enable_autofarm')) this.toggle();
+
+		this.polislist = this.generateList();
 	}
 
 	settings = () => {
@@ -926,28 +918,87 @@ class AutoFarm extends ModernUtil {
 		this.timer -= currentTime - this.lastTime;
 		this.lastTime = currentTime;
 
+		/* Add timer of not there */
 		const timerDisplay = document.getElementById('autofarm_timer_p');
 		if (timerDisplay == null) {
 			uw.$('.tb_activities, .toolbar_activities').find('.middle').append(this.buttonHtml);
-		}
-		if (this.timer > 0) {
-			timerDisplay.innerHTML = Math.round(this.timer / 1000);
 		} else {
-			timerDisplay.innerHTML = '0';
+			timerDisplay.innerHTML = Math.round(Math.max(this.timer, 0) / 1000);
 		}
+
+		let yellow = 'brightness(294%) sepia(100%) hue-rotate(15deg) saturate(1000%) contrast(0.8)';
+		let green = 'brightness(110%) sepia(100%) hue-rotate(100deg) saturate(1500%) contrast(0.8)';
+		const isCaptainActive = uw.GameDataPremium.isAdvisorActivated('captain');
+		/* Check for curator -> if not active set yellow */
+		uw.$('#autofarm_timer').css('filter', isCaptainActive ? green : yellow);
 	};
 
-	main = () => {
-		/* Fix time if out ot timing */
-		// let next = this.getNextCollection();
-		// if (this.timer + 2 * this.delta_time < next) {
-		// 	this.timer = next + Math.floor(Math.random() * this.delta_time);
-		// }
+	claim = async () => {
+		const isCaptainActive = uw.GameDataPremium.isAdvisorActivated('captain');
+		if (isCaptainActive) {
+			let data = {
+				towns: this.polislist,
+				time_option_base: 300,
+				time_option_booty: 600,
+				claim_factor: 'normal',
+			};
+			uw.gpAjax.ajaxPost('farm_town_overviews', 'claim_loads_multiple', data);
+		} else {
+			const claimSingle = (town_id, farm_town_id, relation_id) => {
+				let data = {
+					model_url: `FarmTownPlayerRelation/${relation_id}`,
+					action_name: 'claim',
+					arguments: {
+						farm_town_id: farm_town_id,
+						type: 'resources',
+						option: 1,
+					},
+					town_id: town_id,
+				};
+				uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+			};
 
+			const player_relation_models =
+				uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
+			const farm_town_models = uw.MM.getOnlyCollectionByName('FarmTown').models;
+			const now = Math.floor(Date.now() / 1000);
+			const max = 20;
+			for (let town_id of this.polislist) {
+				let town = uw.ITowns.towns[town_id];
+				let x = town.getIslandCoordinateX();
+				let y = town.getIslandCoordinateY();
+
+				for (let farmtown of farm_town_models) {
+					if (farmtown.attributes.island_x != x) continue;
+					if (farmtown.attributes.island_y != y) continue;
+
+					for (let relation of player_relation_models) {
+						if (farmtown.attributes.id != relation.attributes.farm_town_id) {
+							continue;
+						}
+
+						if (relation.attributes.relation_status === 0) continue;
+						if (
+							!relation.attributes.lootable_at ||
+							now < relation.attributes.lootable_at
+						) {
+							continue;
+						}
+						claimSingle(town_id, relation.attributes.farm_town_id, relation.id);
+						await this.sleep(500);
+						if (!max) return;
+						else max -= 1;
+					}
+				}
+			}
+		}
+
+		setTimeout(() => uw.WMap.removeFarmTownLootCooldownIconAndRefreshLootTimers(), 2000);
+	};
+
+	main = async () => {
 		/* Claim resouces of timer has passed */
 		if (this.timer < 1) {
-			let Polislist = this.generateList();
-
 			/* Check if the percentual has reach */
 			let total = {
 				wood: 0,
@@ -956,7 +1007,7 @@ class AutoFarm extends ModernUtil {
 				storage: 0,
 			};
 
-			for (let town_id of Polislist) {
+			for (let town_id of this.polislist) {
 				let town = uw.ITowns.towns[town_id];
 				let resources = town.resources();
 				total.wood += resources.wood;
@@ -970,25 +1021,24 @@ class AutoFarm extends ModernUtil {
 			/* If the max percentual it's reached stop and wait for 30 seconds */
 			if (this.rural_percentual == 3 && min_percentual > 0.99) {
 				this.timer = 30000;
-				this.updateTimer();
+				requestAnimationFrame(this.updateTimer);
 				return;
 			}
 			if (this.rural_percentual == 2 && min_percentual > 0.9) {
 				this.timer = 30000;
-				this.updateTimer();
+				requestAnimationFrame(this.updateTimer);
 				return;
 			}
 			if (this.rural_percentual == 1 && min_percentual > 0.8) {
 				this.timer = 30000;
-				this.updateTimer();
+				requestAnimationFrame(this.updateTimer);
 				return;
 			}
 
-			this.claim(Polislist);
+			await this.claim();
 			this.console.log('Claimed all rurals');
 			let rand = Math.floor(Math.random() * this.delta_time);
 			this.timer = this.farm_timing * 300000 + rand;
-			setTimeout(() => uw.WMap.removeFarmTownLootCooldownIconAndRefreshLootTimers(), 2000);
 		}
 
 		/* update the timer */
@@ -1309,10 +1359,9 @@ class AutoRuralLevel extends ModernUtil {
 
 		/* If some rurals still have to be unlocked */
 		if (locked.length > 0) {
-			console.log('here');
 			/* The first 5 rurals have discount */
 			const discounts = [2, 8, 10, 30, 50, 100];
-			if (unlocked < discounts.length && available < discounts[unlocked - 1]) return;
+			if (unlocked < discounts.length && available < discounts[unlocked]) return;
 
 			let towns = this.generateList();
 			for (let town_id of towns) {
@@ -1338,29 +1387,28 @@ class AutoRuralLevel extends ModernUtil {
 		} else {
 			/* else check each level once at the time */
 			let towns = this.generateList();
-
+			let expansion = false;
 			const levelCosts = [1, 5, 25, 50, 100];
 			for (let level = 1; level < this.rural_level; level++) {
 				if (available < levelCosts[level - 1]) return;
 
 				for (let town_id of towns) {
 					let town = uw.ITowns.towns[town_id];
-					let x = town.getIslandCoordinateX(),
-						y = town.getIslandCoordinateY();
+					let x = town.getIslandCoordinateX();
+					let y = town.getIslandCoordinateY();
 
 					for (let farmtown of farm_town_models) {
-						if (
-							farmtown.attributes.island_x != x ||
-							farmtown.attributes.island_y != y
-						) {
-							continue;
-						}
+						if (farmtown.attributes.island_x != x) continue;
+						if (farmtown.attributes.island_y != y) continue;
 
 						for (let relation of player_relation_models) {
 							if (farmtown.attributes.id != relation.attributes.farm_town_id) {
 								continue;
 							}
-							if (relation.attributes.expansion_at) continue;
+							if (relation.attributes.expansion_at) {
+								expansion = true;
+								continue;
+							}
 							if (relation.attributes.expansion_stage > level) continue;
 							this.upgradeRural(
 								town_id,
@@ -1375,6 +1423,8 @@ class AutoRuralLevel extends ModernUtil {
 					}
 				}
 			}
+
+			if (expansion) return;
 		}
 
 		/* Auto turn off when the level is reached */
