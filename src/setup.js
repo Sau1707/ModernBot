@@ -10,11 +10,12 @@ class ModernBot {
 		this.autoRuralTrade = new AutoRuralTrade(this.console);
 		this.autoBootcamp = new AutoBootcamp(this.console);
 		this.autoParty = new AutoParty(this.console);
+		this.autoTrain = new AutoTrain(this.console);
 
 		this.settingsFactory = new createGrepoWindow({
 			id: 'MODERN_BOT',
 			title: 'ModernBot',
-			size: [800, 300],
+			size: [845, 300],
 			tabs: [
 				{
 					title: 'Farm',
@@ -27,6 +28,11 @@ class ModernBot {
 					render: this.settingsBuild,
 				},
 				{
+					title: 'Train',
+					id: 'train',
+					render: this.settingsTrain,
+				},
+				{
 					title: 'Mix',
 					id: 'mix',
 					render: this.settingsMix,
@@ -37,7 +43,7 @@ class ModernBot {
 					render: this.console.renderSettings,
 				},
 			],
-			start_tab: 0,
+			start_tab: 2,
 		});
 		this.settingsFactory.activate();
 		// TODO: Fix this button for the time attacch the settings event
@@ -66,6 +72,12 @@ class ModernBot {
 		let html = '';
 		html += this.autoBootcamp.settings();
 		html += this.autoParty.settings();
+		return html;
+	};
+
+	settingsTrain = () => {
+		let html = '';
+		html += this.autoTrain.settings();
 		return html;
 	};
 }
