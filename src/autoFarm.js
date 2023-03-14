@@ -180,7 +180,7 @@ class AutoFarm extends ModernUtil {
 				uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
 			const farm_town_models = uw.MM.getOnlyCollectionByName('FarmTown').models;
 			const now = Math.floor(Date.now() / 1000);
-			const max = 20;
+			let max = 20;
 			for (let town_id of this.polislist) {
 				let town = uw.ITowns.towns[town_id];
 				let x = town.getIslandCoordinateX();
@@ -195,9 +195,9 @@ class AutoFarm extends ModernUtil {
 							continue;
 						}
 
-						if (relation.attributes.relation_status === 0) continue;
+						if (relation.attributes.relation_status !== 1) continue;
 						if (
-							!relation.attributes.lootable_at ||
+							relation.attributes.lootable_at !== null &&
 							now < relation.attributes.lootable_at
 						) {
 							continue;

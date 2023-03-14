@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.11.6
+// @version      1.11.7
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -962,7 +962,7 @@ class AutoFarm extends ModernUtil {
 				uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
 			const farm_town_models = uw.MM.getOnlyCollectionByName('FarmTown').models;
 			const now = Math.floor(Date.now() / 1000);
-			const max = 20;
+			let max = 20;
 			for (let town_id of this.polislist) {
 				let town = uw.ITowns.towns[town_id];
 				let x = town.getIslandCoordinateX();
@@ -977,9 +977,9 @@ class AutoFarm extends ModernUtil {
 							continue;
 						}
 
-						if (relation.attributes.relation_status === 0) continue;
+						if (relation.attributes.relation_status !== 1) continue;
 						if (
-							!relation.attributes.lootable_at ||
+							relation.attributes.lootable_at !== null &&
 							now < relation.attributes.lootable_at
 						) {
 							continue;
