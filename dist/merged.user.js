@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.12.0
+// @version      1.12.1
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -25,8 +25,8 @@ document.head.appendChild(style);
 
 class ModernUtil {
 	/* Usage async this.sleep(ms) -> stop the code for ms */
-	sleep = (ms) => {
-		return new Promise((resolve) => setTimeout(resolve, ms));
+	sleep = ms => {
+		return new Promise(resolve => setTimeout(resolve, ms));
 	};
 
 	/* Save content in localstorage */
@@ -59,49 +59,68 @@ class ModernUtil {
 		}
 	}
 
-	/* generate list with 1 polis per island */
+	/**
+	 * Generate a list of town IDs that are located on large islands.
+	 * A large island is defined as an island that has at least one town that is not on a small island.
+	 * @returns {Array} - Array of town IDs.
+	 */
 	generateList = () => {
-		let islands_list = [];
-		let polis_list = [];
+		const townList = uw.MM.getOnlyCollectionByName('Town').models;
+		const islandsList = [];
+		const polisList = [];
 
-		let town_list = uw.MM.getOnlyCollectionByName('Town').models;
+		for (const town of townList) {
+			const { island_id, id, on_small_island } = town.attributes;
 
-		for (let town of town_list) {
-			if (town.attributes.on_small_island) continue;
-			let { island_id, id } = town.attributes;
-			if (!islands_list.includes(island_id)) {
-				islands_list.push(island_id);
-				polis_list.push(id);
+			if (on_small_island) continue; // Skip towns on small islands
+
+			if (!islandsList.includes(island_id)) {
+				islandsList.push(island_id);
+				polisList.push(id);
 			}
 		}
 
-		return polis_list;
+		return polisList;
 	};
 
-	/* Return html of the button */
+	/**
+	 * Returns HTML code for a button with a specified ID, text, function, and optional properties.
+	 *
+	 * @param {string} id - The ID for the button.
+	 * @param {string} text - The text to display on the button.
+	 * @param {Function} fn - The function to call when the button is clicked.
+	 * @param {string} [props] - Optional properties to pass to the function.
+	 * @returns {string} - The HTML code for the button.
+	 */
 	getButtonHtml(id, text, fn, props) {
-		let name = this.constructor.name.charAt(0).toLowerCase() + this.constructor.name.slice(1);
-		if (isNaN(parseInt(props))) {
-			props = `'${props}'`;
-		}
-		let click = `window.modernBot.${name}.${fn.name}(${props ? props : ''})`;
+		const name = this.constructor.name.charAt(0).toLowerCase() + this.constructor.name.slice(1);
+		props = isNaN(parseInt(props)) ? `'${props}'` : props;
+		const click = `window.modernBot.${name}.${fn.name}(${props || ''})`;
 
 		return `
-        <div id="${id}" style="cursor: pointer" class="button_new" onclick="${click}">
-            <div class="left"></div>
-            <div class="right"></div>
-            <div class="caption js-caption"> ${text} <div class="effect js-effect"></div></div>
-        </div>`;
+      <div id="${id}" style="cursor: pointer" class="button_new" onclick="${click}">
+        <div class="left"></div>
+        <div class="right"></div>
+        <div class="caption js-caption"> ${text} <div class="effect js-effect"></div></div>
+      </div>`;
 	}
 
-	/* Return html of the title */
+	/**
+	 * Returns the HTML for a game title with a clickable header that toggles a function.
+	 *
+	 * @param {string} id - The ID for the HTML element.
+	 * @param {string} text - The text to display in the title.
+	 * @param {function} fn - The function to toggle.
+	 * @param {string|number} props - The properties to pass to the function.
+	 * @param {boolean} enable - Whether the title is enabled or not.
+	 * @param {string} [desc='(click to toggle)'] - The description to display.
+	 * @returns {string} The HTML for the game title.
+	 */
 	getTitleHtml(id, text, fn, props, enable, desc = '(click to toggle)') {
-		let name = this.constructor.name.charAt(0).toLowerCase() + this.constructor.name.slice(1);
-		if (isNaN(parseInt(props)) && props) {
-			props = `"${props}"`;
-		}
-		let click = `window.modernBot.${name}.${fn.name}(${props ? props : ''})`;
-		let filter = 'brightness(100%) saturate(186%) hue-rotate(241deg)';
+		const name = this.constructor.name.charAt(0).toLowerCase() + this.constructor.name.slice(1);
+		props = isNaN(parseInt(props)) && props ? `"${props}"` : props;
+		const click = `window.modernBot.${name}.${fn.name}(${props || ''})`;
+		const filter = 'brightness(100%) saturate(186%) hue-rotate(241deg)';
 
 		return `
         <div class="game_border_top"></div>
@@ -112,14 +131,31 @@ class ModernUtil {
         <div class="game_border_corner corner2"></div>
         <div class="game_border_corner corner3"></div>
         <div class="game_border_corner corner4"></div>
-        <div id="${id}" style="cursor: pointer; filter: ${
-			enable ? filter : ''
-		}" class="game_header bold" onclick="${click}"> ${text} <span class="command_count"></span>
+        <div id="${id}" style="cursor: pointer; filter: ${enable ? filter : ''}" class="game_header bold" onclick="${click}">
+            ${text}
+            <span class="command_count"></span>
             <div style="position: absolute; right: 10px; top: 4px; font-size: 10px;"> ${desc} </div>
-        </div>
-        `;
+        </div>`;
 	}
 
+	/**
+	 * Calculates the total population of a collection of units.
+	 *
+	 * @param {Object} units - The collection of units to count population for.
+	 * @returns {number} - The total population of all units in the collection.
+	 */
+	countPopulation(obj) {
+		const data = GameData.units;
+		let total = 0;
+		for (let key in obj) {
+			total += data[key].population * obj[key];
+		}
+		return total;
+	}
+
+	isActive(type) {
+		return uw.GameDataPremium.isAdvisorActivated(type);
+	}
 	/* 
         GET REQUEST TO THE SERVER
     */
@@ -368,54 +404,52 @@ class AutoBootcamp extends ModernUtil {
 
 class AutoBuild extends ModernUtil {
 	constructor(console) {
-		super();
-		this.console = console;
+		super()
+		this.console = console
 
 		/* Load settings, the polis in the settins are the active */
-		this.towns_buildings = this.load('auto_build_levels', {});
+		this.towns_buildings = this.load('auto_build_levels', {})
 
 		/* Check if shift is pressed */
-		this.shiftHeld = false;
+		this.shiftHeld = false
 
 		/* Active always, check if the towns are in the active list */
-		this.enable = setInterval(this.main, 20000);
+		this.enable = setInterval(this.main, 20000)
 
 		/* Attach event to towns list */
 		setTimeout(() => {
-			const townController = uw.layout_main_controller.sub_controllers.find(
-				(controller) => controller.name === 'town_name_area',
-			);
-			if (!townController) return;
+			const townController = uw.layout_main_controller.sub_controllers.find(controller => controller.name === 'town_name_area')
+			if (!townController) return
 
-			const oldRender = townController.controller.town_groups_list_view.render;
+			const oldRender = townController.controller.town_groups_list_view.render
 			townController.controller.town_groups_list_view.render = function () {
-				oldRender.call(this);
-				const townIds = Object.keys(uw.modernBot.autoBuild.towns_buildings);
+				oldRender.call(this)
+				const townIds = Object.keys(uw.modernBot.autoBuild.towns_buildings)
 				uw.$('.town_group_town').each(function () {
-					const townId = parseInt(uw.$(this).attr('data-townid'));
-					if (!townIds.includes(townId.toString())) return;
-					const html = `<div style='background-image: url(https://i.ibb.co/G5DfgbZ/gear.png); scale: 0.9; background-repeat: no-repeat; position: relative; height: 20px; width: 25px; float: left;'></div>`;
-					uw.$(this).append(html);
-				});
-			};
-		}, 2500);
+					const townId = parseInt(uw.$(this).attr('data-townid'))
+					if (!townIds.includes(townId.toString())) return
+					const html = `<div style='background-image: url(https://i.ibb.co/G5DfgbZ/gear.png); scale: 0.9; background-repeat: no-repeat; position: relative; height: 20px; width: 25px; float: left;'></div>`
+					uw.$(this).append(html)
+				})
+			}
+		}, 2500)
 	}
 
 	settings = () => {
 		/* Apply event to shift */
 		requestAnimationFrame(() => {
-			uw.$('#buildings_lvl_buttons').on('mousedown', (e) => {
-				this.shiftHeld = e.shiftKey;
-			});
+			uw.$('#buildings_lvl_buttons').on('mousedown', e => {
+				this.shiftHeld = e.shiftKey
+			})
 
-			this.setPolisInSettings(uw.ITowns.getCurrentTown().id);
-			this.updateTitle();
+			this.setPolisInSettings(uw.ITowns.getCurrentTown().id)
+			this.updateTitle()
 
 			uw.$.Observer(uw.GameEvents.town.town_switch).subscribe(() => {
-				this.setPolisInSettings(uw.ITowns.getCurrentTown().id);
-				this.updateTitle();
-			});
-		});
+				this.setPolisInSettings(uw.ITowns.getCurrentTown().id)
+				this.updateTitle()
+			})
+		})
 
 		return `
         <div class="game_border" style="margin-bottom: 20px">
@@ -427,28 +461,25 @@ class AutoBuild extends ModernUtil {
             <div class="game_border_corner corner2"></div>
             <div class="game_border_corner corner3"></div>
             <div class="game_border_corner corner4"></div>
-            <div id="auto_build_title" style="cursor: pointer; filter: ${
-				this.enable ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : ''
-			}" class="game_header bold" onclick="window.modernBot.autoBuild.toggle()"> Auto Build <span class="command_count"></span>
+            <div id="auto_build_title" style="cursor: pointer; filter: ${this.enable ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : ''}" class="game_header bold" onclick="window.modernBot.autoBuild.toggle()"> Auto Build <span class="command_count"></span>
                 <div style="position: absolute; right: 10px; top: 4px; font-size: 10px;"> (click to toggle) </div>
             </div>
             <div id="buildings_lvl_buttons"></div>    
-        </div> `;
-	};
+        </div> `
+	}
 
 	/* Given the town id, set the polis in the settings menu */
-	setPolisInSettings = (town_id) => {
-		let town = uw.ITowns.towns[town_id];
+	setPolisInSettings = town_id => {
+		let town = uw.ITowns.towns[town_id]
 
 		/* If the town is in the active list set*/
-		let town_buildings =
-			this.towns_buildings?.[town_id] ?? { ...town.buildings()?.attributes } ?? {};
-		let buildings = { ...town.buildings().attributes };
+		let town_buildings = this.towns_buildings?.[town_id] ?? { ...town.buildings()?.attributes } ?? {}
+		let buildings = { ...town.buildings().attributes }
 
 		const getBuildingHtml = (building, bg) => {
-			let color = 'lime';
-			if (buildings[building] > town_buildings[building]) color = 'red';
-			else if (buildings[building] < town_buildings[building]) color = 'orange';
+			let color = 'lime'
+			if (buildings[building] > town_buildings[building]) color = 'red'
+			else if (buildings[building] < town_buildings[building]) color = 'orange'
 
 			return `
                 <div class="auto_build_box">
@@ -457,15 +488,15 @@ class AutoBuild extends ModernUtil {
                     <div class="auto_build_down_arrow" onclick="window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', -1)"></div>
                     <p style="color: ${color}" id="build_lvl_${building}" class="auto_build_lvl"> ${town_buildings[building]} <p>
                 </div>
-            </div>`;
-		};
+            </div>`
+		}
 
 		/* If the town is in a group, the the groups */
 		const groups =
 			`(uw.${Object.values(uw.ITowns.getTownGroups())
-				.filter((group) => group.id > 0 && group.id !== -1 && group.towns[town_id])
-				.map((group) => group.name)
-				.join(', ')})` || '';
+				.filter(group => group.id > 0 && group.id !== -1 && group.towns[town_id])
+				.map(group => group.name)
+				.join(', ')})` || ''
 
 		uw.$('#buildings_lvl_buttons').html(`
         <div id="build_settings_${town_id}">
@@ -489,295 +520,253 @@ class AutoBuild extends ModernUtil {
                 ${getBuildingHtml('ironer', [250, 0])}
                 ${getBuildingHtml('wall', [50, 100])}
             </div>
-        </div>`);
-	};
+        </div>`)
+	}
 
 	/* call with town_id, building type and level to be added */
 	editBuildingLevel = (town_id, name, d) => {
 		/* if shift is pressed, add or remove 10 */
-		const current_lvl = parseInt(uw.$(`#build_lvl_${name}`).text());
-		d = this.shiftHeld ? d * 10 : d;
+		const current_lvl = parseInt(uw.$(`#build_lvl_${name}`).text())
+		d = this.shiftHeld ? d * 10 : d
 
-		const { max_level, min_level } = uw.GameData.buildings[name];
+		const { max_level, min_level } = uw.GameData.buildings[name]
 
-		const town = uw.ITowns.towns[town_id];
+		const town = uw.ITowns.towns[town_id]
 
-		const town_buildings =
-			this.towns_buildings?.[town_id] ?? { ...town.buildings()?.attributes } ?? {};
-		const townBuildings = town.buildings().attributes;
+		const town_buildings = this.towns_buildings?.[town_id] ?? { ...town.buildings()?.attributes } ?? {}
+		const townBuildings = town.buildings().attributes
 
 		/* Check if bottom or top overflow */
-		town_buildings[name] = Math.min(Math.max(current_lvl + d, min_level), max_level);
+		town_buildings[name] = Math.min(Math.max(current_lvl + d, min_level), max_level)
 
-		const color =
-			town_buildings[name] > townBuildings[name]
-				? 'orange'
-				: town_buildings[name] < townBuildings[name]
-				? 'red'
-				: 'lime';
+		const color = town_buildings[name] > townBuildings[name] ? 'orange' : town_buildings[name] < townBuildings[name] ? 'red' : 'lime'
 
-		uw.$(`#build_settings_${town_id} #build_lvl_${name}`)
-			.css('color', color)
-			.text(town_buildings[name]);
+		uw.$(`#build_settings_${town_id} #build_lvl_${name}`).css('color', color).text(town_buildings[name])
 
 		if (town_id.toString() in this.towns_buildings) {
-			this.towns_buildings[town_id] = town_buildings;
-			this.save('auto_build_levels', this.towns_buildings);
+			this.towns_buildings[town_id] = town_buildings
+			this.save('auto_build_levels', this.towns_buildings)
 		}
-	};
+	}
 
-	isActive = (town_id) => {
-		let town = uw.ITowns.towns[town_id];
-		return !this.towns_buildings?.[town.id];
-	};
+	isActive = town_id => {
+		let town = uw.ITowns.towns[town_id]
+		return !this.towns_buildings?.[town.id]
+	}
 
 	updateTitle = () => {
-		let town = uw.ITowns.getCurrentTown();
+		let town = uw.ITowns.getCurrentTown()
 		if (town.id.toString() in this.towns_buildings) {
-			uw.$('#auto_build_title').css(
-				'filter',
-				'brightness(100%) saturate(186%) hue-rotate(241deg)',
-			);
+			uw.$('#auto_build_title').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)')
 		} else {
-			uw.$('#auto_build_title').css('filter', '');
+			uw.$('#auto_build_title').css('filter', '')
 		}
-	};
+	}
 
 	/* Call to toggle on and off (trigger the current town) */
 	toggle = () => {
-		let town = uw.ITowns.getCurrentTown();
+		let town = uw.ITowns.getCurrentTown()
 
 		if (!(town.id.toString() in this.towns_buildings)) {
-			this.console.log(`${town.name}: Auto Build On`);
-			this.towns_buildings[town.id] = {};
-			let buildins = [
-				'main',
-				'storage',
-				'farm',
-				'academy',
-				'temple',
-				'barracks',
-				'docks',
-				'market',
-				'hide',
-				'lumber',
-				'stoner',
-				'ironer',
-				'wall',
-			];
-			buildins.forEach((e) => {
-				let lvl = parseInt(uw.$(`#build_lvl_${e}`).text());
-				this.towns_buildings[town.id][e] = lvl;
-			});
-			this.save('auto_build_levels', this.towns_buildings);
+			this.console.log(`${town.name}: Auto Build On`)
+			this.towns_buildings[town.id] = {}
+			let buildins = ['main', 'storage', 'farm', 'academy', 'temple', 'barracks', 'docks', 'market', 'hide', 'lumber', 'stoner', 'ironer', 'wall']
+			buildins.forEach(e => {
+				let lvl = parseInt(uw.$(`#build_lvl_${e}`).text())
+				this.towns_buildings[town.id][e] = lvl
+			})
+			this.save('auto_build_levels', this.towns_buildings)
 		} else {
-			delete this.towns_buildings[town.id];
-			this.console.log(`${town.name}: Auto Build Off`);
+			delete this.towns_buildings[town.id]
+			this.console.log(`${town.name}: Auto Build Off`)
 		}
 
-		this.updateTitle();
-	};
+		this.updateTitle()
+	}
 
 	/* Main loop for building */
 	main = async () => {
 		for (let town_id of Object.keys(this.towns_buildings)) {
 			/* If the town don't exists in list, remove it to prevent errors */
 			if (!uw.ITowns.towns[town_id]) {
-				delete this.towns_buildings[town_id];
-				this.save('auto_build_levels', this.towns_buildings);
-				continue;
+				delete this.towns_buildings[town_id]
+				this.save('auto_build_levels', this.towns_buildings)
+				continue
 			}
 
-			if (this.isFullQueue(town_id)) continue;
+			if (this.isFullQueue(town_id)) continue
 			/* If town is done, remove from the list */
 			if (this.isDone(town_id)) {
-				delete this.towns_buildings[town_id];
-				this.save('auto_build_levels', this.towns_buildings);
-				this.updateTitle();
-				const town = uw.ITowns.towns[town_id];
-				this.console.log(`${town.name}: Auto Build Done`);
-				continue;
+				delete this.towns_buildings[town_id]
+				this.save('auto_build_levels', this.towns_buildings)
+				this.updateTitle()
+				const town = uw.ITowns.towns[town_id]
+				this.console.log(`${town.name}: Auto Build Done`)
+				continue
 			}
-			await this.getNextBuild(town_id);
+			await this.getNextBuild(town_id)
 		}
-	};
+	}
 
 	/* Make post request to the server to buildup the building */
 	postBuild = async (type, town_id) => {
-		let town = uw.ITowns.towns[town_id];
-		let { wood, stone, iron } = town.resources();
-		let { resources_for, population_for } =
-			uw.MM.getModels().BuildingBuildData[town_id].attributes.building_data[type];
+		let town = uw.ITowns.towns[town_id]
+		let { wood, stone, iron } = town.resources()
+		let { resources_for, population_for } = uw.MM.getModels().BuildingBuildData[town_id].attributes.building_data[type]
 
-		if (town.getAvailablePopulation() < population_for) return;
+		if (town.getAvailablePopulation() < population_for) return
 		if (wood < resources_for.wood || stone < resources_for.stone || iron < resources_for.iron) {
-			return;
+			return
 		}
 		let data = {
 			model_url: 'BuildingOrder',
 			action_name: 'buildUp',
 			arguments: { building_id: type },
 			town_id: town_id,
-		};
-		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
-		this.console.log(`${town.getName()}: buildUp ${type}`);
-		await this.sleep(500);
-	};
+		}
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data)
+		this.console.log(`${town.getName()}: buildUp ${type}`)
+		await this.sleep(500)
+	}
 
 	/* Make post request to tear building down */
 	postTearDown = async (type, town_id) => {
-		let town = uw.ITowns.towns[town_id];
+		let town = uw.ITowns.towns[town_id]
 		let data = {
 			model_url: 'BuildingOrder',
 			action_name: 'tearDown',
 			arguments: { building_id: type },
 			town_id: town_id,
-		};
-		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
-		await this.sleep(500);
-	};
+		}
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data)
+		await this.sleep(500)
+	}
 
 	/* return true if the quee is full */
-	isFullQueue = (town_id) => {
-		let town = uw.ITowns.towns[town_id];
+	isFullQueue = town_id => {
+		let town = uw.ITowns.towns[town_id]
 		if (uw.GameDataPremium.isAdvisorActivated('curator') && town.buildingOrders().length >= 7) {
-			return true;
+			return true
 		}
-		if (
-			!uw.GameDataPremium.isAdvisorActivated('curator') &&
-			town.buildingOrders().length >= 2
-		) {
-			return true;
+		if (!uw.GameDataPremium.isAdvisorActivated('curator') && town.buildingOrders().length >= 2) {
+			return true
 		}
-		return false;
-	};
+		return false
+	}
 
 	/* return true if building match polis */
-	isDone = (town_id) => {
-		let town = uw.ITowns.towns[town_id];
-		let buildings = town.getBuildings().attributes;
+	isDone = town_id => {
+		let town = uw.ITowns.towns[town_id]
+		let buildings = town.getBuildings().attributes
 		for (let build of Object.keys(this.towns_buildings[town_id])) {
 			if (this.towns_buildings[town_id][build] != buildings[build]) {
-				return false;
+				return false
 			}
 		}
-		return true;
-	};
+		return true
+	}
 
 	/* */
-	getNextBuild = async (town_id) => {
-		let town = ITowns.towns[town_id];
+	getNextBuild = async town_id => {
+		let town = ITowns.towns[town_id]
 
 		/* livello attuale */
-		let buildings = { ...town.getBuildings().attributes };
+		let buildings = { ...town.getBuildings().attributes }
 
 		/* Add the the list the current building progress */
 		for (let order of town.buildingOrders().models) {
 			if (order.attributes.tear_down) {
-				buildings[order.attributes.building_type] -= 1;
+				buildings[order.attributes.building_type] -= 1
 			} else {
-				buildings[order.attributes.building_type] += 1;
+				buildings[order.attributes.building_type] += 1
 			}
 		}
 		/* livello in cui deve arrivare */
-		let target = this.towns_buildings[town_id];
+		let target = this.towns_buildings[town_id]
 
 		/* Check if the building is duable, if yes build it and return true, else false  */
 		const check = async (build, level) => {
 			/* if the given is an array, randomically try all of the array */
 			if (Array.isArray(build)) {
-				build.sort(() => Math.random() - 0.5);
+				build.sort(() => Math.random() - 0.5)
 				for (let el of build) {
-					if (await check(el, level)) return true;
+					if (await check(el, level)) return true
 				}
-				return false;
+				return false
 			}
-			if (target[build] <= buildings[build]) return false;
+			if (target[build] <= buildings[build]) return false
 			else if (buildings[build] < level) {
-				await this.postBuild(build, town_id);
-				return true;
+				await this.postBuild(build, town_id)
+				return true
 			}
-			return false;
-		};
+			return false
+		}
 
-		const tearCheck = async (build) => {
+		const tearCheck = async build => {
 			if (Array.isArray(build)) {
-				build.sort(() => Math.random() - 0.5);
+				build.sort(() => Math.random() - 0.5)
 				for (let el of build) {
-					if (await tearCheck(el)) return true;
+					if (await tearCheck(el)) return true
 				}
-				return false;
+				return false
 			}
 			if (target[build] < buildings[build]) {
-				await this.postTearDown(build, town_id);
-				return true;
+				await this.postTearDown(build, town_id)
+				return true
 			}
-			return false;
-		};
+			return false
+		}
 
 		/* IF the docks is not build yet, then follow the tutorial */
 		if (buildings.docks < 1) {
-			if (await check('lumber', 3)) return;
-			if (await check('stoner', 3)) return;
-			if (await check('farm', 4)) return;
-			if (await check('ironer', 3)) return;
-			if (await check('storage', 4)) return;
-			if (await check('temple', 3)) return;
-			if (await check('main', 5)) return;
-			if (await check('barracks', 5)) return;
-			if (await check('storage', 5)) return;
-			if (await check('stoner', 6)) return;
-			if (await check('lumber', 6)) return;
-			if (await check('ironer', 6)) return;
-			if (await check('main', 8)) return;
-			if (await check('farm', 8)) return;
-			if (await check('market', 6)) return;
-			if (await check('storage', 8)) return;
-			if (await check('academy', 7)) return;
-			if (await check('temple', 5)) return;
-			if (await check('farm', 12)) return;
-			if (await check('main', 15)) return;
-			if (await check('storage', 12)) return;
-			if (await check('main', 25)) return;
-			if (await check('hide', 10)) return;
+			if (await check('lumber', 3)) return
+			if (await check('stoner', 3)) return
+			if (await check('farm', 4)) return
+			if (await check('ironer', 3)) return
+			if (await check('storage', 4)) return
+			if (await check('temple', 3)) return
+			if (await check('main', 5)) return
+			if (await check('barracks', 5)) return
+			if (await check('storage', 5)) return
+			if (await check('stoner', 6)) return
+			if (await check('lumber', 6)) return
+			if (await check('ironer', 6)) return
+			if (await check('main', 8)) return
+			if (await check('farm', 8)) return
+			if (await check('market', 6)) return
+			if (await check('storage', 8)) return
+			if (await check('academy', 7)) return
+			if (await check('temple', 5)) return
+			if (await check('farm', 12)) return
+			if (await check('main', 15)) return
+			if (await check('storage', 12)) return
+			if (await check('main', 25)) return
+			if (await check('hide', 10)) return
 		}
 
 		/* Resouces */
 		// WALLS!
-		if (await check('farm', 15)) return;
-		if (await check(['storage', 'main'], 25)) return;
-		if (await check('market', 4)) return;
-		if (await check('hide', 10)) return;
-		if (await check(['lumber', 'stoner', 'ironer'], 15)) return;
-		if (await check(['academy', 'farm'], 36)) return;
-		if (await check(['docks', 'barracks'], 10)) return;
-		if (await check('wall', 25)) return;
+		if (await check('farm', 15)) return
+		if (await check(['storage', 'main'], 25)) return
+		if (await check('market', 4)) return
+		if (await check('hide', 10)) return
+		if (await check(['lumber', 'stoner', 'ironer'], 15)) return
+		if (await check(['academy', 'farm'], 36)) return
+		if (await check(['docks', 'barracks'], 10)) return
+		if (await check('wall', 25)) return
 		// terme
-		if (await check(['docks', 'barracks', 'market'], 20)) return;
-		if (await check('farm', 45)) return;
-		if (await check(['docks', 'barracks', 'market'], 30)) return;
-		if (await check(['lumber', 'stoner', 'ironer'], 40)) return;
-		if (await check('temple', 30)) return;
-		if (await check('storage', 35)) return;
+		if (await check(['docks', 'barracks', 'market'], 20)) return
+		if (await check('farm', 45)) return
+		if (await check(['docks', 'barracks', 'market'], 30)) return
+		if (await check(['lumber', 'stoner', 'ironer'], 40)) return
+		if (await check('temple', 30)) return
+		if (await check('storage', 35)) return
 
 		/* Demolish */
-		let lista = [
-			'lumber',
-			'stoner',
-			'ironer',
-			'docks',
-			'barracks',
-			'market',
-			'temple',
-			'academy',
-			'farm',
-			'hide',
-			'storage',
-			'wall',
-		];
-		if (await tearCheck(lista)) return;
-		if (await tearCheck('main')) return;
-	};
+		let lista = ['lumber', 'stoner', 'ironer', 'docks', 'barracks', 'market', 'temple', 'academy', 'farm', 'hide', 'storage', 'wall']
+		if (await tearCheck(lista)) return
+		if (await tearCheck('main')) return
+	}
 }
 
 /* 
@@ -807,13 +796,7 @@ class AutoFarm extends ModernUtil {
 		});
 		return `
         <div class="game_border" style="margin-bottom: 20px">
-            ${this.getTitleHtml(
-				'auto_farm',
-				'Auto Farm',
-				this.toggle,
-				'',
-				this.enable_auto_farming,
-			)}
+            ${this.getTitleHtml('auto_farm', 'Auto Farm', this.toggle, '', this.enable_auto_farming)}
 
             <div style="display: inline-flex">
             <div id="farming_lvl_buttons" style="padding: 5px; margin-right: 398px">
@@ -871,14 +854,14 @@ class AutoFarm extends ModernUtil {
 		this.save('enable_autofarm', !!this.enable_auto_farming);
 	};
 
-	setAutoFarmLevel = (n) => {
+	setAutoFarmLevel = n => {
 		uw.$('#farming_lvl_buttons .button_new').addClass('disabled');
 		uw.$(`#farming_lvl_${n}`).removeClass('disabled');
 		this.farm_timing = n;
 		this.save('enable_autofarm_level', n);
 	};
 
-	setAutoFarmPercentual = (n) => {
+	setAutoFarmPercentual = n => {
 		let box = document.getElementById('rural_lvl_percentuals');
 		let buttons = box.getElementsByClassName('button_new');
 		for (let i = 0; i < buttons.length; i++) {
@@ -929,7 +912,7 @@ class AutoFarm extends ModernUtil {
 		let yellow = 'brightness(294%) sepia(100%) hue-rotate(15deg) saturate(1000%) contrast(0.8)';
 		let green = 'brightness(110%) sepia(100%) hue-rotate(100deg) saturate(1500%) contrast(0.8)';
 		const isCaptainActive = uw.GameDataPremium.isAdvisorActivated('captain');
-		/* Check for curator -> if not active set yellow */
+		/* Check for captain -> if not active set yellow */
 		uw.$('#autofarm_timer').css('filter', isCaptainActive ? green : yellow);
 	};
 
@@ -958,8 +941,7 @@ class AutoFarm extends ModernUtil {
 				uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 			};
 
-			const player_relation_models =
-				uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
+			const player_relation_models = uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
 			const farm_town_models = uw.MM.getOnlyCollectionByName('FarmTown').models;
 			const now = Math.floor(Date.now() / 1000);
 			let max = 20;
@@ -978,10 +960,7 @@ class AutoFarm extends ModernUtil {
 						}
 
 						if (relation.attributes.relation_status !== 1) continue;
-						if (
-							relation.attributes.lootable_at !== null &&
-							now < relation.attributes.lootable_at
-						) {
+						if (relation.attributes.lootable_at !== null && now < relation.attributes.lootable_at) {
 							continue;
 						}
 						claimSingle(town_id, relation.attributes.farm_town_id, relation.id);
@@ -1570,24 +1549,47 @@ class AutoRuralTrade extends ModernUtil {
 }
 
 class AutoTrain extends ModernUtil {
+	REQUIREMENTS = {
+		sword: {},
+		archer: { research: 'archer' },
+		hoplite: { research: 'hoplite' },
+		slinger: { research: 'slinger' },
+		catapult: { research: 'catapult' },
+		rider: { research: 'rider', building: 'barracks', level: 10 },
+		chariot: { research: 'chariot', building: 'barracks', level: 15 },
+		big_transporter: { building: 'docks', level: 1 },
+		small_transporter: { research: 'small_transporter', building: 'docks', level: 1 },
+		bireme: { research: 'bireme', building: 'docks', level: 1 },
+		attack_ship: { research: 'attack_ship', building: 'docks', level: 1 },
+		trireme: { research: 'trireme', building: 'docks', level: 1 },
+		colonize_ship: { research: 'colonize_ship', building: 'docks', level: 10 },
+	};
+
 	constructor(console) {
 		super();
 		this.console = console;
 
 		this.city_troops = this.load('city_troops', {});
+		this.single_cicle = this.load('autotrain_single_cicle', []);
+		this.multiple_cicle = this.load('autotrain_multiple_cicle', []);
+
+		this.shiftHeld = false;
 	}
 
 	settings = () => {
-		// ''minotaur', 'manticore', 'zyklop', 'harpy', 'medusa', 'centaur', 'pegasus', 'cerberus', 'fury', 'griffin', 'calydonian_boar', 'satyr', 'spartoi', 'ladon', 'godsent',
-		// '', '', 'attack_ship', 'demolition_ship', '', 'trireme', 'colonize_ship', 'sea_monster', 'siren'
-
 		requestAnimationFrame(() => {
 			this.setPolisInSettings(uw.ITowns.getCurrentTown().id);
+			this.updatePolisInSettings(uw.ITowns.getCurrentTown().id);
 			/*this.updateTitle();*/
 
 			uw.$.Observer(uw.GameEvents.town.town_switch).subscribe(() => {
 				this.setPolisInSettings(uw.ITowns.getCurrentTown().id);
+				this.updatePolisInSettings(uw.ITowns.getCurrentTown().id);
 				/*this.updateTitle();*/
+			});
+
+			uw.$('#troops_lvl_buttons').on('mousedown', e => {
+				this.shiftHeld = e.shiftKey;
 			});
 		});
 
@@ -1601,10 +1603,9 @@ class AutoTrain extends ModernUtil {
             <div class="game_border_corner corner2"></div>
             <div class="game_border_corner corner3"></div>
             <div class="game_border_corner corner4"></div>
-            <div class="game_header bold" style="position: relative; cursor: pointer" onclick="window.modernBot.autoRuralTrade.main()"> 
+            <div id="auto_train_title" class="game_header bold" style="position: relative; cursor: pointer" onclick="window.modernBot.autoTrain.trigger()"> 
             <span style="z-index: 10; position: relative;">Auto Train </span>
-            <div id="res_progress_bar" class="progress_bar_auto"></div>
-            <div style="position: absolute; right: 10px; top: 4px; font-size: 10px; z-index: 10"> (click to stop) </div>
+            <div style="position: absolute; right: 10px; top: 4px; font-size: 10px; z-index: 10"> (click to toggle) </div>
             <span class="command_count"></span></div>
 
             <div id="troops_lvl_buttons"></div>    
@@ -1612,67 +1613,40 @@ class AutoTrain extends ModernUtil {
     `;
 	};
 
-	getTotalPopulation = (town_id) => {
-		let town = uw.ITowns.towns[town_id];
-		let free = town.getAvailablePopulation();
-		let used = 0;
-
+	/**
+	 * Calculates the total population of a town, taking into account the available population, the units in the town, the units outside the town, and the units in orders.
+	 *
+	 * @param {string} town_id - The ID of the town to calculate the population for.
+	 * @returns {number} - The total population of the town.
+	 */
+	getTotalPopulation = town_id => {
+		const town = uw.ITowns.towns[town_id];
 		const data = GameData.units;
-		let units = town.units();
-		for (let unit in units) {
-			used += data[unit].population * units[unit];
-		}
+		const { models: orders } = town.getUnitOrdersCollection();
 
-		let orders = town.getUnitOrdersCollection().models;
-		for (let order of orders) {
-			used += data[order.attributes.unit_type].population * order.attributes.units_left;
-		}
+		const used = Object.entries({ ...town.units(), ...town.unitsOuter(), ...orders }).reduce((acc, [unit, count]) => acc + (data[unit]?.population ?? 0) * count, 0);
 
-		let outer = town.unitsOuter();
-		for (let unit in outer) {
-			used += data[unit].population * outer[unit];
-		}
-		// TODO add troops that are outside
-		return free + used;
+		return town.getAvailablePopulation() + used;
 	};
 
-	isGray = (troop, researches, buildings) => {
-		const requirements = {
-			sword: {},
-			archer: { research: 'archer' },
-			hoplite: { research: 'hoplite' },
-			slinger: { research: 'slinger' },
-			catapult: { research: 'catapult' },
-			rider: { research: 'rider', building: 'barracks', level: 10 },
-			chariot: { research: 'chariot', building: 'barracks', level: 15 },
-			big_transporter: { building: 'docks', level: 1 },
-			small_transporter: { research: 'small_transporter', building: 'docks', level: 1 },
-			bireme: { research: 'bireme', building: 'docks', level: 1 },
-			attack_ship: { research: 'attack_ship', building: 'docks', level: 1 },
-			trireme: { research: 'trireme', building: 'docks', level: 1 },
-			colonize_ship: { research: 'colonize_ship', building: 'docks', level: 10 },
-		};
-
-		if (!requirements.hasOwnProperty(troop)) {
-			return true; // Troop type not recognized
-		}
-
-		const { research, building, level } = requirements[troop];
-		if (research && !researches[research]) return true;
-		if (building && buildings[building] < level) return true;
-
-		return false;
-	};
-
-	setPolisInSettings = (town_id) => {
+	setPolisInSettings = town_id => {
 		let town = uw.ITowns.towns[town_id];
 		let researches = town.researches().attributes;
 		let buildings = town.buildings().attributes;
 
-		const getTroopHtml = (troop, bg) => {
-			let gray = this.isGray(troop, researches, buildings);
+		const isGray = troop => {
+			if (!this.REQUIREMENTS.hasOwnProperty(troop)) {
+				return true; // Troop type not recognized
+			}
 
-			let town_id = 0;
+			const { research, building, level } = this.REQUIREMENTS[troop];
+			if (research && !researches[research]) return true;
+			if (building && buildings[building] < level) return true;
+			return false;
+		};
+
+		const getTroopHtml = (troop, bg) => {
+			let gray = isGray(troop, researches, buildings);
 			let color = 'red';
 
 			if (gray) {
@@ -1693,13 +1667,13 @@ class AutoTrain extends ModernUtil {
 		};
 
 		uw.$('#troops_lvl_buttons').html(`
-        <div id="build_settings_${town_id}">
+        <div id="troops_settings_${town_id}">
             <div style="width: 600px; margin-bottom: 3px; display: inline-flex">
             <a class="gp_town_link" href="${town.getLinkFragment()}">${town.getName()}</a> 
             <p style="font-weight: bold; margin: 0px 5px"> [${town.getPoints()} pts] </p>
             <p style="font-weight: bold; margin: 0px 5px"> </p>
             <div class="population_icon">
-                <p> ${this.getTotalPopulation(town_id)} <p>
+                <p id="troops_lvl_population"> ${this.getTotalPopulation(town_id)} <p>
             </div>
             </div>
             <div style="width: 831px; display: inline-flex; gap: 1px;">
@@ -1722,11 +1696,197 @@ class AutoTrain extends ModernUtil {
         </div>`);
 	};
 
-	editTroopCount = (town_id, troop) => {};
+	editTroopCount = (town_id, troop, count) => {
+		const { units } = GameData;
+		const { city_troops } = this;
+		// Modify count based on whether the shift key is held down
+		count = this.shiftHeld ? count * 50 : count;
 
-	trigger = () => {};
+		// Add the town to the city_troops object if it doesn't already exist
+		if (!city_troops.hasOwnProperty(town_id)) city_troops[town_id] = {};
 
-	main = () => {};
+		// Check if the troop count can be increased without exceeding population capacity
+		const total_pop = this.getTotalPopulation(town_id);
+		const used_pop = this.countPopulation(this.city_troops[town_id]);
+		const unit_pop = units[troop].population;
+		if (total_pop - used_pop < unit_pop * count) count = parseInt((total_pop - used_pop) / unit_pop);
+
+		// Update the troop count for the specified town and troop type
+		if (troop in city_troops[town_id]) city_troops[town_id][troop] += count;
+		else city_troops[town_id][troop] = count;
+
+		/* Clenaup */
+		if (city_troops[town_id][troop] <= 0) delete city_troops[town_id][troop];
+		if (uw.$.isEmptyObject(city_troops[town_id])) delete this.city_troops[town_id];
+
+		this.updatePolisInSettings(town_id);
+		this.save('city_troops', this.city_troops);
+	};
+
+	updatePolisInSettings = town_id => {
+		const { units } = GameData;
+		const cityTroops = this.city_troops[town_id];
+
+		Object.keys(units).forEach(troop => {
+			const color = 'orange';
+			const guiCount = cityTroops && cityTroops[troop] ? cityTroops[troop] : 0;
+			const selector = `#troops_settings_${town_id} #troop_lvl_${troop}`;
+
+			uw.$(selector).css('color', color).text(guiCount);
+		});
+	};
+
+	/* return status of the give polis */
+	getPolisStatus = town_id => {
+		if (!this.city_troops.hasOwnProperty(town_id)) return 'inactive';
+		if (this.single_cicle.includes(town_id)) return 'single';
+		if (this.multiple_cicle.includes(town_id)) return 'multiple';
+		return 'inactive';
+	};
+
+	setPolisStatus = (town_id, status) => {
+		const { single_cicle, multiple_cicle } = this;
+
+		switch (status) {
+			case 'inactive':
+				this.single_cicle = single_cicle.filter(id => id !== town_id);
+				this.multiple_cicle = multiple_cicle.filter(id => id !== town_id);
+				break;
+			case 'single':
+				this.single_cicle = [...new Set([...single_cicle, town_id])];
+				this.multiple_cicle = multiple_cicle.filter(id => id !== town_id);
+				break;
+			case 'multiple':
+				this.single_cicle = single_cicle.filter(id => id !== town_id);
+				this.multiple_cicle = [...new Set([...multiple_cicle, town_id])];
+				break;
+			default:
+				throw new Error(`Invalid status: ${status}`);
+		}
+	};
+
+	trigger = () => {
+		let town = uw.ITowns.getCurrentTown();
+		let status = this.getPolisStatus(town.id);
+		if (status == 'inactive' && this.city_troops.hasOwnProperty(town.id)) {
+			this.setPolisStatus(town.id, 'single');
+			uw.$('#auto_train_title').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
+			return;
+		}
+		if (status == 'single') {
+			this.setPolisStatus(town.id, 'multiple');
+			uw.$('#auto_train_title').css('filter', 'brightness(100%) saturate(186%) hue-rotate(49deg)');
+			return;
+		}
+		if (status == 'multiple') {
+			this.setPolisStatus(town.id, 'inactive');
+			uw.$('#auto_train_title').css('filter', '');
+			return;
+		}
+	};
+
+	// naval, ground
+	getUnitOrdersCount = (type, town_id = 0) => {
+		let town = town_id ? uw.ITowns.towns[town_id] : uw.ITowns.getCurrentTown();
+		let count = 0;
+		for (let model of town.getUnitOrdersCollection().models) {
+			if (model.attributes.kind == type) count += 1;
+		}
+		return count;
+	};
+
+	/* Return the next troop that has to be trained */
+	getNextInList = (type, town_id) => {
+		if (!this.city_troops[town_id]) return null;
+		if (type == 'naval') {
+			if (this.city_troops[town_id].small_transporter) return 'small_transporter';
+			if (this.city_troops[town_id].bireme) return 'bireme';
+			if (this.city_troops[town_id].trireme) return 'trireme';
+			if (this.city_troops[town_id].attack_ship) return 'attack_ship';
+			if (this.city_troops[town_id].big_transporter) return 'big_transporter';
+			if (this.city_troops[town_id].demolition_ship) return 'demolition_ship';
+			if (this.city_troops[town_id].colonize_ship) return 'colonize_ship';
+		} else {
+			if (this.city_troops[town_id].catapult) return 'catapult';
+			if (this.city_troops[town_id].sword) return 'sword';
+			if (this.city_troops[town_id].archer) return 'archer';
+			if (this.city_troops[town_id].hoplite) return 'hoplite';
+			if (this.city_troops[town_id].slinger) return 'slinger';
+			if (this.city_troops[town_id].rider) return 'rider';
+			if (this.city_troops[town_id].chariot) return 'chariot';
+		}
+		return null;
+	};
+
+	getTroopCount = (troop, town_id) => {
+		let town = town_id ? uw.ITowns.towns[town_id] : uw.ITowns.getCurrentTown();
+		if (!this.city_troops[town_id]) return 0;
+		if (!this.city_troops[town_id][troop]) return 0;
+		let count = this.city_troops[town_id][troop];
+
+		/* Get the duable ammount with the current resouces of the polis */
+		let resouces = town.resources();
+		let discount = uw.GeneralModifications.getUnitBuildResourcesModification(town_id, uw.GameData.units[troop]);
+		let { wood, stone, iron } = uw.GameData.units[troop].resources;
+		let w = resouces.wood / (wood * discount);
+		let s = resouces.stone / (stone * discount);
+		let i = resouces.iron / (iron * discount);
+		let min = parseInt(Math.min(w, s, i));
+		count = count > min ? min : count;
+
+		/* Check for free population */
+		let duable_with_pop = parseInt(resouces.population / uw.GameData.units[troop].population); // for each troop
+		console.log(duable_with_pop);
+
+		/* Get the max duable */
+		let w_max = resouces.storage / (wood * discount);
+		let s_max = resouces.storage / (stone * discount);
+		let i_max = resouces.storage / (iron * discount);
+		let max = parseInt(Math.min(w_max, s_max, i_max) * 0.8); // 0.8 it's the full percentual -> 80%
+		console.log(max);
+		max = max > duable_with_pop ? duable_with_pop : max;
+
+		count = count >= max ? max : -1;
+		console.log(max);
+		console.log(count);
+		return count;
+	};
+
+	checkPolis = (type, town_id) => {
+		let order_count = this.getUnitOrdersCount(type, town_id);
+		console.log(order_count);
+		if (order_count > 6) return false;
+		let next = this.getNextInList(type, town_id);
+		console.log(next);
+		if (!next) return false;
+		let count = this.getTroopCount(next, town_id);
+		console.log(count);
+		if (!count) return false;
+		this.buildPost(town_id, next, count);
+		return true;
+	};
+
+	mainSingle = () => {
+		if (this.single_cicle.length == 0) return;
+		for (let town_id of this.single_cicle) {
+			if (this.checkPolis('naval', town_id)) return;
+			if (this.checkPolis('ground', town_id)) return;
+		}
+	};
+
+	mainMultiple = () => {
+		if (this.multiple_cicle.length == 0) return;
+		for (let town_id of this.multiple_cicle) {
+			if (this.checkPolis('naval', town_id)) return;
+			if (this.checkPolis('ground', town_id)) return;
+		}
+	};
+
+	buildPost = (polis, unit, count) => {
+		let data = { unit_id: unit, amount: count, town_id: polis };
+		//uw.gpAjax.ajaxPost('building_barracks', 'build', data)
+		uw.HumanMessage.success('Truppato ' + count + ' su ' + polis);
+	};
 }
 
 /* 
