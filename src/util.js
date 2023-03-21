@@ -1,4 +1,21 @@
 class ModernUtil {
+	/* CONSTANTS */
+	REQUIREMENTS = {
+		sword: {},
+		archer: { research: 'archer' },
+		hoplite: { research: 'hoplite' },
+		slinger: { research: 'slinger' },
+		catapult: { research: 'catapult' },
+		rider: { research: 'rider', building: 'barracks', level: 10 },
+		chariot: { research: 'chariot', building: 'barracks', level: 15 },
+		big_transporter: { building: 'docks', level: 1 },
+		small_transporter: { research: 'small_transporter', building: 'docks', level: 1 },
+		bireme: { research: 'bireme', building: 'docks', level: 1 },
+		attack_ship: { research: 'attack_ship', building: 'docks', level: 1 },
+		trireme: { research: 'trireme', building: 'docks', level: 1 },
+		colonize_ship: { research: 'colonize_ship', building: 'docks', level: 10 },
+	};
+
 	/* Usage async this.sleep(ms) -> stop the code for ms */
 	sleep = ms => {
 		return new Promise(resolve => setTimeout(resolve, ms));

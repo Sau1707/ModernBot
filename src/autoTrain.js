@@ -1,20 +1,4 @@
 class AutoTrain extends ModernUtil {
-	REQUIREMENTS = {
-		sword: {},
-		archer: { research: 'archer' },
-		hoplite: { research: 'hoplite' },
-		slinger: { research: 'slinger' },
-		catapult: { research: 'catapult' },
-		rider: { research: 'rider', building: 'barracks', level: 10 },
-		chariot: { research: 'chariot', building: 'barracks', level: 15 },
-		big_transporter: { building: 'docks', level: 1 },
-		small_transporter: { research: 'small_transporter', building: 'docks', level: 1 },
-		bireme: { research: 'bireme', building: 'docks', level: 1 },
-		attack_ship: { research: 'attack_ship', building: 'docks', level: 1 },
-		trireme: { research: 'trireme', building: 'docks', level: 1 },
-		colonize_ship: { research: 'colonize_ship', building: 'docks', level: 10 },
-	};
-
 	constructor(console) {
 		super();
 		this.console = console;
@@ -24,6 +8,8 @@ class AutoTrain extends ModernUtil {
 		this.multiple_cicle = this.load('autotrain_multiple_cicle', []);
 
 		this.shiftHeld = false;
+
+		setInterval(this.mainSingle, 3000);
 	}
 
 	settings = () => {
@@ -218,7 +204,8 @@ class AutoTrain extends ModernUtil {
 	trigger = () => {
 		let town = uw.ITowns.getCurrentTown();
 		let status = this.getPolisStatus(town.id);
-		if (status == 'inactive' && this.city_troops.hasOwnProperty(town.id)) {
+		if (!this.city_troops.hasOwnProperty(town.id)) return;
+		if (status == 'inactive') {
 			this.setPolisStatus(town.id, 'single');
 			uw.$('#auto_train_title').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
 			return;
@@ -273,45 +260,53 @@ class AutoTrain extends ModernUtil {
 		if (!this.city_troops[town_id]) return 0;
 		if (!this.city_troops[town_id][troop]) return 0;
 		let count = this.city_troops[town_id][troop];
+		for (let order of town.getUnitOrdersCollection().models) {
+			if (order.attributes.unit_type === troop) count -= order.attributes.count;
+		}
+		let townUnits = town.units();
+		if (townUnits.hasOwnProperty(troop)) count -= townUnits[troop];
+		let outerUnits = town.unitsOuter();
+		if (outerUnits.hasOwnProperty(troop)) count -= outerUnits[troop];
+		//TODO: in viaggio
+		if (count < 0) return 0;
+		console.log(count);
 
 		/* Get the duable ammount with the current resouces of the polis */
-		let resouces = town.resources();
+		let resources = town.resources();
 		let discount = uw.GeneralModifications.getUnitBuildResourcesModification(town_id, uw.GameData.units[troop]);
 		let { wood, stone, iron } = uw.GameData.units[troop].resources;
-		let w = resouces.wood / (wood * discount);
-		let s = resouces.stone / (stone * discount);
-		let i = resouces.iron / (iron * discount);
-		let min = parseInt(Math.min(w, s, i));
-		count = count > min ? min : count;
+		let w = resources.wood / Math.round(wood * discount);
+		let s = resources.stone / Math.round(stone * discount);
+		let i = resources.iron / Math.round(iron * discount);
+		let current = parseInt(Math.min(w, s, i));
 
 		/* Check for free population */
-		let duable_with_pop = parseInt(resouces.population / uw.GameData.units[troop].population); // for each troop
-		console.log(duable_with_pop);
+		let duable_with_pop = parseInt(resources.population / uw.GameData.units[troop].population); // for each troop
 
 		/* Get the max duable */
-		let w_max = resouces.storage / (wood * discount);
-		let s_max = resouces.storage / (stone * discount);
-		let i_max = resouces.storage / (iron * discount);
+		let w_max = resources.storage / (wood * discount);
+		let s_max = resources.storage / (stone * discount);
+		let i_max = resources.storage / (iron * discount);
 		let max = parseInt(Math.min(w_max, s_max, i_max) * 0.8); // 0.8 it's the full percentual -> 80%
-		console.log(max);
 		max = max > duable_with_pop ? duable_with_pop : max;
 
-		count = count >= max ? max : -1;
-		console.log(max);
-		console.log(count);
-		return count;
+		if (max > count) {
+			return count > current ? -1 : count;
+		} else {
+			if (current >= max && current < duable_with_pop) return current;
+			if (current >= max && current > duable_with_pop) return duable_with_pop;
+			return -1;
+		}
 	};
 
 	checkPolis = (type, town_id) => {
 		let order_count = this.getUnitOrdersCount(type, town_id);
-		console.log(order_count);
 		if (order_count > 6) return false;
 		let next = this.getNextInList(type, town_id);
-		console.log(next);
 		if (!next) return false;
 		let count = this.getTroopCount(next, town_id);
 		console.log(count);
-		if (!count) return false;
+		if (!count || count < 0) return false;
 		this.buildPost(town_id, next, count);
 		return true;
 	};
