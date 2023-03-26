@@ -25,24 +25,6 @@ class AutoBuild extends ModernUtil {
 
 		/* Active always, check if the towns are in the active list */
 		this.enable = setInterval(this.main, 20000);
-
-		/* Attach event to towns list */
-		setTimeout(() => {
-			const townController = uw.layout_main_controller.sub_controllers.find(controller => controller.name === 'town_name_area');
-			if (!townController) return;
-
-			const oldRender = townController.controller.town_groups_list_view.render;
-			townController.controller.town_groups_list_view.render = function () {
-				oldRender.call(this);
-				const townIds = Object.keys(uw.modernBot.autoBuild.towns_buildings);
-				uw.$('.town_group_town').each(function () {
-					const townId = parseInt(uw.$(this).attr('data-townid'));
-					if (!townIds.includes(townId.toString())) return;
-					const html = `<div style='background-image: url(https://i.ibb.co/G5DfgbZ/gear.png); scale: 0.9; background-repeat: no-repeat; position: relative; height: 20px; width: 25px; float: left;'></div>`;
-					uw.$(this).append(html);
-				});
-			};
-		}, 2500);
 	}
 
 	settings = () => {

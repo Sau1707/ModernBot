@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.12.2
+// @version      1.12.3
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -432,24 +432,6 @@ class AutoBuild extends ModernUtil {
 
 		/* Active always, check if the towns are in the active list */
 		this.enable = setInterval(this.main, 20000);
-
-		/* Attach event to towns list */
-		setTimeout(() => {
-			const townController = uw.layout_main_controller.sub_controllers.find(controller => controller.name === 'town_name_area');
-			if (!townController) return;
-
-			const oldRender = townController.controller.town_groups_list_view.render;
-			townController.controller.town_groups_list_view.render = function () {
-				oldRender.call(this);
-				const townIds = Object.keys(uw.modernBot.autoBuild.towns_buildings);
-				uw.$('.town_group_town').each(function () {
-					const townId = parseInt(uw.$(this).attr('data-townid'));
-					if (!townIds.includes(townId.toString())) return;
-					const html = `<div style='background-image: url(https://i.ibb.co/G5DfgbZ/gear.png); scale: 0.9; background-repeat: no-repeat; position: relative; height: 20px; width: 25px; float: left;'></div>`;
-					uw.$(this).append(html);
-				});
-			};
-		}, 2500);
 	}
 
 	settings = () => {
@@ -1571,24 +1553,21 @@ class AutoTrain extends ModernUtil {
 		this.console = console;
 
 		this.city_troops = this.load('city_troops', {});
-		this.single_cicle = this.load('autotrain_single_cicle', []);
-		this.multiple_cicle = this.load('autotrain_multiple_cicle', []);
+		this.active = this.load('autotrain_active', []);
 
 		this.shiftHeld = false;
 
-		setInterval(this.mainSingle, 3000);
+		setInterval(this.main, 10000);
 	}
 
 	settings = () => {
 		requestAnimationFrame(() => {
 			this.setPolisInSettings(uw.ITowns.getCurrentTown().id);
 			this.updatePolisInSettings(uw.ITowns.getCurrentTown().id);
-			/*this.updateTitle();*/
 
 			uw.$.Observer(uw.GameEvents.town.town_switch).subscribe(() => {
 				this.setPolisInSettings(uw.ITowns.getCurrentTown().id);
 				this.updatePolisInSettings(uw.ITowns.getCurrentTown().id);
-				/*this.updateTitle();*/
 			});
 
 			uw.$('#troops_lvl_buttons').on('mousedown', e => {
@@ -1610,7 +1589,6 @@ class AutoTrain extends ModernUtil {
             <span style="z-index: 10; position: relative;">Auto Train </span>
             <div style="position: absolute; right: 10px; top: 4px; font-size: 10px; z-index: 10"> (click to toggle) </div>
             <span class="command_count"></span></div>
-
             <div id="troops_lvl_buttons"></div>    
         </div>
     `;
@@ -1627,8 +1605,18 @@ class AutoTrain extends ModernUtil {
 		const data = GameData.units;
 		const { models: orders } = town.getUnitOrdersCollection();
 
-		const used = Object.entries({ ...town.units(), ...town.unitsOuter(), ...orders }).reduce((acc, [unit, count]) => acc + (data[unit]?.population ?? 0) * count, 0);
-
+		let used = 0;
+		for (let order of orders) {
+			used += data[order.attributes.unit_type].population * order.attributes.count;
+		}
+		let units = town.units();
+		for (let unit of Object.keys(units)) {
+			used += data[unit].population * units[unit];
+		}
+		let outher = town.unitsOuter();
+		for (let out of Object.keys(outher)) {
+			used += data[out].population * outher[out];
+		}
 		return town.getAvailablePopulation() + used;
 	};
 
@@ -1726,99 +1714,106 @@ class AutoTrain extends ModernUtil {
 		this.save('city_troops', this.city_troops);
 	};
 
+	/**
+	 * Updates the display of troop counts for a given town in the settings panel.
+	 * Also updates the display of the autotrain status indicator based on whether the town is active or inactive.
+	 * @param {number} town_id - The id of the town to update the display for.
+	 * @returns {void}
+	 */
 	updatePolisInSettings = town_id => {
 		const { units } = GameData;
 		const cityTroops = this.city_troops[town_id];
 
 		Object.keys(units).forEach(troop => {
-			const color = 'orange';
-			const guiCount = cityTroops && cityTroops[troop] ? cityTroops[troop] : 0;
+			const guiCount = cityTroops?.[troop] ?? 0;
 			const selector = `#troops_settings_${town_id} #troop_lvl_${troop}`;
 
-			uw.$(selector).css('color', color).text(guiCount);
+			if (guiCount > 0) {
+				uw.$(selector).css('color', 'orange').text(guiCount);
+			} else {
+				uw.$(selector).css('color', '').text('-');
+			}
 		});
+
+		const isTownActive = this.active.includes(town_id);
+		uw.$('#auto_train_title').css('filter', isTownActive ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : '');
 	};
 
 	/* return status of the give polis */
 	getPolisStatus = town_id => {
 		if (!this.city_troops.hasOwnProperty(town_id)) return 'inactive';
-		if (this.single_cicle.includes(town_id)) return 'single';
-		if (this.multiple_cicle.includes(town_id)) return 'multiple';
+		if (this.active.includes(town_id)) return 'active';
 		return 'inactive';
 	};
 
-	setPolisStatus = (town_id, status) => {
-		const { single_cicle, multiple_cicle } = this;
-
-		switch (status) {
-			case 'inactive':
-				this.single_cicle = single_cicle.filter(id => id !== town_id);
-				this.multiple_cicle = multiple_cicle.filter(id => id !== town_id);
-				break;
-			case 'single':
-				this.single_cicle = [...new Set([...single_cicle, town_id])];
-				this.multiple_cicle = multiple_cicle.filter(id => id !== town_id);
-				break;
-			case 'multiple':
-				this.single_cicle = single_cicle.filter(id => id !== town_id);
-				this.multiple_cicle = [...new Set([...multiple_cicle, town_id])];
-				break;
-			default:
-				throw new Error(`Invalid status: ${status}`);
+	/**
+	 * Sets the auto-train status for a given town.
+	 * @param {number} townId - The ID of the town to set the status for.
+	 * @param {string} status - The status to set ('active' or 'inactive').
+	 * @throws {Error} If an invalid status is provided.
+	 */
+	setPolisStatus = (townId, status) => {
+		if (!['active', 'inactive'].includes(status)) {
+			throw new Error(`Invalid status: ${status}`);
 		}
-	};
-
-	trigger = () => {
-		let town = uw.ITowns.getCurrentTown();
-		let status = this.getPolisStatus(town.id);
-		if (!this.city_troops.hasOwnProperty(town.id)) return;
-		if (status == 'inactive') {
-			this.setPolisStatus(town.id, 'single');
-			uw.$('#auto_train_title').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
-			return;
-		}
-		if (status == 'single') {
-			this.setPolisStatus(town.id, 'multiple');
-			uw.$('#auto_train_title').css('filter', 'brightness(100%) saturate(186%) hue-rotate(49deg)');
-			return;
-		}
-		if (status == 'multiple') {
-			this.setPolisStatus(town.id, 'inactive');
-			uw.$('#auto_train_title').css('filter', '');
-			return;
-		}
-	};
-
-	// naval, ground
-	getUnitOrdersCount = (type, town_id = 0) => {
-		let town = town_id ? uw.ITowns.towns[town_id] : uw.ITowns.getCurrentTown();
-		let count = 0;
-		for (let model of town.getUnitOrdersCollection().models) {
-			if (model.attributes.kind == type) count += 1;
-		}
-		return count;
-	};
-
-	/* Return the next troop that has to be trained */
-	getNextInList = (type, town_id) => {
-		if (!this.city_troops[town_id]) return null;
-		if (type == 'naval') {
-			if (this.city_troops[town_id].small_transporter) return 'small_transporter';
-			if (this.city_troops[town_id].bireme) return 'bireme';
-			if (this.city_troops[town_id].trireme) return 'trireme';
-			if (this.city_troops[town_id].attack_ship) return 'attack_ship';
-			if (this.city_troops[town_id].big_transporter) return 'big_transporter';
-			if (this.city_troops[town_id].demolition_ship) return 'demolition_ship';
-			if (this.city_troops[town_id].colonize_ship) return 'colonize_ship';
+		const activeTowns = new Set(this.active);
+		if (status === 'active') {
+			activeTowns.add(townId);
 		} else {
-			if (this.city_troops[town_id].catapult) return 'catapult';
-			if (this.city_troops[town_id].sword) return 'sword';
-			if (this.city_troops[town_id].archer) return 'archer';
-			if (this.city_troops[town_id].hoplite) return 'hoplite';
-			if (this.city_troops[town_id].slinger) return 'slinger';
-			if (this.city_troops[town_id].rider) return 'rider';
-			if (this.city_troops[town_id].chariot) return 'chariot';
+			activeTowns.delete(townId);
 		}
+		this.active = [...activeTowns];
+	};
+
+	/**
+	 * Toggles the auto-train status for the current town between 'active' and 'inactive'.
+	 */
+	trigger = () => {
+		const town = uw.ITowns.getCurrentTown();
+		const townId = town.getId();
+		const status = this.getPolisStatus(townId);
+		if (!this.city_troops[townId]) return;
+		const newStatus = status === 'active' ? 'inactive' : 'active';
+		this.setPolisStatus(townId, newStatus);
+		const filterValue = newStatus === 'active' ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : '';
+		uw.$('#auto_train_title').css('filter', filterValue);
+		this.save('autotrain_active', this.active);
+	};
+
+	/**
+	 * Returns the number of pending unit orders of the given type for the specified town or the current town.
+	 * @param {string} type - The type of unit orders to count (e.g. 'attack', 'support', 'transport').
+	 * @param {number} [townId] - Optional. The ID of the town to check. If omitted, the current town is used.
+	 * @returns {number} The number of pending unit orders of the given type.
+	 */
+	getUnitOrdersCount = (type, townId = null) => {
+		const town = townId ? uw.ITowns.getTown(townId) : uw.ITowns.getCurrentTown();
+		const orders = town.getUnitOrdersCollection().where({ kind: type });
+		return orders.length;
+	};
+
+	/**
+	 * Returns the next available troop type for the given town ID and unit type.
+	 * @param {string} unitType - The type of units ('naval' or 'ground').
+	 * @param {string} townId - The ID of the town.
+	 * @returns {string|null} The next available troop type, or null if none are available.
+	 */
+	getNextInList = (unitType, townId) => {
+		const troops = this.city_troops[townId];
+		if (!troops) {
+			return null;
+		}
+
+		const naval_order = ['small_transporter', 'bireme', 'trireme', 'attack_ship', 'big_transporter', 'demolition_ship', 'colonize_ship'];
+		const ground_order = ['catapult', 'sword', 'archer', 'hoplite', 'slinger', 'rider', 'chariot'];
+		const unitOrder = unitType === 'naval' ? naval_order : ground_order;
+
+		for (const unit of unitOrder) {
+			if (troops[unit] && this.getTroopCount(unit, townId) !== 0) {
+				return unit;
+			}
+		}
+
 		return null;
 	};
 
@@ -1836,7 +1831,6 @@ class AutoTrain extends ModernUtil {
 		if (outerUnits.hasOwnProperty(troop)) count -= outerUnits[troop];
 		//TODO: in viaggio
 		if (count < 0) return 0;
-		console.log(count);
 
 		/* Get the duable ammount with the current resouces of the polis */
 		let resources = town.resources();
@@ -1854,7 +1848,7 @@ class AutoTrain extends ModernUtil {
 		let w_max = resources.storage / (wood * discount);
 		let s_max = resources.storage / (stone * discount);
 		let i_max = resources.storage / (iron * discount);
-		let max = parseInt(Math.min(w_max, s_max, i_max) * 0.8); // 0.8 it's the full percentual -> 80%
+		let max = parseInt(Math.min(w_max, s_max, i_max) * 0.85); // 0.8 it's the full percentual -> 80%
 		max = max > duable_with_pop ? duable_with_pop : max;
 
 		if (max > count) {
@@ -1868,27 +1862,22 @@ class AutoTrain extends ModernUtil {
 
 	checkPolis = (type, town_id) => {
 		let order_count = this.getUnitOrdersCount(type, town_id);
-		if (order_count > 6) return false;
-		let next = this.getNextInList(type, town_id);
-		if (!next) return false;
-		let count = this.getTroopCount(next, town_id);
-		console.log(count);
-		if (!count || count < 0) return false;
-		this.buildPost(town_id, next, count);
-		return true;
-	};
-
-	mainSingle = () => {
-		if (this.single_cicle.length == 0) return;
-		for (let town_id of this.single_cicle) {
-			if (this.checkPolis('naval', town_id)) return;
-			if (this.checkPolis('ground', town_id)) return;
+		if (order_count > 6) return 0;
+		let count = 1;
+		while (count >= 0) {
+			let next = this.getNextInList(type, town_id);
+			if (!next) return 0;
+			count = this.getTroopCount(next, town_id);
+			if (count < 0) return 0;
+			if (count === 0) continue;
+			this.buildPost(town_id, next, count);
+			return true;
 		}
 	};
 
-	mainMultiple = () => {
-		if (this.multiple_cicle.length == 0) return;
-		for (let town_id of this.multiple_cicle) {
+	main = () => {
+		if (this.active.length == 0) return;
+		for (let town_id of this.active) {
 			if (this.checkPolis('naval', town_id)) return;
 			if (this.checkPolis('ground', town_id)) return;
 		}
@@ -1896,7 +1885,7 @@ class AutoTrain extends ModernUtil {
 
 	buildPost = (polis, unit, count) => {
 		let data = { unit_id: unit, amount: count, town_id: polis };
-		//uw.gpAjax.ajaxPost('building_barracks', 'build', data)
+		uw.gpAjax.ajaxPost('building_barracks', 'build', data);
 		uw.HumanMessage.success('Truppato ' + count + ' su ' + polis);
 	};
 }
@@ -2061,6 +2050,7 @@ class ModernBot {
 		this.autoBootcamp = new AutoBootcamp(this.console);
 		this.autoParty = new AutoParty(this.console);
 		this.autoTrain = new AutoTrain(this.console);
+		console.log('HERE');
 
 		this.settingsFactory = new createGrepoWindow({
 			id: 'MODERN_BOT',
@@ -2098,9 +2088,31 @@ class ModernBot {
 		this.settingsFactory.activate();
 		// TODO: Fix this button for the time attacch the settings event
 		// TODO: change the icon with the one of the Modernbot
-		uw.$('.gods_area_buttons').append(
-			"<div class='circle_button modern_bot_settings' onclick='window.modernBot.settingsFactory.openWindow()'><div style='width: 27px; height: 27px; background: url(https://raw.githubusercontent.com/Sau1707/ModernBot/main/img/gear.png) no-repeat 6px 5px' class='icon js-caption'></div></div>",
-		);
+		uw.$('.gods_area_buttons').append("<div class='circle_button modern_bot_settings' onclick='window.modernBot.settingsFactory.openWindow()'><div style='width: 27px; height: 27px; background: url(https://raw.githubusercontent.com/Sau1707/ModernBot/main/img/gear.png) no-repeat 6px 5px' class='icon js-caption'></div></div>");
+
+		setTimeout(() => {
+			const townController = uw.layout_main_controller.sub_controllers.find(controller => controller.name === 'town_name_area');
+			if (!townController) return;
+
+			const oldRender = townController.controller.town_groups_list_view.render;
+			townController.controller.town_groups_list_view.render = function () {
+				oldRender.call(this);
+				const both = `<div style='position: absolute; background-image: url(https://i.ibb.co/1rNDZj2/hammer-wrench.png); background-size: 19px 19px; margin: 1px; background-repeat: no-repeat; position: absolute; height: 20px; width: 25px; right: 18px;'></div>`;
+				const build = `<div style='background-image: url(https://i.ibb.co/4swgDmq/hammer-only.png); background-size: 19px 19px; margin: 1px; background-repeat: no-repeat; position: absolute; height: 20px; width: 25px; right: 18px;'></div>`;
+				const troop = `<div style='background-image: url(https://i.ibb.co/yBBfSqj/wrench.png); background-size: 19px 19px; margin: 1px; background-repeat: no-repeat; position: absolute; height: 20px; width: 25px; right: 18px;'></div>`;
+				const townIds = Object.keys(uw.modernBot.autoBuild.towns_buildings);
+				const troopsIds = uw.modernBot.autoTrain.active.map(entry => entry.toString());
+				uw.$('.town_group_town').each(function () {
+					const townId = parseInt(uw.$(this).attr('data-townid'));
+					const is_build = townIds.includes(townId.toString());
+					const id_troop = troopsIds.includes(townId.toString());
+					if (!id_troop && !is_build) return;
+					if (id_troop && !is_build) uw.$(this).prepend(troop);
+					else if (is_build && !id_troop) uw.$(this).prepend(build);
+					else uw.$(this).prepend(both);
+				});
+			};
+		}, 2500);
 	}
 
 	settingsFarm = () => {
