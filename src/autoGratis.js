@@ -19,7 +19,7 @@ class AutoGratis extends ModernUtil {
             <div class="game_border_corner corner4"></div>
             <div id="auto_gratis_title" style="cursor: pointer; filter: ${
 				this.autogratis ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : ''
-			}" class="game_header bold" onclick="window.modernBot.autoGratis.toggle()"> Auto Build <span class="command_count"></span>
+			}" class="game_header bold" onclick="window.modernBot.autoGratis.toggle()"> Auto Gratis <span class="command_count"></span>
                 <div style="position: absolute; right: 10px; top: 4px; font-size: 10px;"> (click to toggle) </div>
             </div>
             <div style="padding: 5px; font-weight: 600">

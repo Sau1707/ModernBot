@@ -4,6 +4,8 @@
 
 ### <div align="center"> [Website](https://sau1707.github.io/ModernBot/) - [Donations](https://paypal.me/sau1707) </div>
 
+Icons from [flaticon](https://www.flaticon.com/)
+
 ##
 
 ## Development
