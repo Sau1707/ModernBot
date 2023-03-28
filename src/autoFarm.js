@@ -25,13 +25,7 @@ class AutoFarm extends ModernUtil {
 		});
 		return `
         <div class="game_border" style="margin-bottom: 20px">
-            ${this.getTitleHtml(
-				'auto_farm',
-				'Auto Farm',
-				this.toggle,
-				'',
-				this.enable_auto_farming,
-			)}
+            ${this.getTitleHtml('auto_farm', 'Auto Farm', this.toggle, '', this.enable_auto_farming)}
 
             <div style="display: inline-flex">
             <div id="farming_lvl_buttons" style="padding: 5px; margin-right: 398px">
@@ -89,14 +83,14 @@ class AutoFarm extends ModernUtil {
 		this.save('enable_autofarm', !!this.enable_auto_farming);
 	};
 
-	setAutoFarmLevel = (n) => {
+	setAutoFarmLevel = n => {
 		uw.$('#farming_lvl_buttons .button_new').addClass('disabled');
 		uw.$(`#farming_lvl_${n}`).removeClass('disabled');
 		this.farm_timing = n;
 		this.save('enable_autofarm_level', n);
 	};
 
-	setAutoFarmPercentual = (n) => {
+	setAutoFarmPercentual = n => {
 		let box = document.getElementById('rural_lvl_percentuals');
 		let buttons = box.getElementsByClassName('button_new');
 		for (let i = 0; i < buttons.length; i++) {
@@ -147,7 +141,7 @@ class AutoFarm extends ModernUtil {
 		let yellow = 'brightness(294%) sepia(100%) hue-rotate(15deg) saturate(1000%) contrast(0.8)';
 		let green = 'brightness(110%) sepia(100%) hue-rotate(100deg) saturate(1500%) contrast(0.8)';
 		const isCaptainActive = uw.GameDataPremium.isAdvisorActivated('captain');
-		/* Check for curator -> if not active set yellow */
+		/* Check for captain -> if not active set yellow */
 		uw.$('#autofarm_timer').css('filter', isCaptainActive ? green : yellow);
 	};
 
@@ -176,8 +170,7 @@ class AutoFarm extends ModernUtil {
 				uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 			};
 
-			const player_relation_models =
-				uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
+			const player_relation_models = uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
 			const farm_town_models = uw.MM.getOnlyCollectionByName('FarmTown').models;
 			const now = Math.floor(Date.now() / 1000);
 			let max = 20;
@@ -196,10 +189,7 @@ class AutoFarm extends ModernUtil {
 						}
 
 						if (relation.attributes.relation_status !== 1) continue;
-						if (
-							relation.attributes.lootable_at !== null &&
-							now < relation.attributes.lootable_at
-						) {
+						if (relation.attributes.lootable_at !== null && now < relation.attributes.lootable_at) {
 							continue;
 						}
 						claimSingle(town_id, relation.attributes.farm_town_id, relation.id);
