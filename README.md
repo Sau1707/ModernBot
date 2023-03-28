@@ -37,6 +37,14 @@ Place this into a tampermokey script:
 // ==/UserScript==
 ```
 
+In case of loading error `@require: couldn't load ` go to
+
+```
+chrome://extensions/
+```
+
+Then select tampermoney and add `Allow access to file URLs`
+
 ### Website
 
 The website dynamicall load the content of `markdown` folder and generate a box for each one of them
