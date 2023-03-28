@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.12.3
+// @version      1.12.4
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -1883,10 +1883,11 @@ class AutoTrain extends ModernUtil {
 		}
 	};
 
-	buildPost = (polis, unit, count) => {
-		let data = { unit_id: unit, amount: count, town_id: polis };
+	buildPost = (town_id, unit, count) => {
+		let town = uw.ITowns.towns[town_id];
+		let data = { unit_id: unit, amount: count, town_id: town_id };
 		uw.gpAjax.ajaxPost('building_barracks', 'build', data);
-		uw.HumanMessage.success('Truppato ' + count + ' su ' + polis);
+		uw.HumanMessage.success('Truppato ' + count + ' su ' + town.name);
 	};
 }
 
@@ -2083,7 +2084,7 @@ class ModernBot {
 					render: this.console.renderSettings,
 				},
 			],
-			start_tab: 2,
+			start_tab: 0,
 		});
 		this.settingsFactory.activate();
 		// TODO: Fix this button for the time attacch the settings event

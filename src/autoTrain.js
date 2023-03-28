@@ -334,9 +334,10 @@ class AutoTrain extends ModernUtil {
 		}
 	};
 
-	buildPost = (polis, unit, count) => {
-		let data = { unit_id: unit, amount: count, town_id: polis };
+	buildPost = (town_id, unit, count) => {
+		let town = uw.ITowns.towns[town_id];
+		let data = { unit_id: unit, amount: count, town_id: town_id };
 		uw.gpAjax.ajaxPost('building_barracks', 'build', data);
-		uw.HumanMessage.success('Truppato ' + count + ' su ' + polis);
+		uw.HumanMessage.success('Truppato ' + count + ' su ' + town.name);
 	};
 }

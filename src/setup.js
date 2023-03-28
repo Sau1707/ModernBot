@@ -44,7 +44,7 @@ class ModernBot {
 					render: this.console.renderSettings,
 				},
 			],
-			start_tab: 2,
+			start_tab: 0,
 		});
 		this.settingsFactory.activate();
 		// TODO: Fix this button for the time attacch the settings event
