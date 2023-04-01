@@ -11,7 +11,7 @@ class ModernBot {
 		this.autoBootcamp = new AutoBootcamp(this.console);
 		this.autoParty = new AutoParty(this.console);
 		this.autoTrain = new AutoTrain(this.console);
-		console.log('HERE');
+		this.autoHide = new AutoHide(this.console);
 
 		this.settingsFactory = new createGrepoWindow({
 			id: 'MODERN_BOT',
@@ -95,6 +95,7 @@ class ModernBot {
 		let html = '';
 		html += this.autoBootcamp.settings();
 		html += this.autoParty.settings();
+		html += this.autoHide.settings();
 		return html;
 	};
 
