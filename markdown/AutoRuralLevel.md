@@ -1,11 +1,11 @@
 ---
 description: Unlock and build the rurals automatically
-version: 1.0.0
+version: 1.0.1
 ---
 
 ## Auto Rural Level
 
-![Autorurallevel](./images/autorurallevel.png "autorurallevel")
+![Autorurallevel](./images/autorurallevel.png 'autorurallevel')
 
 -   Activate and choose the desired level
 -   Works level by level, once an entire level is complete starts the next one

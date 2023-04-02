@@ -11,11 +11,6 @@ class AntiRage extends ModernUtil {
 		this.loop_funct = null;
 		this.active_god_el = null;
 
-		//const old = uw.GPWindowMgr.Create;
-		//uw.GPWindowMgr.Create = function (...props) {
-		//	console.log(props);
-		//	return old.call(this, props);
-		//};
 		let commandId;
 		const oldCreate = GPWindowMgr.Create;
 		GPWindowMgr.Create = function (type, title, params, id) {
@@ -29,15 +24,24 @@ class AntiRage extends ModernUtil {
 		/* Attach event to attack opening */
 		uw.$.Observer(uw.GameEvents.window.open).subscribe((e, data) => {
 			if (data.context != 'atk_command') return;
-			const id = data.wnd.getID();
+			//const id = data.wnd.getID();
 
-			setTimeout(() => {
+			let max = 10;
+			const addSpell = () => {
 				let spellMenu = $('#command_info-god')[0];
-				if (!spellMenu) return;
+				if (!spellMenu) {
+					if (max > 0) {
+						max -= 1;
+						setTimeout(addSpell, 50);
+					}
+					return;
+				}
 				$(spellMenu).on('click', this.trigger);
 
 				this.command_id = commandId;
-			}, 100);
+			};
+
+			setTimeout(addSpell, 50);
 		});
 	}
 
@@ -64,7 +68,7 @@ class AntiRage extends ModernUtil {
 			if (this.active_god_el && this.active_god_el.get(0) === godEl.get(0)) {
 				clearInterval(this.loop_funct);
 				this.loop_funct = null;
-				this.setColor(active_god_el.get(0), false);
+				this.setColor(this.active_god_el.get(0), false);
 				this.active_god_el = null;
 				return;
 			}
@@ -94,20 +98,132 @@ class AntiRage extends ModernUtil {
 			this.handleGod('zeus');
 			this.handleGod('artemis');
 
-			console.log('here');
 			$('.js-god-box[data-god_id="zeus"]').find('.powers').append(`
             <div id="enchanted_rage" class="js-power-icon animated_power_icon animated_power_icon_45x45 power_icon45x45 power transformation" style="filter: brightness(70%) sepia(104%) hue-rotate(14deg) saturate(1642%) contrast(0.8)">
                 <div class="extend_spell">
                     <div class="gold"></div>
-                    <div class="amount"><span class="value">1</span>x</div>
                 </div>
                 <div class="js-caption"></div>
             </div>
             `);
 
+			const html = `
+            <table class="popup" id="popup_div" cellpadding="0" cellspacing="0" style="display: block; left: 243px; top: 461px; opacity: 1; position: absolute; z-index: 6001; width: auto; max-width: 400px;">
+                <tbody>
+                    <tr class="popup_top">
+                        <td class="popup_top_left"></td>
+                        <td class="popup_top_middle"></td>
+                        <td class="popup_top_right"></td>
+                    </tr>
+                    <tr>
+                        <td class="popup_middle_left">&nbsp;</td>
+                        <td class="popup_middle_middle" id="popup_content" style="width: auto;">
+                            <div class="temple_power_popup ">
+                                <div class="temple_power_popup_image power_icon86x86 transformation" style="filter: brightness(70%) sepia(104%) hue-rotate(14deg) saturate(1642%) contrast(0.8)"></div>
+                                <div class="temple_power_popup_info">
+                                    <h4>Enchanted Rage</h4>
+                                    <p> An Enchanted version of the normal rage </p> 
+                                    <p> Made for who try to troll with the autoclick </p>
+                                    <p><b> Cast Purification and Rage at the same time </b></p>
+                                    <div class="favor_cost_info">
+                                        <div class="resource_icon favor"></div>
+                                        <span>300 zeus + 200 artemis</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="popup_middle_right">&nbsp;</td>
+                    </tr>
+                    <tr class="popup_bottom">
+                        <td class="popup_bottom_left"></td>
+                        <td class="popup_bottom_middle"></td>
+                        <td class="popup_bottom_right"></td>
+                    </tr>
+                </tbody>
+            </table>`;
+
+			const default_popup = `
+            <table class="popup" id="popup_div" cellpadding="0" cellspacing="0" style="display: none; opacity: 0;">
+	    	    <tbody><tr class="popup_top">
+	    	    	<td class="popup_top_left"></td>
+	    	    	<td class="popup_top_middle"></td>
+	    	    	<td class="popup_top_right"></td>
+	    	    </tr>
+	    	    <tr>
+	    	    	<td class="popup_middle_left">&nbsp;</td>
+	    	    	<td class="popup_middle_middle" id="popup_content"></td>
+	    	    	<td class="popup_middle_right">&nbsp;</td>
+	    	    </tr>
+	    	    <tr class="popup_bottom">
+	    	    	<td class="popup_bottom_left"></td>
+	    	    	<td class="popup_bottom_middle"></td>
+	    	    	<td class="popup_bottom_right"></td>
+	    	    </tr>
+ 	            </tbody>
+            </table>`;
+
+			const { artemis_favor, zeus_favor } = uw.ITowns.player_gods.attributes;
+			console.log(artemis_favor, zeus_favor);
+			const enable = artemis_favor >= 200 && zeus_favor >= 300;
+			if (!enable) $('#enchanted_rage').css('filter', 'grayscale(1)');
+
 			// TODO: disable if not enable
-			$('#enchanted_rage').on('click', () => {
-				this.enchanted('zeus');
+			$('#enchanted_rage').on({
+				click: () => {
+					if (!enable) return;
+					this.enchanted('zeus');
+				},
+				mouseenter: event => {
+					$('#popup_div_curtain').html(html);
+					const $popupDiv = $('#popup_div');
+					const offset = $popupDiv.offset();
+					const height = $popupDiv.outerHeight();
+					const width = $popupDiv.outerWidth();
+					const left = event.pageX + 10;
+					const top = event.pageY + 10;
+					if (left + width > $(window).width()) {
+						offset.left -= width;
+					} else {
+						offset.left = left;
+					}
+					if (top + height > $(window).height()) {
+						offset.top -= height;
+					} else {
+						offset.top = top;
+					}
+					$popupDiv.css({
+						left: offset.left + 'px',
+						top: offset.top + 'px',
+						display: 'block',
+					});
+				},
+				mousemove: event => {
+					const $popupDiv = $('#popup_div');
+					if ($popupDiv.is(':visible')) {
+						const offset = $popupDiv.offset();
+						const height = $popupDiv.outerHeight();
+						const width = $popupDiv.outerWidth();
+						const left = event.pageX + 10;
+						const top = event.pageY + 10;
+						if (left + width > $(window).width()) {
+							offset.left -= width;
+						} else {
+							offset.left = left;
+						}
+						if (top + height > $(window).height()) {
+							offset.top -= height;
+						} else {
+							offset.top = top;
+						}
+						$popupDiv.css({
+							left: offset.left + 'px',
+							top: offset.top + 'px',
+						});
+					}
+				},
+				mouseleave: () => {
+					$('#popup_div_curtain').html(default_popup);
+				},
 			});
 		}, 100);
 	};
@@ -131,7 +247,7 @@ class AntiRage extends ModernUtil {
 		console.log(type);
 		if (type === 'zeus') {
 			this.cast(this.command_id, 'cleanse');
-			await this.sleep(1);
+			//await this.sleep(1);
 			this.cast(this.command_id, 'transformation');
 		}
 	};
@@ -148,3 +264,44 @@ class AntiRage extends ModernUtil {
 		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 }
+
+/* 
+
+<div id="popup_div_curtain">
+	<table class="popup" id="popup_div" cellpadding="0" cellspacing="0" style="display: block; left: 243px; top: 461px; opacity: 1; position: absolute; z-index: 6001; width: auto; max-width: 400px;">
+		<tbody><tr class="popup_top">
+			<td class="popup_top_left"></td>
+			<td class="popup_top_middle"></td>
+			<td class="popup_top_right"></td>
+		</tr>
+		<tr>
+			<td class="popup_middle_left">&nbsp;</td>
+			<td class="popup_middle_middle" id="popup_content" style="width: auto;"><div>
+
+<div class="temple_power_popup ">
+	
+	<div class="temple_power_popup_image power_icon86x86 fair_wind"></div>
+
+	<div class="temple_power_popup_info">
+		<h4>Vento favorevole</h4>
+		<p>La voce di Zeus risuona nell'aria, il vento fa gonfiare le vele delle navi e frecce e dardi sibilanti vengono lanciati con precisione verso il nemico.</p>
+		
+			<p><b>Le forze navali attaccanti ottengono un bonus del 10% alla loro forza durante il loro prossimo attacco.</b></p>
+					<div class="favor_cost_info">
+						<div class="resource_icon favor"></div>
+						<span>250 favore</span>
+					</div>
+	</div>
+</div>
+</div></td>
+			<td class="popup_middle_right">&nbsp;</td>
+		</tr>
+		<tr class="popup_bottom">
+			<td class="popup_bottom_left"></td>
+			<td class="popup_bottom_middle"></td>
+			<td class="popup_bottom_right"></td>
+		</tr>
+ 	</tbody></table>
+</div>
+
+*/
