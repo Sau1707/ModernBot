@@ -1,6 +1,6 @@
 ---
 description: Claim all the rurals so that you don't have to do it
-version: 2.0.0
+version: 2.1.0
 ---
 
 ## Auto Farm

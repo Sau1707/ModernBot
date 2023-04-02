@@ -1,6 +1,6 @@
 ---
 description: Click the 5 min gratis button, so that you don't have to do it
-version: 1.0.0
+version: 1.1.0
 ---
 
 ## Auto 5 min
