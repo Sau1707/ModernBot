@@ -1,11 +1,10 @@
 class AutoParty extends ModernUtil {
-    constructor(console) {
-        super();
-        this.console = console;
+    constructor(c, s) {
+        super(c, s);
 
-        this.active_types = this.load('autoparty_types', { festival: false, procession: false });
-        this.single = this.load('autoparty_single', true);
-        if (this.load('enable_autoparty', false)) this.toggle();
+        this.active_types = this.storage.load('autoparty_types', { festival: false, procession: false });
+        this.single = this.storage.load('autoparty_single', true);
+        if (this.storage.load('enable_autoparty', false)) this.toggle();
     }
 
     // ${this.getButtonHtml('autoparty_lvl_1', 'Olympic', this.setRuralLevel, 1)}
@@ -57,7 +56,7 @@ class AutoParty extends ModernUtil {
             uw.$(`#autoparty_${type}`).removeClass('disabled');
         }
         this.active_types[type] = !this.active_types[type];
-        this.save('autoparty_types', this.active_types);
+        this.storage.save('autoparty_types', this.active_types);
     };
 
     triggerSingle = (type) => {
@@ -70,7 +69,7 @@ class AutoParty extends ModernUtil {
             uw.$(`#autoparty_single`).removeClass('disabled');
             this.single = true;
         }
-        this.save('autoparty_single', this.single);
+        this.storage.save('autoparty_single', this.single);
     };
 
     toggle = () => {
@@ -87,7 +86,7 @@ class AutoParty extends ModernUtil {
             this.autoparty = null;
             this.console.log('Auto Party -> Off');
         }
-        this.save('enable_autoparty', !!this.autoparty);
+        this.storage.save('enable_autoparty', !!this.autoparty);
     };
 
     /* Return list of town with active celebration */
@@ -150,5 +149,20 @@ class AutoParty extends ModernUtil {
     main = async () => {
         if (this.active_types['procession']) await this.checkTriumph();
         if (this.active_types['festival']) await this.checkParty();
+    };
+
+    makeCelebration = (type, town_id) => {
+        if (typeof town_id === 'undefined') {
+            let data = {
+                celebration_type: type,
+            };
+            uw.gpAjax.ajaxPost('town_overviews', 'start_all_celebrations', data);
+        } else {
+            let data = {
+                celebration_type: type,
+                town_id: town_id,
+            };
+            uw.gpAjax.ajaxPost('building_place', 'start_celebration', data);
+        }
     };
 }

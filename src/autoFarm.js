@@ -5,15 +5,15 @@
     - AutoFarm: check for time to start
 */
 class AutoFarm extends ModernUtil {
-    constructor(console) {
-        super();
-        this.console = console;
+    constructor(c, s) {
+        super(c, s);
+
         this.buttonHtml =
             '<div class="divider"id="autofarm_timer_divider" ></div><div onclick="window.modernBot.autoFarm.toggle()" class="activity" id="autofarm_timer" style="filter: brightness(110%) sepia(100%) hue-rotate(100deg) saturate(1500%) contrast(0.8); background: url(https://i.ibb.co/gm8NDFS/backgound-timer.png); height: 26px; width: 40px"><p id="autofarm_timer_p" style="z-index: 6; top: -8px; position: relative; font-weight: bold;"></p></div>';
         this.delta_time = 5000;
-        this.farm_timing = this.load('enable_autofarm_level', 1);
-        this.rural_percentual = this.load('enable_autofarm_percentuals', 3);
-        if (this.load('enable_autofarm')) this.toggle();
+        this.farm_timing = this.storage.load('enable_autofarm_level', 1);
+        this.rural_percentual = this.storage.load('enable_autofarm_percentuals', 3);
+        if (this.storage.load('enable_autofarm', false)) this.toggle();
 
         this.polislist = this.generateList();
     }
@@ -80,14 +80,14 @@ class AutoFarm extends ModernUtil {
             this.enable_auto_farming = null;
             this.console.log('Auto Farm -> Off');
         }
-        this.save('enable_autofarm', !!this.enable_auto_farming);
+        this.storage.save('enable_autofarm', !!this.enable_auto_farming);
     };
 
     setAutoFarmLevel = n => {
         uw.$('#farming_lvl_buttons .button_new').addClass('disabled');
         uw.$(`#farming_lvl_${n}`).removeClass('disabled');
         this.farm_timing = n;
-        this.save('enable_autofarm_level', n);
+        this.storage.save('enable_autofarm_level', n);
     };
 
     setAutoFarmPercentual = n => {
@@ -98,7 +98,7 @@ class AutoFarm extends ModernUtil {
         }
         uw.$(`#rural_percentuals_${n}`).removeClass('disabled');
         this.rural_percentual = n;
-        this.save('enable_autofarm_percentuals', n);
+        this.storage.save('enable_autofarm_percentuals', n);
     };
 
     getNextCollection = () => {

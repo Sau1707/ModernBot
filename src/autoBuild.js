@@ -12,12 +12,11 @@
 // var r = Math.round(e.building.points * Math.pow(e.building.points_factor, e.next_level)) - Math.round(e.building.points * Math.pow(e.building.points_factor, e.level))
 
 class AutoBuild extends ModernUtil {
-    constructor(console) {
-        super();
-        this.console = console;
+    constructor(c, s) {
+        super(c, s);
 
         /* Load settings, the polis in the settins are the active */
-        this.towns_buildings = this.load('auto_build_levels', {});
+        this.towns_buildings = this.storage.load('auto_build_levels', {});
 
         /* Check if shift is pressed */
         this.shiftHeld = false;
@@ -136,7 +135,7 @@ class AutoBuild extends ModernUtil {
 
         if (town_id.toString() in this.towns_buildings) {
             this.towns_buildings[town_id] = town_buildings;
-            this.save('auto_build_levels', this.towns_buildings);
+            this.storage.save('auto_build_levels', this.towns_buildings);
         }
     };
 
@@ -166,7 +165,7 @@ class AutoBuild extends ModernUtil {
                 let lvl = parseInt(uw.$(`#build_lvl_${e}`).text());
                 this.towns_buildings[town.id][e] = lvl;
             });
-            this.save('auto_build_levels', this.towns_buildings);
+            this.storage.save('auto_build_levels', this.towns_buildings);
         } else {
             delete this.towns_buildings[town.id];
             this.console.log(`${town.name}: Auto Build Off`);
@@ -181,7 +180,7 @@ class AutoBuild extends ModernUtil {
             /* If the town don't exists in list, remove it to prevent errors */
             if (!uw.ITowns.towns[town_id]) {
                 delete this.towns_buildings[town_id];
-                this.save('auto_build_levels', this.towns_buildings);
+                this.storage.save('auto_build_levels', this.towns_buildings);
                 continue;
             }
 
@@ -189,7 +188,7 @@ class AutoBuild extends ModernUtil {
             /* If town is done, remove from the list */
             if (this.isDone(town_id)) {
                 delete this.towns_buildings[town_id];
-                this.save('auto_build_levels', this.towns_buildings);
+                this.storage.save('auto_build_levels', this.towns_buildings);
                 this.updateTitle();
                 const town = uw.ITowns.towns[town_id];
                 this.console.log(`${town.name}: Auto Build Done`);

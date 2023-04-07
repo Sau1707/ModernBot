@@ -1,9 +1,8 @@
 class AutoRuralTrade extends ModernUtil {
-    constructor(console) {
-        super();
-        this.console = console;
+    constructor(c, s) {
+        super(c, s);
 
-        this.min_rural_ratio = this.load('min_rural_ratio', 5);
+        this.min_rural_ratio = this.storage.load('min_rural_ratio', 5);
     }
 
     settings = () => {
@@ -53,7 +52,7 @@ class AutoRuralTrade extends ModernUtil {
         uw.$('#min_rural_ratio .button_new').addClass('disabled');
         uw.$(`#min_rural_ratio_${n}`).removeClass('disabled');
         this.min_rural_ratio = n;
-        this.save('min_rural_ratio', n);
+        this.storage.save('min_rural_ratio', n);
     };
 
     /*  Trade with all rurals*/
@@ -132,5 +131,16 @@ class AutoRuralTrade extends ModernUtil {
         uw.$('#res_progress_bar').css('width', `${(this.done_trade / this.total_trade) * 100}%`);
 
         this.done_trade += 1;
+    };
+
+    tradeRuralPost = (farm_town_id, relation_id, count, town_id) => {
+        if (count < 100) return;
+        let data = {
+            model_url: `FarmTownPlayerRelation/${relation_id}`,
+            action_name: 'trade',
+            arguments: { farm_town_id: farm_town_id, amount: count > 3000 ? 3000 : count },
+            town_id: town_id,
+        };
+        uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
     };
 }
