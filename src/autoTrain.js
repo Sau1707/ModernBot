@@ -58,7 +58,7 @@ class AutoTrain extends ModernUtil {
 
 		let used = 0;
 		for (let order of orders) {
-			used += data[order.attributes.unit_type].population * order.attributes.count;
+			used += data[order.attributes.unit_type].population * (order.attributes.units_left / order.attributes.count) * order.attributes.count;
 		}
 		let units = town.units();
 		for (let unit of Object.keys(units)) {
