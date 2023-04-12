@@ -72,10 +72,10 @@ class AutoBuild extends ModernUtil {
 			else if (buildings[building] < town_buildings[building]) color = 'orange';
 
 			return `
-                <div class="auto_build_box">
+                <div class="auto_build_box" onclick="window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', 0)">
                 <div class="item_icon auto_build_building" style="background-position: -${bg[0]}px -${bg[1]}px;">
-                    <div class="auto_build_up_arrow" onclick="window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', 1)" ></div>
-                    <div class="auto_build_down_arrow" onclick="window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', -1)"></div>
+                    <div class="auto_build_up_arrow" onclick="event.stopPropagation(); window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', 1)" ></div>
+                    <div class="auto_build_down_arrow" onclick="event.stopPropagation(); window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', -1)"></div>
                     <p style="color: ${color}" id="build_lvl_${building}" class="auto_build_lvl"> ${town_buildings[building]} <p>
                 </div>
             </div>`;
@@ -115,19 +115,23 @@ class AutoBuild extends ModernUtil {
 
 	/* call with town_id, building type and level to be added */
 	editBuildingLevel = (town_id, name, d) => {
-		/* if shift is pressed, add or remove 10 */
-		const current_lvl = parseInt(uw.$(`#build_lvl_${name}`).text());
-		d = this.shiftHeld ? d * 10 : d;
+		const town = uw.ITowns.getTown(town_id);
 
 		const { max_level, min_level } = uw.GameData.buildings[name];
 
-		const town = uw.ITowns.towns[town_id];
-
 		const town_buildings = this.towns_buildings?.[town_id] ?? { ...town.buildings()?.attributes } ?? {};
 		const townBuildings = town.buildings().attributes;
+		const current_lvl = parseInt(uw.$(`#build_lvl_${name}`).text());
+		if (d) {
+			/* if shift is pressed, add or remove 10 */
+			d = this.shiftHeld ? d * 10 : d;
 
-		/* Check if bottom or top overflow */
-		town_buildings[name] = Math.min(Math.max(current_lvl + d, min_level), max_level);
+			/* Check if bottom or top overflow */
+			town_buildings[name] = Math.min(Math.max(current_lvl + d, min_level), max_level);
+		} else {
+			if (town_buildings[name] == current_lvl) town_buildings[name] = Math.min(Math.max(50, min_level), max_level);
+			else town_buildings[name] = townBuildings[name];
+		}
 
 		const color = town_buildings[name] > townBuildings[name] ? 'orange' : town_buildings[name] < townBuildings[name] ? 'red' : 'lime';
 

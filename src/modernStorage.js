@@ -36,7 +36,6 @@ class ModernStorage extends Compressor {
 			const now = Date.now();
 			const timeSinceLastUpdate = now - this.lastUpdateTime;
 			if (timeSinceLastUpdate > 3000) {
-				console.log('Saved from time');
 				this.saveSettingsNote();
 				this.lastUpdateTime = null;
 			}
@@ -99,7 +98,6 @@ class ModernStorage extends Compressor {
 	saveSettingsNote = () => {
 		if (!this.note_id) return;
 		const storage = this.encode(this.getStorage());
-		console.log(storage);
 
 		uw.temp = storage;
 
@@ -194,11 +192,16 @@ class ModernStorage extends Compressor {
 		gpAjax.ajaxPost('frontend_bridge', 'execute', data, false, (e, i) => {
 			$('.btn_save').trigger('click');
 			setTimeout(this.addButton, 100);
+			setTimeout(() => {
+				this.note_id = this.getNoteId();
+			}, 101);
 		});
 	}
 
 	getNoteId() {
-		let { models } = MM.getOnlyCollectionByName('PlayerNote');
+		const collection = MM.getOnlyCollectionByName('PlayerNote');
+		if (!collection) return null;
+		let { models } = collection;
 		if (models) {
 			for (let model of models) {
 				let { attributes } = model;
