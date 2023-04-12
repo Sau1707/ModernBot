@@ -170,9 +170,9 @@ class AutoTrain extends ModernUtil {
 			}
 			return `
                 <div class="auto_build_box">
-                <div class="item_icon auto_trade_troop" style="background-position: -${bg[0]}px -${bg[1]}px;">
-                    <div class="auto_build_up_arrow" onclick="window.modernBot.autoTrain.editTroopCount(${town_id}, '${troop}', 1)" ></div>
-                    <div class="auto_build_down_arrow" onclick="window.modernBot.autoTrain.editTroopCount(${town_id}, '${troop}', -1)"></div>
+                <div class="item_icon auto_trade_troop" onclick="window.modernBot.autoTrain.editTroopCount(${town_id}, '${troop}', 0)" style="background-position: -${bg[0]}px -${bg[1]}px; cursor: pointer">
+                    <div class="auto_build_up_arrow" onclick="event.stopPropagation(); window.modernBot.autoTrain.editTroopCount(${town_id}, '${troop}', 1)" ></div>
+                    <div class="auto_build_down_arrow" onclick="event.stopPropagation(); window.modernBot.autoTrain.editTroopCount(${town_id}, '${troop}', -1)"></div>
                     <p style="color: ${color}" id="troop_lvl_${troop}" class="auto_build_lvl"> 0 <p>
                 </div>
             </div>`;
@@ -215,13 +215,17 @@ class AutoTrain extends ModernUtil {
 
 		const { units } = GameData;
 		const { city_troops } = this;
-		// Modify count based on whether the shift key is held down
-		const index = count > 0 ? 0 : 1;
-		console.log(this.SHIFT_LEVELS[troop][index]);
-		count = this.shiftHeld ? count * this.SHIFT_LEVELS[troop][index] : count;
 
 		// Add the town to the city_troops object if it doesn't already exist
 		if (!city_troops.hasOwnProperty(town_id)) city_troops[town_id] = {};
+
+		if (count) {
+			// Modify count based on whether the shift key is held down
+			const index = count > 0 ? 0 : 1;
+			count = this.shiftHeld ? count * this.SHIFT_LEVELS[troop][index] : count;
+		} else {
+			count = 10000;
+		}
 
 		// Check if the troop count can be increased without exceeding population capacity
 		const total_pop = this.getTotalPopulation(town_id);

@@ -72,7 +72,7 @@ class AutoBuild extends ModernUtil {
 			else if (buildings[building] < town_buildings[building]) color = 'orange';
 
 			return `
-                <div class="auto_build_box" onclick="window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', 0)">
+                <div class="auto_build_box" onclick="window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', 0)" style="cursor: pointer">
                 <div class="item_icon auto_build_building" style="background-position: -${bg[0]}px -${bg[1]}px;">
                     <div class="auto_build_up_arrow" onclick="event.stopPropagation(); window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', 1)" ></div>
                     <div class="auto_build_down_arrow" onclick="event.stopPropagation(); window.modernBot.autoBuild.editBuildingLevel(${town_id}, '${building}', -1)"></div>

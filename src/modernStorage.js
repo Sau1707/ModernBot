@@ -35,7 +35,7 @@ class ModernStorage extends Compressor {
 			if (!this.lastUpdateTime) return;
 			const now = Date.now();
 			const timeSinceLastUpdate = now - this.lastUpdateTime;
-			if (timeSinceLastUpdate > 3000) {
+			if (timeSinceLastUpdate > 30000) {
 				this.saveSettingsNote();
 				this.lastUpdateTime = null;
 			}
