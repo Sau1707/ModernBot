@@ -1,10 +1,9 @@
 class AutoBootcamp extends ModernUtil {
-	constructor(console) {
-		super();
-		this.console = console;
+	constructor(c, s) {
+		super(c, s);
 
-		if (this.load('enable_autobootcamp')) this.toggle();
-		if (this.load('bootcamp_use_def')) this.triggerUseDef();
+		if (this.storage.load('ab_active', false)) this.toggle();
+		if (this.storage.load('bootcamp_use_def', false)) this.triggerUseDef();
 	}
 
 	settings = () => {
@@ -20,13 +19,7 @@ class AutoBootcamp extends ModernUtil {
 
 		return `
         <div class="game_border" style="margin-bottom: 20px">
-            ${this.getTitleHtml(
-				'auto_autobootcamp',
-				'Auto Bootcamp',
-				this.toggle,
-				'',
-				this.enable_auto_bootcamp,
-			)}
+            ${this.getTitleHtml('auto_autobootcamp', 'Auto Bootcamp', this.toggle, '', this.enable_auto_bootcamp)}
         
         <div id="autobootcamp_lvl_buttons" style="padding: 5px; display: inline-flex;">
             <!-- temp -->
@@ -48,15 +41,12 @@ class AutoBootcamp extends ModernUtil {
 			uw.$('#autobootcamp_def').addClass('disabled');
 			uw.$('#autobootcamp_off').removeClass('disabled');
 		}
-		this.save('bootcamp_use_def', this.use_def);
+		this.storage.save('bootcamp_use_def', this.use_def);
 	};
 
 	toggle = () => {
 		if (!this.enable_auto_bootcamp) {
-			uw.$('#auto_autobootcamp').css(
-				'filter',
-				'brightness(100%) saturate(186%) hue-rotate(241deg)',
-			);
+			uw.$('#auto_autobootcamp').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
 			this.enable_auto_bootcamp = setInterval(this.main, 4000);
 			this.console.log('Auto Bootcamp -> On');
 		} else {
@@ -65,24 +55,24 @@ class AutoBootcamp extends ModernUtil {
 			this.enable_auto_bootcamp = null;
 			this.console.log('Auto Bootcamp -> Off');
 		}
-		this.save('enable_autobootcamp', !!this.enable_auto_bootcamp);
+		this.storage.save('ab_active', !!this.enable_auto_bootcamp);
 	};
 
 	attackBootcamp = () => {
 		let cooldown = uw.MM.getModelByNameAndPlayerId('PlayerAttackSpot').getCooldownDuration();
 		if (cooldown > 0) return false;
 
-		let movements = uw.MM.getModels().MovementsUnits;
+		let { MovementsUnits } = uw.MM.getModels();
 
 		/* Check if there isn't already an active attack */
-		if (movements != null) {
-			if (Object.keys(movements).length > 0) {
-				var attack_list = Object.keys(movements);
-				for (var i = 0; i < Object.keys(movements).length; i++) {
-					if (movements[attack_list[i]].attributes.destination_is_attack_spot) {
+		if (MovementsUnits != null) {
+			if (Object.keys(MovementsUnits).length > 0) {
+				var attack_list = Object.keys(MovementsUnits);
+				for (var i = 0; i < Object.keys(MovementsUnits).length; i++) {
+					if (MovementsUnits[attack_list[i]].attributes.destination_is_attack_spot) {
 						return false;
 					}
-					if (movements[attack_list[i]].attributes.origin_is_attack_spot) {
+					if (MovementsUnits[attack_list[i]].attributes.origin_is_attack_spot) {
 						return false;
 					}
 				}
@@ -90,12 +80,6 @@ class AutoBootcamp extends ModernUtil {
 		}
 
 		var units = { ...uw.ITowns.towns[uw.Game.townId].units() };
-
-		/* Stop if no units are avalable anymore */
-		if (Object.keys(units).length === 0) {
-			this.toggle();
-			return;
-		}
 
 		delete units.militia;
 		for (let unit in units) {
@@ -107,13 +91,13 @@ class AutoBootcamp extends ModernUtil {
 			delete units.archer;
 		}
 
-		var model_url = 'PlayerAttackSpot/' + uw.Game.player_id;
-		var data = {
-			model_url: model_url,
-			action_name: 'attack',
-			arguments: units,
-		};
-		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		/* Stop if no units are avalable anymore */
+		if (Object.keys(units).length === 0) {
+			this.toggle();
+			return;
+		}
+
+		this.postAttackBootcamp(units);
 		return true;
 	};
 
@@ -136,16 +120,47 @@ class AutoBootcamp extends ModernUtil {
 			return true;
 		}
 
-		if (reward.stashable) {
-			this.stashBootcampReward();
-		} else {
-			this.useBootcampReward();
-		}
+		if (reward.stashable) this.stashBootcampReward();
+		else this.useBootcampReward();
+
 		return true;
 	};
 
+	/* Main function, call in loop */
 	main = () => {
 		if (this.rewardBootcamp()) return;
 		if (this.attackBootcamp()) return;
+	};
+
+	/* Send post request to attack with the given units */
+	postAttackBootcamp = units => {
+		var data = {
+			model_url: `PlayerAttackSpot/${uw.Game.player_id}`,
+			action_name: 'attack',
+			arguments: units,
+		};
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+	};
+
+	/* Send requesto to the server to use the reward */
+	useBootcampReward = () => {
+		var data = {
+			model_url: `PlayerAttackSpot/${uw.Game.player_id}`,
+			action_name: 'useReward',
+			arguments: {},
+		};
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+	};
+
+	/* Send request to the server to stash the reward */
+	stashBootcampReward = () => {
+		var data = {
+			model_url: `PlayerAttackSpot/${uw.Game.player_id}`,
+			action_name: 'stashReward',
+			arguments: {},
+		};
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data, 0, {
+			error: this.useBootcampReward,
+		});
 	};
 }

@@ -1,10 +1,11 @@
 class AutoRuralLevel extends ModernUtil {
-	constructor(console) {
-		super();
-		this.console = console;
+	constructor(c, s) {
+		super(c, s);
 
-		this.rural_level = this.load('enable_autorural_level', 1);
-		if (this.load('enable_autorural_level_active')) this.toggle();
+		this.rural_level = this.storage.load('enable_autorural_level', 1);
+		if (this.storage.load('enable_autorural_level_active')) {
+			this.enable = setInterval(this.main, 20000);
+		}
 	}
 
 	settings = () => {
@@ -14,13 +15,7 @@ class AutoRuralLevel extends ModernUtil {
 
 		return `
         <div class="game_border" style="margin-bottom: 20px;">
-                ${this.getTitleHtml(
-					'auto_rural_level',
-					'Auto Rural level',
-					this.toggle,
-					'',
-					this.enable_auto_rural,
-				)}
+            ${this.getTitleHtml('auto_rural_level', 'Auto Rural level', this.toggle, '', this.enable)}
             
             <div id="rural_lvl_buttons" style="padding: 5px">
                 ${this.getButtonHtml('rural_lvl_1', 'lvl 1', this.setRuralLevel, 1)}
@@ -52,28 +47,26 @@ class AutoRuralLevel extends ModernUtil {
 		return polis_list;
 	};
 
-	setRuralLevel = (n) => {
+	setRuralLevel = n => {
 		uw.$('#rural_lvl_buttons .button_new').addClass('disabled');
 		uw.$(`#rural_lvl_${n}`).removeClass('disabled');
-		this.rural_level = n;
-		this.save('enable_autorural_level', this.rural_level);
+
+		if (this.rural_level != n) {
+			this.rural_level = n;
+			this.storage.save('enable_autorural_level', this.rural_level);
+		}
 	};
 
 	toggle = () => {
-		if (!this.enable_auto_rural) {
-			uw.$('#auto_rural_level').css(
-				'filter',
-				'brightness(100%) saturate(186%) hue-rotate(241deg)',
-			);
-			this.enable_auto_rural = setInterval(this.main, 20000);
-			this.console.log('Auto Rural Level -> On');
+		if (!this.enable) {
+			uw.$('#auto_rural_level').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
+			this.enable = setInterval(this.main, 20000);
 		} else {
 			uw.$('#auto_rural_level').css('filter', '');
-			this.console.log('Auto Rural Level -> Off');
-			clearInterval(this.enable_auto_rural);
-			this.enable_auto_rural = null;
+			clearInterval(this.enable);
+			this.enable = null;
 		}
-		this.save('enable_autorural_level_active', !!this.enable_auto_rural);
+		this.storage.save('enable_autorural_level_active', !!this.enable);
 	};
 
 	main = async () => {
@@ -82,9 +75,7 @@ class AutoRuralLevel extends ModernUtil {
 		let killpoints = uw.MM.getModelByNameAndPlayerId('PlayerKillpoints').attributes;
 
 		/* Get array with all locked rurals */
-		const locked = player_relation_models.filter(
-			(model) => model.attributes.relation_status === 0,
-		);
+		const locked = player_relation_models.filter(model => model.attributes.relation_status === 0);
 
 		/* Get killpoints */
 
@@ -111,9 +102,7 @@ class AutoRuralLevel extends ModernUtil {
 					for (let relation of locked) {
 						if (farmtown.attributes.id != relation.attributes.farm_town_id) continue;
 						this.unlockRural(town_id, relation.attributes.farm_town_id, relation.id);
-						this.console.log(
-							`Island ${farmtown.attributes.island_xy}: unlocked ${farmtown.attributes.name}`,
-						);
+						this.console.log(`Island ${farmtown.attributes.island_xy}: unlocked ${farmtown.attributes.name}`);
 						return;
 					}
 				}
@@ -144,14 +133,8 @@ class AutoRuralLevel extends ModernUtil {
 								continue;
 							}
 							if (relation.attributes.expansion_stage > level) continue;
-							this.upgradeRural(
-								town_id,
-								relation.attributes.farm_town_id,
-								relation.attributes.id,
-							);
-							this.console.log(
-								`Island ${farmtown.attributes.island_xy}: upgraded ${farmtown.attributes.name}`,
-							);
+							this.upgradeRural(town_id, relation.attributes.farm_town_id, relation.attributes.id);
+							this.console.log(`Island ${farmtown.attributes.island_xy}: upgraded ${farmtown.attributes.name}`);
 							return;
 						}
 					}
@@ -163,5 +146,32 @@ class AutoRuralLevel extends ModernUtil {
 
 		/* Auto turn off when the level is reached */
 		this.toggle();
+	};
+
+	/* 
+        Post requests
+    */
+	unlockRural = (town_id, farm_town_id, relation_id) => {
+		let data = {
+			model_url: `FarmTownPlayerRelation/${relation_id}`,
+			action_name: 'unlock',
+			arguments: {
+				farm_town_id: farm_town_id,
+			},
+			town_id: town_id,
+		};
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+	};
+
+	upgradeRural = (town_id, farm_town_id, relation_id) => {
+		let data = {
+			model_url: `FarmTownPlayerRelation/${relation_id}`,
+			action_name: 'upgrade',
+			arguments: {
+				farm_town_id: farm_town_id,
+			},
+			town_id: town_id,
+		};
+		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 }

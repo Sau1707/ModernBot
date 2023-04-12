@@ -1,9 +1,8 @@
 class AutoGratis extends ModernUtil {
-    constructor(console) {
-        super();
-        this.console = console;
+    constructor(c, s) {
+        super(c, s);
 
-        if (this.load('enable_autogratis', false)) this.toggle();
+        if (this.storage.load('enable_autogratis', false)) this.toggle();
     }
 
     settings = () => {
@@ -47,7 +46,7 @@ class AutoGratis extends ModernUtil {
             this.autogratis = null;
             this.console.log('Auto Gratis -> Off');
         }
-        this.save('enable_autogratis', !!this.autogratis);
+        this.storage.save('enable_autogratis', !!this.autogratis);
     };
 
     /* Main loop for the autogratis bot */

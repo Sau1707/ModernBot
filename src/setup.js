@@ -3,16 +3,18 @@
 class ModernBot {
 	constructor() {
 		this.console = new BotConsole();
-		this.autoGratis = new AutoGratis(this.console);
-		this.autoFarm = new AutoFarm(this.console);
-		this.autoRuralLevel = new AutoRuralLevel(this.console);
-		this.autoBuild = new AutoBuild(this.console);
-		this.autoRuralTrade = new AutoRuralTrade(this.console);
-		this.autoBootcamp = new AutoBootcamp(this.console);
-		this.autoParty = new AutoParty(this.console);
-		this.autoTrain = new AutoTrain(this.console);
-		this.autoHide = new AutoHide(this.console);
-		this.antiRage = new AntiRage(this.console);
+		this.storage = new ModernStorage();
+
+		this.autoGratis = new AutoGratis(this.console, this.storage);
+		this.autoFarm = new AutoFarm(this.console, this.storage);
+		this.autoRuralLevel = new AutoRuralLevel(this.console, this.storage);
+		this.autoBuild = new AutoBuild(this.console, this.storage);
+		this.autoRuralTrade = new AutoRuralTrade(this.console, this.storage);
+		this.autoBootcamp = new AutoBootcamp(this.console, this.storage);
+		this.autoParty = new AutoParty(this.console, this.storage);
+		this.autoTrain = new AutoTrain(this.console, this.storage);
+		this.autoHide = new AutoHide(this.console, this.storage);
+		this.antiRage = new AntiRage(this.console, this.storage);
 
 		this.settingsFactory = new createGrepoWindow({
 			id: 'MODERN_BOT',
@@ -59,11 +61,11 @@ class ModernBot {
 			const oldRender = townController.controller.town_groups_list_view.render;
 			townController.controller.town_groups_list_view.render = function () {
 				oldRender.call(this);
-				const both = `<div style='position: absolute; background-image: url(https://i.ibb.co/1rNDZj2/hammer-wrench.png); background-size: 19px 19px; margin: 1px; background-repeat: no-repeat; position: absolute; height: 20px; width: 25px; right: 18px;'></div>`;
-				const build = `<div style='background-image: url(https://i.ibb.co/4swgDmq/hammer-only.png); background-size: 19px 19px; margin: 1px; background-repeat: no-repeat; position: absolute; height: 20px; width: 25px; right: 18px;'></div>`;
-				const troop = `<div style='background-image: url(https://i.ibb.co/yBBfSqj/wrench.png); background-size: 19px 19px; margin: 1px; background-repeat: no-repeat; position: absolute; height: 20px; width: 25px; right: 18px;'></div>`;
+				const both = `<div style='position: absolute; background-image: url(https://raw.githubusercontent.com/Sau1707/ModernBot/main/img/hammer_wrench.png); background-size: 19px 19px; margin: 1px; background-repeat: no-repeat; position: absolute; height: 20px; width: 25px; right: 18px;'></div>`;
+				const build = `<div style='background-image: url(https://raw.githubusercontent.com/Sau1707/ModernBot/main/img/hammer_only.png); background-size: 19px 19px; margin: 1px; background-repeat: no-repeat; position: absolute; height: 20px; width: 25px; right: 18px;'></div>`;
+				const troop = `<div style='background-image: url(https://raw.githubusercontent.com/Sau1707/ModernBot/main/img/wrench.png); background-size: 19px 19px; margin: 1px; background-repeat: no-repeat; position: absolute; height: 20px; width: 25px; right: 18px;'></div>`;
 				const townIds = Object.keys(uw.modernBot.autoBuild.towns_buildings);
-				const troopsIds = uw.modernBot.autoTrain.active.map(entry => entry.toString());
+				const troopsIds = uw.modernBot.autoTrain.getActiveList().map(entry => entry.toString());
 				uw.$('.town_group_town').each(function () {
 					const townId = parseInt(uw.$(this).attr('data-townid'));
 					const is_build = townIds.includes(townId.toString());

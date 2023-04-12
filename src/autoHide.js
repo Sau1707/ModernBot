@@ -1,9 +1,8 @@
 class AutoHide extends ModernUtil {
-    constructor(c) {
-        super();
-        this.console = c;
+    constructor(c, s) {
+        super(c, s);
 
-        this.activePolis = this.load('autohide_active', 0);
+        this.activePolis = this.storage.load('autohide_active', 0);
 
         setInterval(this.main, 5000)
 
@@ -74,7 +73,7 @@ class AutoHide extends ModernUtil {
             if (hide == 10) this.activePolis = town.id;
             else uw.HumanMessage.error("Hide must be at level 10");
         }
-        this.save("autohide_active", this.activePolis)
+        this.storage.save("autohide_active", this.activePolis)
         this.updateSettings(town.id)
     }
 

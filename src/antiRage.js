@@ -5,19 +5,16 @@ class AntiRage extends ModernUtil {
 		artemis: 'js-power-icon.animated_power_icon.animated_power_icon_45x45.power_icon45x45.power.effort_of_the_huntress',
 	};
 
-	constructor(c) {
-		super();
-		this.console = c;
+	constructor(c, s) {
+		super(c, s);
+
 		this.loop_funct = null;
 		this.active_god_el = null;
 
 		let commandId;
 		const oldCreate = GPWindowMgr.Create;
 		GPWindowMgr.Create = function (type, title, params, id) {
-			if (type === GPWindowMgr.TYPE_ATK_COMMAND && id) {
-				commandId = id;
-				console.log(commandId);
-			}
+			if (type === GPWindowMgr.TYPE_ATK_COMMAND && id) commandId = id;
 			return oldCreate.apply(this, arguments);
 		};
 
@@ -268,40 +265,40 @@ class AntiRage extends ModernUtil {
 /* 
 
 <div id="popup_div_curtain">
-	<table class="popup" id="popup_div" cellpadding="0" cellspacing="0" style="display: block; left: 243px; top: 461px; opacity: 1; position: absolute; z-index: 6001; width: auto; max-width: 400px;">
-		<tbody><tr class="popup_top">
-			<td class="popup_top_left"></td>
-			<td class="popup_top_middle"></td>
-			<td class="popup_top_right"></td>
-		</tr>
-		<tr>
-			<td class="popup_middle_left">&nbsp;</td>
-			<td class="popup_middle_middle" id="popup_content" style="width: auto;"><div>
+    <table class="popup" id="popup_div" cellpadding="0" cellspacing="0" style="display: block; left: 243px; top: 461px; opacity: 1; position: absolute; z-index: 6001; width: auto; max-width: 400px;">
+        <tbody><tr class="popup_top">
+            <td class="popup_top_left"></td>
+            <td class="popup_top_middle"></td>
+            <td class="popup_top_right"></td>
+        </tr>
+        <tr>
+            <td class="popup_middle_left">&nbsp;</td>
+            <td class="popup_middle_middle" id="popup_content" style="width: auto;"><div>
 
 <div class="temple_power_popup ">
 	
-	<div class="temple_power_popup_image power_icon86x86 fair_wind"></div>
+    <div class="temple_power_popup_image power_icon86x86 fair_wind"></div>
 
-	<div class="temple_power_popup_info">
-		<h4>Vento favorevole</h4>
-		<p>La voce di Zeus risuona nell'aria, il vento fa gonfiare le vele delle navi e frecce e dardi sibilanti vengono lanciati con precisione verso il nemico.</p>
-		
-			<p><b>Le forze navali attaccanti ottengono un bonus del 10% alla loro forza durante il loro prossimo attacco.</b></p>
-					<div class="favor_cost_info">
-						<div class="resource_icon favor"></div>
-						<span>250 favore</span>
-					</div>
-	</div>
+    <div class="temple_power_popup_info">
+        <h4>Vento favorevole</h4>
+        <p>La voce di Zeus risuona nell'aria, il vento fa gonfiare le vele delle navi e frecce e dardi sibilanti vengono lanciati con precisione verso il nemico.</p>
+    	
+            <p><b>Le forze navali attaccanti ottengono un bonus del 10% alla loro forza durante il loro prossimo attacco.</b></p>
+                    <div class="favor_cost_info">
+                        <div class="resource_icon favor"></div>
+                        <span>250 favore</span>
+                    </div>
+    </div>
 </div>
 </div></td>
-			<td class="popup_middle_right">&nbsp;</td>
-		</tr>
-		<tr class="popup_bottom">
-			<td class="popup_bottom_left"></td>
-			<td class="popup_bottom_middle"></td>
-			<td class="popup_bottom_right"></td>
-		</tr>
- 	</tbody></table>
+            <td class="popup_middle_right">&nbsp;</td>
+        </tr>
+        <tr class="popup_bottom">
+            <td class="popup_bottom_left"></td>
+            <td class="popup_bottom_middle"></td>
+            <td class="popup_bottom_right"></td>
+        </tr>
+      </tbody></table>
 </div>
 
 */
