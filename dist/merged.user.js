@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.18.0
+// @version      1.18.1
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -1128,7 +1128,7 @@ class AutoFarm extends ModernUtil {
 
 	/* return the time before the next collection */
 	getNextCollection = () => {
-		const models = uw.MM.getCollections().FarmTownPlayerRelation[0].models;
+		const { models } = uw.MM.getCollections().FarmTownPlayerRelation[0];
 
 		const lootCounts = {};
 		for (const model of models) {
@@ -1169,13 +1169,18 @@ class AutoFarm extends ModernUtil {
 	claim = async () => {
 		const isCaptainActive = uw.GameDataPremium.isAdvisorActivated('captain');
 		if (isCaptainActive) {
-			if (this.timing <= 2) this.claimMultiple(300, 600);
-			if (this.timing > 2) this.claimMultiple(1200, 2400);
+			await this.fakeOpening();
+			await this.sleep(Math.random() * 2000 + 1000); // random between 1 second and 3
+			await this.fakeSelectAll();
+			await this.sleep(Math.random() * 2000 + 1000);
+			if (this.timing <= 2) await this.claimMultiple(300, 600);
+			if (this.timing > 2) await this.claimMultiple(1200, 2400);
+			await this.fakeUpdate();
 		} else {
-			const player_relation_models = uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation').models;
-			const farm_town_models = uw.MM.getOnlyCollectionByName('FarmTown').models;
+			const { models: player_relation_models } = uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation');
+			const { models: farm_town_models } = uw.MM.getOnlyCollectionByName('FarmTown').models;
 			const now = Math.floor(Date.now() / 1000);
-			let max = 20;
+			let max = 60;
 			for (let town_id of this.polislist) {
 				let town = uw.ITowns.towns[town_id];
 				let x = town.getIslandCoordinateX();
@@ -1272,15 +1277,52 @@ class AutoFarm extends ModernUtil {
 		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 
-	claimMultiple = (base = 300, boost = 600) => {
-		let data = {
-			towns: this.polislist,
-			time_option_base: base,
-			time_option_booty: boost,
-			claim_factor: 'normal',
-		};
-		uw.gpAjax.ajaxPost('farm_town_overviews', 'claim_loads_multiple', data);
-	};
+	claimMultiple = (base = 300, boost = 600) =>
+		new Promise((myResolve, myReject) => {
+			let data = {
+				towns: this.polislist,
+				time_option_base: base,
+				time_option_booty: boost,
+				claim_factor: 'normal',
+			};
+			uw.gpAjax.ajaxPost('farm_town_overviews', 'claim_loads_multiple', data, false, () => myResolve());
+		});
+
+	/* Pretent that the window it's opening */
+	fakeOpening = () =>
+		new Promise((myResolve, myReject) => {
+			uw.gpAjax.ajaxGet('farm_town_overviews', 'index', {}, false, async () => {
+				await this.sleep(10);
+				await this.fakeUpdate();
+				myResolve();
+			});
+		});
+
+	/* Fake the user selecting the list */
+	fakeSelectAll = () =>
+		new Promise((myResolve, myReject) => {
+			const data = {
+				town_ids: this.polislist,
+			};
+			uw.gpAjax.ajaxGet('farm_town_overviews', 'get_farm_towns_from_multiple_towns', data, false, () => myResolve());
+		});
+
+	/* Fake the window update*/
+	fakeUpdate = () =>
+		new Promise((myResolve, myReject) => {
+			const town = uw.ITowns.getCurrentTown();
+			const { booty } = town.getResearches().attributes;
+			const { trade_office } = town.getBuildings().attributes;
+			const data = {
+				island_x: town.getIslandCoordinateX(),
+				island_y: town.getIslandCoordinateY(),
+				current_town_id: town.id,
+				booty_researched: booty ? 1 : 0,
+				diplomacy_researched: '',
+				trade_office: trade_office ? 1 : 0,
+			};
+			uw.gpAjax.ajaxGet('farm_town_overviews', 'get_farm_towns_for_town', data, false, () => myResolve());
+		});
 }
 
 class AutoGratis extends ModernUtil {
