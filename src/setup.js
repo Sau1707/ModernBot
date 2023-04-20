@@ -36,12 +36,12 @@ class ModernBot {
 					title: 'Train',
 					id: 'train',
 					render: this.settingsTrain,
-				},
-				/*{
+				} /*
+				{
 					title: 'Trade',
 					id: 'trade',
 					render: this.settingsTrade,
-				},*/
+				},*/,
 				{
 					title: 'Mix',
 					id: 'mix',
@@ -95,9 +95,11 @@ class ModernBot {
 	};
 
 	setup = () => {
+		/* Activate */
 		this.settingsFactory.activate();
 		uw.$('.gods_area_buttons').append("<div class='circle_button modern_bot_settings' onclick='window.modernBot.settingsFactory.openWindow()'><div style='width: 27px; height: 27px; background: url(https://raw.githubusercontent.com/Sau1707/ModernBot/main/img/gear.png) no-repeat 6px 5px' class='icon js-caption'></div></div>");
 
+		/* Add event to polis list menu */
 		const editController = () => {
 			const townController = uw.layout_main_controller.sub_controllers.find(controller => controller.name === 'town_name_area');
 			if (!townController) {
@@ -129,7 +131,8 @@ class ModernBot {
 	};
 }
 
-setTimeout(() => {
+setTimeout(async () => {
+	/* */
 	uw.modernBot = new ModernBot();
 	setTimeout(() => uw.modernBot.settingsFactory.openWindow(), 500);
 }, 1000);
