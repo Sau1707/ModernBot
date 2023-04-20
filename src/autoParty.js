@@ -120,7 +120,6 @@ class AutoParty extends ModernUtil {
 			// single and multiple are swapped...
 			for (let town_id in uw.ITowns.towns) {
 				if (triumph.includes(parseInt(town_id))) continue;
-				console.log(town_id);
 				this.makeCelebration('triumph', town_id);
 				await this.sleep(500);
 				available -= 300;

@@ -5,41 +5,7 @@
 class ModernStorage extends Compressor {
 	constructor() {
 		super();
-		/* The active or disactive it's saved locally */
-		this.active = localStorage.getItem('modernStorage') || false;
 		this.check_done = 0;
-
-		/* Try to load the data from the note */
-		if (this.active) {
-			this.loadNote().then(e => {
-				if (!e) this.createNote();
-				try {
-					let storage = this.decode(JSON.parse(e.text));
-					this.saveStorage(storage);
-					this.lastUpdateTime = null;
-				} catch (error) {
-					console.log(error);
-				}
-			});
-		}
-
-		/* Save the data before the user close the window */
-		window.addEventListener('beforeunload', () => {
-			if (!this.lastUpdateTime) return;
-			this.saveSettingsNote();
-		});
-
-		/* After an entry it's saved start a countdown of 30 seconds */
-		this.lastUpdateTime = Date.now();
-		setInterval(() => {
-			if (!this.lastUpdateTime) return;
-			const now = Date.now();
-			const timeSinceLastUpdate = now - this.lastUpdateTime;
-			if (timeSinceLastUpdate > 30000) {
-				this.saveSettingsNote();
-				this.lastUpdateTime = null;
-			}
-		}, 1000);
 
 		/* Add event to add the button in the notes */
 		uw.$.Observer(uw.GameEvents.window.open).subscribe((e, i) => {
@@ -95,61 +61,45 @@ class ModernStorage extends Compressor {
 		return savedValue !== undefined ? savedValue : defaultValue;
 	};
 
-	saveSettingsNote = () => {
-		if (!this.note_id) return;
-		const storage = this.encode(this.getStorage());
-
-		uw.temp = storage;
-
+	/* Call to save the setting to the given note id */
+	saveSettingsNote = note_id => {
+		const storage = JSON.stringify(this.encode(this.getStorage()));
 		const data = {
-			model_url: `PlayerNote/${this.note_id}`,
+			model_url: `PlayerNote/${note_id}`,
 			action_name: 'save',
 			arguments: {
-				id: this.note_id,
-				text: JSON.stringify(storage),
+				id: note_id,
+				text: storage,
 			},
 		};
 		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		return storage;
 	};
 
-	loadNote = () => {
-		return new Promise((resolve, reject) => {
-			const data = {
-				window_type: 'notes',
-				tab_type: 'note1',
-				known_data: {
-					models: [],
-					collections: [],
-				},
-			};
-			uw.gpAjax.ajaxGet('frontend_bridge', 'fetch', data, false, (...data) => {
-				const playerNotes = data[0].collections.PlayerNotes.data;
-				for (let model of playerNotes) {
-					if (model.d.title === 'settings') {
-						this.note_id = model.d.id;
-						resolve(model.d);
-					}
-				}
-				resolve(null);
-			});
-		});
-	};
-
+	/* Call to add the buttons */
 	addButton = () => {
 		this.check_done += 1;
-		if ($('#modern_storage').length) return;
-		const modern_settings = $('<div/>', {
+		if ($('#modern_storage_load').length) return;
+
+		const modern_settings_load = $('<div/>', {
 			class: 'button_new',
-			id: 'modern_storage',
+			id: 'modern_storage_load',
 			style: 'position: absolute; bottom: 5px; left: 6px; ',
-			onclick: 'modernBot.storage.trigger()',
-			html: '<div class="left"></div><div class="right"></div><div class="caption js-caption" id="modern_storage_text"> ModernStorage <div class="effect js-effect"></div></div>',
+			onclick: 'modernBot.storage.loadSettings()',
+			html: '<div class="left"></div><div class="right"></div><div class="caption js-caption"> Load <div class="effect js-effect"></div></div>',
+		});
+
+		const modern_settings_save = $('<div/>', {
+			class: 'button_new',
+			id: 'modern_storage_save',
+			style: 'position: absolute; bottom: 5px; left: 75px; ',
+			onclick: 'modernBot.storage.saveSettings()',
+			html: '<div class="left"></div><div class="right"></div><div class="caption js-caption"> Save <div class="effect js-effect"></div></div>',
 		});
 
 		const box = $('.notes_container');
 		if (box.length) {
-			$('.notes_container').append(modern_settings);
-			setTimeout(() => this.trigger(false), 10);
+			$('.notes_container').append(modern_settings_load, modern_settings_save);
 		} else {
 			if (this.check_done > 10) {
 				this.check_done = 0;
@@ -159,55 +109,56 @@ class ModernStorage extends Compressor {
 		}
 	};
 
-	/* Call to trigger the notes */
-	trigger(s = true) {
-		if (s) {
-			this.active = !this.active;
-			localStorage.setItem('modernStorage', this.active);
-
-			if (this.active) {
-				this.createNote();
-				setTimeout(this.saveSettingsNote, 1000);
-			}
-		}
-
-		$('#modern_storage_text').css({
-			color: this.active ? '#00d910' : 'rgb(255 35 35)',
-		});
-	}
-
-	createNote() {
-		if (this.getNoteId()) return;
-
-		/* Create note if not found */
-		const data = {
-			model_url: 'PlayerNote',
-			action_name: 'create',
-			arguments: {
-				title: 'settings',
-				text: '{}',
+	saveSettings = () => {
+		uw.ConfirmationWindowFactory.openSimpleConfirmation(
+			'ModernStorage',
+			'This operation will overwrite the current note with the local settings of the ModernBot',
+			() => {
+				// trigged when user press yes
+				const note = this.getActiveNote();
+				if (!note) return; // TODO: display an error
+				const content = this.saveSettingsNote(note.id);
+				$('.preview_box').text(content);
 			},
-		};
+			() => {}
+		);
+	};
 
-		gpAjax.ajaxPost('frontend_bridge', 'execute', data, false, (e, i) => {
-			$('.btn_save').trigger('click');
-			setTimeout(this.addButton, 100);
-			setTimeout(() => {
-				this.note_id = this.getNoteId();
-			}, 101);
-		});
-	}
+	loadSettings = () => {
+		// TODO: check that the current note has settimhs
+		uw.ConfirmationWindowFactory.openSimpleConfirmation(
+			'ModernStorage',
+			'This operation will load the settings of the current note and overwrite the local settings',
+			() => {
+				// Trigged when the user press yes
+				const note = this.getActiveNote();
+				const { text } = note.attributes;
+				let decoded;
+				try {
+					decoded = this.decode(JSON.parse(text));
+				} catch {
+					HumanMessage.error("This note don't contains the settings");
+					return;
+				}
 
-	getNoteId() {
+				this.saveStorage(decoded);
+				location.reload();
+			},
+			() => {}
+		);
+	};
+
+	/* Return the current active note */
+	getActiveNote() {
+		const noteClass = $('.tab.selected').attr('class');
+		if (!noteClass) return null;
+		const noteX = noteClass.match(/note(\d+)/)[1];
+		const note_index = parseInt(noteX) - 1;
+
 		const collection = MM.getOnlyCollectionByName('PlayerNote');
 		if (!collection) return null;
 		let { models } = collection;
-		if (models) {
-			for (let model of models) {
-				let { attributes } = model;
-				if (attributes.title == 'settings') return model;
-			}
-		}
-		return null;
+
+		return models[note_index];
 	}
 }

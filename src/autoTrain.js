@@ -1,5 +1,3 @@
-// TODO: fix controller
-
 class AutoTrain extends ModernUtil {
 	POWER_LIST = ['call_of_the_ocean', 'spartan_training', 'fertility_improvement'];
 	GROUND_ORDER = ['catapult', 'sword', 'archer', 'hoplite', 'slinger', 'rider', 'chariot'];

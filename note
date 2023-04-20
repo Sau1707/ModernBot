@@ -1,4 +1,11 @@
 function saveinNote(text) {
-    let data = {"model_url":"PlayerNote/603","action_name":"save","arguments":{"id":603,"text":text}}
-    gpAjax.ajaxPost("frontend_bridge", "execute", data)
+	let data = { model_url: 'PlayerNote/603', action_name: 'save', arguments: { id: 603, text: text } };
+	gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 }
+
+ConfirmationWindowFactory.openSimpleConfirmation(
+	'ModernStorage',
+	'Are u sure?',
+	() => console.log('yes'),
+	() => console.log('no')
+);

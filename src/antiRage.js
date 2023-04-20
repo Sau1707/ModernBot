@@ -160,7 +160,6 @@ class AntiRage extends ModernUtil {
             </table>`;
 
 			const { artemis_favor, zeus_favor } = uw.ITowns.player_gods.attributes;
-			console.log(artemis_favor, zeus_favor);
 			const enable = artemis_favor >= 200 && zeus_favor >= 300;
 			if (!enable) $('#enchanted_rage').css('filter', 'grayscale(1)');
 
@@ -241,7 +240,6 @@ class AntiRage extends ModernUtil {
 	};
 
 	enchanted = async type => {
-		console.log(type);
 		if (type === 'zeus') {
 			this.cast(this.command_id, 'cleanse');
 			//await this.sleep(1);

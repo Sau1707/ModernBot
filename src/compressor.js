@@ -145,7 +145,7 @@ class Compressor {
 	decode_troops(str) {
 		let json_str = '{';
 		for (let item of str.match(/.{1,3}/g)) {
-			json_str += `"${this.ITEMS_REV[item[0]]}"` + ':' + this.decompressNumber(item[1]) + ',';
+			json_str += `"${this.ITEMS_REV[item[0]]}"` + ':' + this.decompressNumber(item.slice(-2)) + ',';
 		}
 		json_str = json_str.replace(/,$/, '}');
 		return JSON.parse(json_str);
