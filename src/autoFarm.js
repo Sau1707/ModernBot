@@ -168,7 +168,7 @@ class AutoFarm extends ModernUtil {
 			await this.fakeUpdate();
 		} else {
 			const { models: player_relation_models } = uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation');
-			const { models: farm_town_models } = uw.MM.getOnlyCollectionByName('FarmTown').models;
+			const { models: farm_town_models } = uw.MM.getOnlyCollectionByName('FarmTown');
 			const now = Math.floor(Date.now() / 1000);
 			let max = 60;
 			for (let town_id of this.polislist) {

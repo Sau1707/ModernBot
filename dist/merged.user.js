@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.18.1
+// @version      1.18.2
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -1178,7 +1178,7 @@ class AutoFarm extends ModernUtil {
 			await this.fakeUpdate();
 		} else {
 			const { models: player_relation_models } = uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation');
-			const { models: farm_town_models } = uw.MM.getOnlyCollectionByName('FarmTown').models;
+			const { models: farm_town_models } = uw.MM.getOnlyCollectionByName('FarmTown');
 			const now = Math.floor(Date.now() / 1000);
 			let max = 60;
 			for (let town_id of this.polislist) {
