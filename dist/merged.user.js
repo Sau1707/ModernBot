@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.18.2
+// @version      1.18.3
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -728,7 +728,7 @@ class AutoBuild extends ModernUtil {
 
 		/* If the town is in a group, the the groups */
 		const groups =
-			`(uw.${Object.values(uw.ITowns.getTownGroups())
+			`(${Object.values(uw.ITowns.getTownGroups())
 				.filter(group => group.id > 0 && group.id !== -1 && group.towns[town_id])
 				.map(group => group.name)
 				.join(', ')})` || '';
@@ -834,6 +834,7 @@ class AutoBuild extends ModernUtil {
 			}
 
 			if (this.isFullQueue(town_id)) continue;
+
 			/* If town is done, remove from the list */
 			if (this.isDone(town_id)) {
 				delete this.towns_buildings[town_id];
@@ -854,9 +855,8 @@ class AutoBuild extends ModernUtil {
 		let { resources_for, population_for } = uw.MM.getModels().BuildingBuildData[town_id].attributes.building_data[type];
 
 		if (town.getAvailablePopulation() < population_for) return;
-		if (wood < resources_for.wood || stone < resources_for.stone || iron < resources_for.iron) {
-			return;
-		}
+		const m = 20;
+		if (wood < resources_for.wood + m || stone < resources_for.stone + m || iron < resources_for.iron + m) return;
 		let data = {
 			model_url: 'BuildingOrder',
 			action_name: 'buildUp',
