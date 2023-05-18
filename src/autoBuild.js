@@ -195,7 +195,7 @@ class AutoBuild extends ModernUtil {
 				delete this.towns_buildings[town_id];
 				this.storage.save('buildings', this.towns_buildings);
 				this.updateTitle();
-				const town = uw.ITowns.towns[town_id];
+				const town = uw.ITowns.getTown(town_id);
 				this.console.log(`${town.name}: Auto Build Done`);
 				continue;
 			}
@@ -205,7 +205,7 @@ class AutoBuild extends ModernUtil {
 
 	/* Make post request to the server to buildup the building */
 	postBuild = async (type, town_id) => {
-		let town = uw.ITowns.towns[town_id];
+		const town = uw.ITowns.getTown(town_id);
 		let { wood, stone, iron } = town.resources();
 		let { resources_for, population_for } = uw.MM.getModels().BuildingBuildData[town_id].attributes.building_data[type];
 
@@ -225,7 +225,6 @@ class AutoBuild extends ModernUtil {
 
 	/* Make post request to tear building down */
 	postTearDown = async (type, town_id) => {
-		let town = uw.ITowns.towns[town_id];
 		let data = {
 			model_url: 'BuildingOrder',
 			action_name: 'tearDown',
@@ -238,7 +237,7 @@ class AutoBuild extends ModernUtil {
 
 	/* return true if the quee is full */
 	isFullQueue = town_id => {
-		let town = uw.ITowns.towns[town_id];
+		const town = uw.ITowns.getTown(town_id);
 		if (uw.GameDataPremium.isAdvisorActivated('curator') && town.buildingOrders().length >= 7) {
 			return true;
 		}
@@ -250,7 +249,7 @@ class AutoBuild extends ModernUtil {
 
 	/* return true if building match polis */
 	isDone = town_id => {
-		let town = uw.ITowns.towns[town_id];
+		const town = uw.ITowns.getTown(town_id);
 		let buildings = town.getBuildings().attributes;
 		for (let build of Object.keys(this.towns_buildings[town_id])) {
 			if (this.towns_buildings[town_id][build] != buildings[build]) {

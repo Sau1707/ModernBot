@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.18.3
+// @version      1.18.4
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -840,7 +840,7 @@ class AutoBuild extends ModernUtil {
 				delete this.towns_buildings[town_id];
 				this.storage.save('buildings', this.towns_buildings);
 				this.updateTitle();
-				const town = uw.ITowns.towns[town_id];
+				const town = uw.ITowns.getTown(town_id);
 				this.console.log(`${town.name}: Auto Build Done`);
 				continue;
 			}
@@ -850,7 +850,7 @@ class AutoBuild extends ModernUtil {
 
 	/* Make post request to the server to buildup the building */
 	postBuild = async (type, town_id) => {
-		let town = uw.ITowns.towns[town_id];
+		const town = uw.ITowns.getTown(town_id);
 		let { wood, stone, iron } = town.resources();
 		let { resources_for, population_for } = uw.MM.getModels().BuildingBuildData[town_id].attributes.building_data[type];
 
@@ -870,7 +870,6 @@ class AutoBuild extends ModernUtil {
 
 	/* Make post request to tear building down */
 	postTearDown = async (type, town_id) => {
-		let town = uw.ITowns.towns[town_id];
 		let data = {
 			model_url: 'BuildingOrder',
 			action_name: 'tearDown',
@@ -883,7 +882,7 @@ class AutoBuild extends ModernUtil {
 
 	/* return true if the quee is full */
 	isFullQueue = town_id => {
-		let town = uw.ITowns.towns[town_id];
+		const town = uw.ITowns.getTown(town_id);
 		if (uw.GameDataPremium.isAdvisorActivated('curator') && town.buildingOrders().length >= 7) {
 			return true;
 		}
@@ -895,7 +894,7 @@ class AutoBuild extends ModernUtil {
 
 	/* return true if building match polis */
 	isDone = town_id => {
-		let town = uw.ITowns.towns[town_id];
+		const town = uw.ITowns.getTown(town_id);
 		let buildings = town.getBuildings().attributes;
 		for (let build of Object.keys(this.towns_buildings[town_id])) {
 			if (this.towns_buildings[town_id][build] != buildings[build]) {
@@ -1047,9 +1046,6 @@ class AutoFarm extends ModernUtil {
 		requestAnimationFrame(() => {
 			this.setAutoFarmLevel(this.timing);
 			this.setAutoFarmPercentual(this.percentual);
-			if (this.active) {
-				uw.$('#auto_farm').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
-			}
 		});
 
 		return `
@@ -1077,7 +1073,7 @@ class AutoFarm extends ModernUtil {
 		const islandsList = new Set();
 		const polisList = [];
 
-		const towns = uw.MM.getOnlyCollectionByName('Town').models;
+		const { models: towns } = uw.MM.getOnlyCollectionByName('Town');
 		for (const town of towns) {
 			const { on_small_island, island_id, id } = town.attributes;
 			if (on_small_island) continue;
@@ -1195,7 +1191,7 @@ class AutoFarm extends ModernUtil {
 						if (relation.attributes.relation_status !== 1) continue;
 						if (relation.attributes.lootable_at !== null && now < relation.attributes.lootable_at) continue;
 
-						this.claimSingle(town_id, relation.attributes.farm_town_id, relation.id);
+						this.claimSingle(town_id, relation.attributes.farm_town_id, relation.id, Math.ceil(this.timing / 2));
 						await this.sleep(500);
 						if (!max) return;
 						else max -= 1;
@@ -1263,14 +1259,14 @@ class AutoFarm extends ModernUtil {
 		this.updateTimer();
 	};
 
-	claimSingle = (town_id, farm_town_id, relation_id) => {
+	claimSingle = (town_id, farm_town_id, relation_id, option = 1) => {
 		const data = {
 			model_url: `FarmTownPlayerRelation/${relation_id}`,
 			action_name: 'claim',
 			arguments: {
 				farm_town_id: farm_town_id,
 				type: 'resources',
-				option: 1,
+				option: option,
 			},
 			town_id: town_id,
 		};
@@ -1311,8 +1307,8 @@ class AutoFarm extends ModernUtil {
 	fakeUpdate = () =>
 		new Promise((myResolve, myReject) => {
 			const town = uw.ITowns.getCurrentTown();
-			const { booty } = town.getResearches().attributes;
-			const { trade_office } = town.getBuildings().attributes;
+			const { attributes: booty } = town.getResearches();
+			const { attributes: trade_office } = town.getBuildings();
 			const data = {
 				island_x: town.getIslandCoordinateX(),
 				island_y: town.getIslandCoordinateY(),
@@ -1760,7 +1756,6 @@ class AutoRuralLevel extends ModernUtil {
 		const locked = player_relation_models.filter(model => model.attributes.relation_status === 0);
 
 		/* Get killpoints */
-
 		let available = killpoints.att + killpoints.def - killpoints.used;
 		let unlocked = player_relation_models.length - locked.length;
 
@@ -1769,6 +1764,7 @@ class AutoRuralLevel extends ModernUtil {
 			/* The first 5 rurals have discount */
 			const discounts = [2, 8, 10, 30, 50, 100];
 			if (unlocked < discounts.length && available < discounts[unlocked]) return;
+			else if (available < 100) return;
 
 			let towns = this.generateList();
 			for (let town_id of towns) {
@@ -1777,9 +1773,7 @@ class AutoRuralLevel extends ModernUtil {
 					y = town.getIslandCoordinateY();
 
 				for (let farmtown of farm_town_models) {
-					if (farmtown.attributes.island_x != x || farmtown.attributes.island_y != y) {
-						continue;
-					}
+					if (farmtown.attributes.island_x != x || farmtown.attributes.island_y != y) continue;
 
 					for (let relation of locked) {
 						if (farmtown.attributes.id != relation.attributes.farm_town_id) continue;

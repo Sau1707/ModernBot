@@ -78,7 +78,6 @@ class AutoRuralLevel extends ModernUtil {
 		const locked = player_relation_models.filter(model => model.attributes.relation_status === 0);
 
 		/* Get killpoints */
-
 		let available = killpoints.att + killpoints.def - killpoints.used;
 		let unlocked = player_relation_models.length - locked.length;
 
@@ -87,6 +86,7 @@ class AutoRuralLevel extends ModernUtil {
 			/* The first 5 rurals have discount */
 			const discounts = [2, 8, 10, 30, 50, 100];
 			if (unlocked < discounts.length && available < discounts[unlocked]) return;
+			else if (available < 100) return;
 
 			let towns = this.generateList();
 			for (let town_id of towns) {
@@ -95,9 +95,7 @@ class AutoRuralLevel extends ModernUtil {
 					y = town.getIslandCoordinateY();
 
 				for (let farmtown of farm_town_models) {
-					if (farmtown.attributes.island_x != x || farmtown.attributes.island_y != y) {
-						continue;
-					}
+					if (farmtown.attributes.island_x != x || farmtown.attributes.island_y != y) continue;
 
 					for (let relation of locked) {
 						if (farmtown.attributes.id != relation.attributes.farm_town_id) continue;
