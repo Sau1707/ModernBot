@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.18.4
+// @version      1.18.5
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -2438,6 +2438,7 @@ class AutoTrain extends ModernUtil {
 				uw.$(selector).css('color', '').text('-');
 			});
 			uw.$('#auto_train_title').css('filter', '');
+			this.storage.save('troops', this.city_troops);
 		}
 	};
 
@@ -2555,8 +2556,12 @@ class AutoTrain extends ModernUtil {
 		let town_list = this.getActiveList();
 
 		for (let town_id of town_list) {
-			if (this.checkPolis('naval', town_id)) return;
-			if (this.checkPolis('ground', town_id)) return;
+			if (town_id in uw.ITowns.towns) {
+				if (this.checkPolis('naval', town_id)) return;
+				if (this.checkPolis('ground', town_id)) return;
+			} else {
+				delete this.city_troops[town_id];
+			}
 		}
 	};
 }
