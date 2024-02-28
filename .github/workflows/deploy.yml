@@ -23,6 +23,13 @@ jobs:
                   npm i --legacy-peer-deps
                   npm run build
                   npm run export
+            - name: Fix permissions
+              run: |
+                  chmod -c -R +rX "_site/" | while read line; do
+                    echo "::warning title=Invalid file permissions automatically fixed::$line"
+                  done
+            - name: Upload Pages artifact
+              uses: actions/upload-pages-artifact@v3
 
     deploy:
         needs: build
