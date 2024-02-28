@@ -16,7 +16,7 @@ export default function GrepoScroll({ }) {
             <ScrollMiddle>
                 <ScrollTitle> ModernBot </ScrollTitle>
                 <ScrollDescription>
-                    a New modern bot for grepolis
+                    a BOT for Grepolis
                 </ScrollDescription>
             </ScrollMiddle>
         </div>
