@@ -7,7 +7,7 @@ version: 1.1.0
 
 ![Autobuild](./images/autobuild.png 'autobuild')
 
--   Set the level of each building with the arrow, _use shift_ to increase or decrease by _10_
+-   Set the level of each building with the arrow, **use shift** to increase or decrease by **10**
 -   Click to activate, each polis can be activate or deactivate individually
 -   All the active polis have the gear icon in the town menu
 -   Before build everything, then demolish
