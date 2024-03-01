@@ -1091,8 +1091,6 @@ class AutoFarm extends ModernUtil {
 			this.timer = 0; // TODO: check if it's really 0
 			this.active = setInterval(this.main, 1000);
 		}
-
-		this.polislist = this.generateList();
 	}
 
 	settings = () => {
@@ -1125,11 +1123,32 @@ class AutoFarm extends ModernUtil {
 	generateList = () => {
 		const islandsList = new Set();
 		const polisList = [];
+		const tmp_polisList = [];
+		let minResource = 0;
+		let min_percentual = 0;
 
 		const { models: towns } = uw.MM.getOnlyCollectionByName('Town');
+
 		for (const town of towns) {
 			const { on_small_island, island_id, id } = town.attributes;
 			if (on_small_island) continue;
+
+			/* Check the min percentual for each town */
+			const { wood, stone, iron, storage } = uw.ITowns.getTown(id).resources();
+			minResource = Math.min(wood, stone, iron);
+			min_percentual = minResource / storage;
+
+			if (this.percentual == 3 && min_percentual > 0.99) continue;
+			if (this.percentual == 2 && min_percentual > 0.9) continue;
+			if (this.percentual == 1 && min_percentual > 0.8) continue;
+
+			/* Add town if it is suitable */
+			tmp_polisList.push(town);
+		}
+
+		/* Generate list with one town per island*/
+		for (const town of tmp_polisList) {
+			const { on_small_island, island_id, id } = town.attributes;
 			if (islandsList.has(island_id)) continue;
 			islandsList.add(island_id);
 			polisList.push(id);
@@ -1145,11 +1164,13 @@ class AutoFarm extends ModernUtil {
 			uw.$('#auto_farm').css('filter', '');
 			clearInterval(this.active);
 			this.active = null;
+			this.console.log('Auto Farm off');
 		} else {
 			uw.$('#auto_farm').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
 			this.lastTime = Date.now();
 			this.timer = 0; // TODO: check if it's really 0
 			this.active = setInterval(this.main, 1000);
+			this.console.log('Auto Farm on');
 		}
 		this.storage.save('af', !!this.active);
 	};
@@ -1253,6 +1274,7 @@ class AutoFarm extends ModernUtil {
 			}
 		}
 
+		this.console.log(`Claimed resources for ${this.polislist.toString()}`)
 		setTimeout(() => uw.WMap.removeFarmTownLootCooldownIconAndRefreshLootTimers(), 2000);
 	};
 
@@ -1280,32 +1302,23 @@ class AutoFarm extends ModernUtil {
 	main = async () => {
 		/* Claim resouces of timer has passed */
 		if (this.timer < 1) {
-			/* Check if the percentual has reach */
-			const { wood, stone, iron, storage } = this.getTotalResources();
-			const minResource = Math.min(wood, stone, iron);
-			const min_percentual = minResource / storage;
 
-			/* If the max percentual it's reached stop and wait for 30 seconds */
-			if (this.percentual == 3 && min_percentual > 0.99) {
-				this.timer = 30000;
-				requestAnimationFrame(this.updateTimer);
-				return;
-			}
-			if (this.percentual == 2 && min_percentual > 0.9) {
-				this.timer = 30000;
-				requestAnimationFrame(this.updateTimer);
-				return;
-			}
-			if (this.percentual == 1 && min_percentual > 0.8) {
-				this.timer = 30000;
-				requestAnimationFrame(this.updateTimer);
-				return;
-			}
-
-			const rand = Math.floor(Math.random() * this.delta_time);
+			const rand = Math.floor(Math.random() * this.delta_time) + 5000;
 			this.timer = this.TIMINGS[this.timing] + rand;
 
+			/* Generate new polislist*/
+			this.polislist = this.generateList();
+
+			/* No entries -> wait 1 minute*/
+			if (this.polislist.length == 0) {
+				this.timer = 60000;
+				requestAnimationFrame(this.updateTimer);
+				return;
+			}
+
 			await this.claim();
+
+			this.timer = this.TIMINGS[this.timing] + rand;
 		}
 
 		/* update the timer */
