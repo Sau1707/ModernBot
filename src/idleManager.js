@@ -31,13 +31,13 @@ class IdleManager extends ModernUtil {
 		if (this.#idleTime > this.#idleThreshold && this.#taskQueue.isStopped) {
 			this.#taskQueue.start();
 
-			this.console.log('User being idle.');
+			this.console.log('User idle, resuming queue.');
 
 			this.#idleLogged = true;
 		}
 
 		if (!this.#taskQueue.isStopped && this.#idleTime < this.#idleThreshold) {
-			this.console.log('User active, resuming queue.');
+			this.console.log('User active, stopping queue.');
 
 			this.#taskQueue.stop();
 		}
