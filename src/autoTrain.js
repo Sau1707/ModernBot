@@ -57,7 +57,7 @@ class AutoTrain extends ModernUtil {
             <div class="game_border_corner corner2"></div>
             <div class="game_border_corner corner3"></div>
             <div class="game_border_corner corner4"></div>
-            <div class="game_header bold" style="position: relative; cursor: pointer"> 
+            <div class="game_header bold" style="position: relative; cursor: pointer">
             <span style="z-index: 10; position: relative;"> Settings </span>
             <span class="command_count"></span></div>
 
@@ -84,11 +84,11 @@ class AutoTrain extends ModernUtil {
             <div class="game_border_corner corner2"></div>
             <div class="game_border_corner corner3"></div>
             <div class="game_border_corner corner4"></div>
-            <div id="auto_train_title" class="game_header bold" style="position: relative; cursor: pointer" onclick="window.modernBot.autoTrain.trigger()"> 
+            <div id="auto_train_title" class="game_header bold" style="position: relative; cursor: pointer" onclick="window.modernBot.autoTrain.trigger()">
             <span style="z-index: 10; position: relative;">Auto Train </span>
             <div style="position: absolute; right: 10px; top: 4px; font-size: 10px; z-index: 10"> (click to reset) </div>
             <span class="command_count"></span></div>
-            <div id="troops_lvl_buttons"></div>    
+            <div id="troops_lvl_buttons"></div>
         </div>
     `;
 	};
@@ -179,7 +179,7 @@ class AutoTrain extends ModernUtil {
 		uw.$('#troops_lvl_buttons').html(`
         <div id="troops_settings_${town_id}">
             <div style="width: 600px; margin-bottom: 3px; display: inline-flex">
-            <a class="gp_town_link" href="${town.getLinkFragment()}">${town.getName()}</a> 
+            <a class="gp_town_link" href="${town.getLinkFragment()}">${town.getName()}</a>
             <p style="font-weight: bold; margin: 0px 5px"> [${town.getPoints()} pts] </p>
             <p style="font-weight: bold; margin: 0px 5px"> </p>
             <div class="population_icon">
@@ -373,7 +373,8 @@ class AutoTrain extends ModernUtil {
 			amount: count,
 			town_id: town_id,
 		};
-		uw.gpAjax.ajaxPost('building_barracks', 'build', data);
+		modernBot.taskQueue.enqueue(events.build.troops, data);
+		// uw.gpAjax.ajaxPost('building_barracks', 'build', data);
 	};
 
 	/* return the active towns */

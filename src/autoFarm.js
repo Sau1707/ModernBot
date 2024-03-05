@@ -1,5 +1,5 @@
-/* 
-    TODO:   
+/*
+    TODO:
     - Autotrade: fix rurali non ti appartiene, materie prime che possiedi + log in console
     - AutoRuralLevel: still to implement
     - AutoFarm: check for time to start
@@ -54,8 +54,8 @@ class AutoFarm extends ModernUtil {
                     ${this.getButtonHtml('percentuals_2', '90%', this.setAutoFarmPercentual, 2)}
                     ${this.getButtonHtml('percentuals_3', '100%', this.setAutoFarmPercentual, 3)}
                 </div>
-                </div>    
-            </div> 
+                </div>
+            </div>
         `;
 	};
 
@@ -261,7 +261,9 @@ class AutoFarm extends ModernUtil {
 			},
 			town_id: town_id,
 		};
-		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+
+		uw.modernBot.taskQueue.enqueue(events.farm.single, data);
+		// uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 
 	claimMultiple = (base = 300, boost = 600) =>

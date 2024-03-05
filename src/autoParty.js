@@ -144,13 +144,15 @@ class AutoParty extends ModernUtil {
 			let data = {
 				celebration_type: type,
 			};
-			uw.gpAjax.ajaxPost('town_overviews', 'start_all_celebrations', data);
+			modernBot.taskQueue.enqueue(events.culture.multipleCelebrations, data);
+			// uw.gpAjax.ajaxPost('town_overviews', 'start_all_celebrations', data);
 		} else {
 			let data = {
 				celebration_type: type,
 				town_id: town_id,
 			};
-			uw.gpAjax.ajaxPost('building_place', 'start_celebration', data);
+			modernBot.taskQueue.enqueue(events.culture.singleCelebration, data);
+			// uw.gpAjax.ajaxPost('building_place', 'start_celebration', data);
 		}
 	};
 }

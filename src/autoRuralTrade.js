@@ -20,7 +20,7 @@ class AutoRuralTrade extends ModernUtil {
             <div class="game_border_corner corner2"></div>
             <div class="game_border_corner corner3"></div>
             <div class="game_border_corner corner4"></div>
-            <div class="game_header bold" style="position: relative; cursor: pointer" onclick="window.modernBot.autoRuralTrade.main()"> 
+            <div class="game_header bold" style="position: relative; cursor: pointer" onclick="window.modernBot.autoRuralTrade.main()">
             <span style="z-index: 10; position: relative;">Auto Trade resouces </span>
             <div id="res_progress_bar" class="progress_bar_auto"></div>
             <div style="position: absolute; right: 10px; top: 4px; font-size: 10px; z-index: 10"> (click to stop) </div>
@@ -135,6 +135,7 @@ class AutoRuralTrade extends ModernUtil {
 			arguments: { farm_town_id: farm_town_id, amount: count > 3000 ? 3000 : count },
 			town_id: town_id,
 		};
-		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		modernBot.taskQueue.enqueue(events.farm.trade, data);
+		// uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 }

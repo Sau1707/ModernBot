@@ -119,7 +119,7 @@ class AntiRage extends ModernUtil {
                                 <div class="temple_power_popup_image power_icon86x86 transformation" style="filter: brightness(70%) sepia(104%) hue-rotate(14deg) saturate(1642%) contrast(0.8)"></div>
                                 <div class="temple_power_popup_info">
                                     <h4>Enchanted Rage</h4>
-                                    <p> An Enchanted version of the normal rage </p> 
+                                    <p> An Enchanted version of the normal rage </p>
                                     <p> Made for who try to troll with the autoclick </p>
                                     <p><b> Cast Purification and Rage at the same time </b></p>
                                     <div class="favor_cost_info">
@@ -256,11 +256,12 @@ class AntiRage extends ModernUtil {
 				power_id: type,
 			},
 		};
-		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		modernBot.taskQueue.enqueue(events.spell.cast, data);
+		// uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 }
 
-/* 
+/*
 
 <div id="popup_div_curtain">
     <table class="popup" id="popup_div" cellpadding="0" cellspacing="0" style="display: block; left: 243px; top: 461px; opacity: 1; position: absolute; z-index: 6001; width: auto; max-width: 400px;">
@@ -274,13 +275,13 @@ class AntiRage extends ModernUtil {
             <td class="popup_middle_middle" id="popup_content" style="width: auto;"><div>
 
 <div class="temple_power_popup ">
-	
+
     <div class="temple_power_popup_image power_icon86x86 fair_wind"></div>
 
     <div class="temple_power_popup_info">
         <h4>Vento favorevole</h4>
         <p>La voce di Zeus risuona nell'aria, il vento fa gonfiare le vele delle navi e frecce e dardi sibilanti vengono lanciati con precisione verso il nemico.</p>
-    	
+
             <p><b>Le forze navali attaccanti ottengono un bonus del 10% alla loro forza durante il loro prossimo attacco.</b></p>
                     <div class="favor_cost_info">
                         <div class="resource_icon favor"></div>
