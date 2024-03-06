@@ -1,0 +1,34 @@
+name: Update Version
+
+on: push
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all history for all tags and branches
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Bump2Version
+        run: pip install bump2version
+
+      - name: Get current version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(cat version.txt)
+
+      - name: Bump patch version and update version.txt
+        run: bump2version patch version.txt --current-version ${{ steps.get_version.outputs.VERSION }} --allow-dirty
+
+      - name: Commit and push if version.txt has changed
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git commit -am "Incremented version number" || echo "No changes to commit"
+          git push
