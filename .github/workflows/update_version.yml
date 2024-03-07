@@ -22,6 +22,11 @@ jobs:
             - name: Build and update version
               run: npm start
 
+            - name: Add /dist folder
+              run: |
+                  git add -f dist/
+                  git status
+
             - name: Commit and push changes
               run: |
                   git config --global user.email "action@github.com"
