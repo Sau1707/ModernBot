@@ -14,7 +14,7 @@ class AutoBuild extends ModernUtil {
         this.enable = setInterval(this.main, 20000);
 
         /* Add listener that change the Senate look */
-        $.Observer(GameEvents.window.open).subscribe("modernSenate", this.updateSenate);
+        uw.$.Observer(GameEvents.window.open).subscribe("modernSenate", this.updateSenate);
     }
 
     settings = () => {
