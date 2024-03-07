@@ -5,17 +5,20 @@ class ModernBot {
         this.console = new BotConsole();
         this.storage = new ModernStorage();
 
-        this.autoGratis = new AutoGratis(this.console, this.storage);
-        this.autoFarm = new AutoFarm(this.console, this.storage);
-        this.autoRuralLevel = new AutoRuralLevel(this.console, this.storage);
-        this.autoBuild = new AutoBuild(this.console, this.storage);
-        this.autoRuralTrade = new AutoRuralTrade(this.console, this.storage);
-        this.autoBootcamp = new AutoBootcamp(this.console, this.storage);
-        this.autoParty = new AutoParty(this.console, this.storage);
-        this.autoTrain = new AutoTrain(this.console, this.storage);
-        this.autoHide = new AutoHide(this.console, this.storage);
-        this.antiRage = new AntiRage(this.console, this.storage);
-        this.autoTrade = new AutoTrade(this.console, this.storage);
+		this.taskQueue = new TaskQueue();
+		this.idleManager = new IdleManager(this.taskQueue, this.console, this.storage);
+
+		this.autoGratis = new AutoGratis(this.console, this.storage);
+		this.autoFarm = new AutoFarm(this.console, this.storage);
+		this.autoRuralLevel = new AutoRuralLevel(this.console, this.storage);
+		this.autoBuild = new AutoBuild(this.console, this.storage);
+		this.autoRuralTrade = new AutoRuralTrade(this.console, this.storage);
+		this.autoBootcamp = new AutoBootcamp(this.console, this.storage);
+		this.autoParty = new AutoParty(this.console, this.storage);
+		this.autoTrain = new AutoTrain(this.console, this.storage);
+		this.autoHide = new AutoHide(this.console, this.storage);
+		this.antiRage = new AntiRage(this.console, this.storage);
+		this.autoTrade = new AutoTrade(this.console, this.storage);
 
         this.settingsFactory = new createGrepoWindow({
             id: 'MODERN_BOT',

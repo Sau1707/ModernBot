@@ -20,15 +20,15 @@ class AutoBootcamp extends ModernUtil {
 		return `
         <div class="game_border" style="margin-bottom: 20px">
             ${this.getTitleHtml('auto_autobootcamp', 'Auto Bootcamp', this.toggle, '', this.enable_auto_bootcamp)}
-        
+
         <div id="autobootcamp_lvl_buttons" style="padding: 5px; display: inline-flex;">
             <!-- temp -->
             <div style="margin-right: 40px">
                 ${this.getButtonHtml('autobootcamp_off', 'Only off', this.triggerUseDef)}
                 ${this.getButtonHtml('autobootcamp_def', 'Off & Def', this.triggerUseDef)}
             </div>
-        </div >    
-    </div> 
+        </div >
+    </div>
         `;
 	};
 
@@ -139,7 +139,8 @@ class AutoBootcamp extends ModernUtil {
 			action_name: 'attack',
 			arguments: units,
 		};
-		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		modernBot.taskQueue.enqueue(events.bandit.attack, data);
+		// uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 
 	/* Send requesto to the server to use the reward */
@@ -149,7 +150,8 @@ class AutoBootcamp extends ModernUtil {
 			action_name: 'useReward',
 			arguments: {},
 		};
-		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+		modernBot.taskQueue.enqueue(events.bandit.useReward, data);
+		// uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
 	};
 
 	/* Send request to the server to stash the reward */
@@ -159,8 +161,11 @@ class AutoBootcamp extends ModernUtil {
 			action_name: 'stashReward',
 			arguments: {},
 		};
-		uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data, 0, {
+		modernBot.taskQueue.enqueue(events.bandit.stashReward, data, 0, {
 			error: this.useBootcampReward,
 		});
+		// uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data, 0, {
+		// 	error: this.useBootcampReward,
+		// });
 	};
 }

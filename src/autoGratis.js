@@ -1,12 +1,12 @@
 class AutoGratis extends ModernUtil {
-    constructor(c, s) {
-        super(c, s);
+	constructor(c, s) {
+		super(c, s);
 
-        if (this.storage.load('enable_autogratis', false)) this.toggle();
-    }
+		if (this.storage.load('enable_autogratis', false)) this.toggle();
+	}
 
-    settings = () => {
-        return `
+	settings = () => {
+		return `
         <div class="game_border" style="margin-bottom: 20px">
             <div class="game_border_top"></div>
             <div class="game_border_bottom"></div>
@@ -16,8 +16,7 @@ class AutoGratis extends ModernUtil {
             <div class="game_border_corner corner2"></div>
             <div class="game_border_corner corner3"></div>
             <div class="game_border_corner corner4"></div>
-            <div id="auto_gratis_title" style="cursor: pointer; filter: ${this.autogratis ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : ''
-            }" class="game_header bold" onclick="window.modernBot.autoGratis.toggle()"> Auto Gratis <span class="command_count"></span>
+            <div id="auto_gratis_title" style="cursor: pointer; filter: ${this.autogratis ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : ''}" class="game_header bold" onclick="window.modernBot.autoGratis.toggle()"> Auto Gratis <span class="command_count"></span>
                 <div style="position: absolute; right: 10px; top: 4px; font-size: 10px;"> (click to toggle) </div>
             </div>
             <div style="padding: 5px; font-weight: 600">
@@ -26,51 +25,49 @@ class AutoGratis extends ModernUtil {
                 <div class="right"></div>
                 <div class="caption js-caption">Gratis<div class="effect js-effect"></div></div>
             </div> button (try every 4 seconds)
-            </div>    
+            </div>
         </div>
         `;
-    };
+	};
 
-    /* Call to trigger the Auto Gratis */
-    toggle = () => {
-        if (!this.autogratis) {
-            uw.$('#auto_gratis_title').css(
-                'filter',
-                'brightness(100%) saturate(186%) hue-rotate(241deg)',
-            );
-            this.autogratis = setInterval(this.main, 4000);
-        } else {
-            uw.$('#auto_gratis_title').css('filter', '');
-            clearInterval(this.autogratis);
-            this.autogratis = null;
-        }
-        this.storage.save('enable_autogratis', !!this.autogratis);
-    };
+	/* Call to trigger the Auto Gratis */
+	toggle = () => {
+		if (!this.autogratis) {
+			uw.$('#auto_gratis_title').css('filter', 'brightness(100%) saturate(186%) hue-rotate(241deg)');
+			this.autogratis = setInterval(this.main, 4000);
+		} else {
+			uw.$('#auto_gratis_title').css('filter', '');
+			clearInterval(this.autogratis);
+			this.autogratis = null;
+		}
+		this.storage.save('enable_autogratis', !!this.autogratis);
+	};
 
-    /* Main loop for the autogratis bot */
-    main = () => {
-        const el = uw.$('.type_building_queue.type_free').not('#dummy_free');
-        if (el.length) el.click();
+	/* Main loop for the autogratis bot */
+	main = () => {
+		const el = uw.$('.type_building_queue.type_free').not('#dummy_free');
+		if (el.length) el.click();
 
-        const town = uw.ITowns.getCurrentTown();
-        for (let model of town.buildingOrders().models) {
-            if (model.attributes.building_time < 300) {
-                this.callGratis(town.id, model.id)
-                return;
-            }
-        }
-    };
+		const town = uw.ITowns.getCurrentTown();
+		for (let model of town.buildingOrders().models) {
+			if (model.attributes.building_time < 300) {
+				this.callGratis(town.id, model.id);
+				return;
+			}
+		}
+	};
 
-    /* Post request to call the gratis */
-    callGratis = (town_id, order_id) => {
-        const data = {
-            "model_url": `BuildingOrder/${order_id}`,
-            "action_name": "buyInstant",
-            "arguments": {
-                "order_id": order_id
-            },
-            "town_id": town_id
-        }
-        uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
-    }
+	/* Post request to call the gratis */
+	callGratis = (town_id, order_id) => {
+		const data = {
+			model_url: `BuildingOrder/${order_id}`,
+			action_name: 'buyInstant',
+			arguments: {
+				order_id: order_id,
+			},
+			town_id: town_id,
+		};
+		modernBot.taskQueue.enqueue(events.build.finish, data);
+		// uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
+	};
 }
