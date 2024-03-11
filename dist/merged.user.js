@@ -1163,7 +1163,7 @@ class AutoFarm extends ModernUtil {
 	generateList = () => {
 		const islandsList = new Set();
 		const polisList = [];
-		const tmp_polisList = [];
+		const not_suitable_polisList = [];
 		let minResource = 0;
 		let min_percentual = 0;
 
@@ -1178,16 +1178,22 @@ class AutoFarm extends ModernUtil {
 			minResource = Math.min(wood, stone, iron);
 			min_percentual = minResource / storage;
 
-			if (this.percentual == 3 && min_percentual > 0.99) continue;
-			if (this.percentual == 2 && min_percentual > 0.9) continue;
-			if (this.percentual == 1 && min_percentual > 0.8) continue;
+			/* When town is not suitable add it to list to avoid looping through all towns later on again */
+			if ((this.percentual == 3 && min_percentual > 0.99)
+				|| (this.percentual == 2 && min_percentual > 0.9)
+				|| (this.percentual == 1 && min_percentual > 0.8)) {
+				not_suitable_polisList.push(id)
+			}
 
-			/* Add town if it is suitable */
-			tmp_polisList.push(town);
+			/* Add one town per island if it is suitable and island has no town yet */
+			if (islandsList.has(island_id)) continue;
+			islandsList.add(island_id);
+			polisList.push(id);
 		}
 
-		/* Generate list with one town per island*/
-		for (const town of tmp_polisList) {
+		/* Loop through skipped towns earlier to have at least one town per island added */
+		for (const town of not_suitable_polisList) {
+			/* no need to check for small island because the towns in this list are all on big islands */
 			const { on_small_island, island_id, id } = town.attributes;
 			if (islandsList.has(island_id)) continue;
 			islandsList.add(island_id);
