@@ -7,11 +7,11 @@ version: 1.0.0
 
 ![AutoParty](./images/autoparty.png 'autoparty')
 
--   2 Modes: Party and Parade
--   2 Options: Single and All
--   If the single it's selected try to start a party in each city individually, else all at the same time (require Administrator)
+-   2 Modes: Party and Parade (Toggle)
+-   2 Options: Single and All (Choose Option)
+-   If the single is selected try to start a party in each city individually, else all at the same time (require Administrator).
 
 ### Planned updates
 
--   Add olimpic games + special event
+-   Add Olympic Games + Special event
 -   Fix with bonus that reduce cost
