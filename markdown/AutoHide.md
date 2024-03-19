@@ -7,6 +7,6 @@ version: 1.0.0
 
 ![autohide](./images/autohide.png 'autohide')
 
--   One polis active at the time.
+-   One city active at the time.
 -   Every 4 seconds check if there is more then 5000 iron, in that case store it in the city cave.
 -   Activable both from the bot GUI and the cave of the city.

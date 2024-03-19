@@ -7,4 +7,4 @@ version: 1.1.0
 
 ![Alt text](./images/fivemin.png 'sentinel_button')
 
--   Self explanatory, activate and every 4 seconds checks if the green "5 min" button exists on the screen, in that case click it. Works on current viewing polis.
+-   Self explanatory, activate and every 4 seconds checks if the green "5 min" button exists on the screen, in that case click it. Works on current viewing city.

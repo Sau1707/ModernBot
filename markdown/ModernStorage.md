@@ -1,5 +1,5 @@
 ---
-description: Save settings in the note to access across diffrents browsers
+description: Save settings in the note to access across different browsers
 version: 1.0.0
 ---
 

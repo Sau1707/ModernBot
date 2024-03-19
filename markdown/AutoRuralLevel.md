@@ -10,7 +10,7 @@ version: 1.0.1
 -   Choose the desired level and activate the module.
 -   Works level by level, once an entire level is complete starts the next one.
 -   Unlocks & Upgrades rural villages.
--   Auto Self turn off once it's complete.
+-   Auto self turn off once it's complete.
 
 ### Planned updates
 

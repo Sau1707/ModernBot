@@ -12,6 +12,6 @@ version: 1.1.0
 -   All the active polis have the gear icon in the town menu.
 -   Before build everything, then demolish.
 -   Pay attention with stuff like the academy points or the requirements, could break.
--   Works both in the ModernBot settings and in the Sentate view
+-   Works both in the ModernBot settings and in the Senate view
 
 ![AutobuildSenate](./images/autobuild_senate.png 'autobuild_sentate')
