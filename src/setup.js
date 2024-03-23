@@ -16,7 +16,6 @@ class ModernBot {
 		this.autoHide = new AutoHide(this.console, this.storage);
 		this.antiRage = new AntiRage(this.console, this.storage);
 		this.autoTrade = new AutoTrade(this.console, this.storage);
-		this.autoGold = new AutoGold(this.console, this.storage);
 
 		this.settingsFactory = new createGrepoWindow({
 			id: 'MODERN_BOT',
