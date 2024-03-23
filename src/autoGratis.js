@@ -31,7 +31,7 @@ class AutoGratis extends ModernUtil {
         `;
     };
 
-    /* Call to trigger the autogratis */
+    /* Call to trigger the Auto Gratis */
     toggle = () => {
         if (!this.autogratis) {
             uw.$('#auto_gratis_title').css(
@@ -39,12 +39,10 @@ class AutoGratis extends ModernUtil {
                 'brightness(100%) saturate(186%) hue-rotate(241deg)',
             );
             this.autogratis = setInterval(this.main, 4000);
-            this.console.log('Auto Gratis -> On');
         } else {
             uw.$('#auto_gratis_title').css('filter', '');
             clearInterval(this.autogratis);
             this.autogratis = null;
-            this.console.log('Auto Gratis -> Off');
         }
         this.storage.save('enable_autogratis', !!this.autogratis);
     };
@@ -52,20 +50,18 @@ class AutoGratis extends ModernUtil {
     /* Main loop for the autogratis bot */
     main = () => {
         const el = uw.$('.type_building_queue.type_free').not('#dummy_free');
-        if (el.length) {
-            el.click();
-        };
+        if (el.length) el.click();
+
         const town = uw.ITowns.getCurrentTown();
         for (let model of town.buildingOrders().models) {
             if (model.attributes.building_time < 300) {
                 this.callGratis(town.id, model.id)
                 return;
             }
-            //const now = new Date()
-            //if ((model.attributes.to_be_completed_at - now / 1000) > 300) continue;
         }
     };
 
+    /* Post request to call the gratis */
     callGratis = (town_id, order_id) => {
         const data = {
             "model_url": `BuildingOrder/${order_id}`,

@@ -1,0 +1,35 @@
+name: Build and update version
+
+on: push
+
+jobs:
+    build-and-update-version:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out the repo
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0 # Fetch all history for all tags and branches
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '14'
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Build and update version
+              run: npm start
+
+            - name: Add /dist folder
+              run: |
+                  git add -f dist/
+                  git status
+
+            - name: Commit and push changes
+              run: |
+                  git config --global user.email "action@github.com"
+                  git config --global user.name "GitHub Action"
+                  git commit -am "Incremented version number" || echo "No changes to commit"
+                  git push

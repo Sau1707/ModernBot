@@ -8,7 +8,7 @@ on:
     workflow_dispatch:
 
 jobs:
-    deployment:
+    build:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
@@ -17,14 +17,36 @@ jobs:
                   node-version: 'lts/*'
                   cache: 'npm'
                   cache-dependency-path: '**/package-lock.json'
-            - name: Build
+            - name: Install and build
               working-directory: website
               run: |
                   npm i --legacy-peer-deps
                   npm run build
                   npm run export
-            - name: Deploy
-              uses: peaceiris/actions-gh-pages@v3
+            - name: Fix permissions
+              working-directory: website
+              run: |
+                  chmod -c -R +rX "out/" | while read line; do
+                    echo "::warning title=Invalid file permissions automatically fixed::$line"
+                  done
+            - name: Upload Pages artifact
+              uses: actions/upload-pages-artifact@v3
               with:
-                  deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-                  publish_dir: ./website/out
+                  path: website/out
+
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+
+        permissions:
+            pages: write
+            id-token: write
+
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+
+        steps:
+            - name: Deploy
+              id: deployment
+              uses: actions/deploy-pages@v4

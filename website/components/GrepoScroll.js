@@ -16,7 +16,10 @@ export default function GrepoScroll({ }) {
             <ScrollMiddle>
                 <ScrollTitle> ModernBot </ScrollTitle>
                 <ScrollDescription>
-                    a New modern bot for grepolis
+                    a BOT for Grepolis. {"   "} Open source on{' '}
+                    <a style={{ color: 'black', fontWeight: 'bold' }} href="https://github.com/Sau1707/ModernBot" target={'_blank'}>
+                        Github
+                    </a>
                 </ScrollDescription>
             </ScrollMiddle>
         </div>

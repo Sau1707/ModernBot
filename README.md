@@ -4,11 +4,14 @@
 
 ### <div align="center"> [Website](https://sau1707.github.io/ModernBot/) - [Donations](https://paypal.me/sau1707) </div>
 
-Icons from [flaticon](https://www.flaticon.com/)
-
-##
 
 ## Development
+
+### Contributing
+
+The `main` branch has the stable version of the bot. The `dev` branch has the latest changes and it's the one that should be used for development.
+
+Fork the repository and clone it to your local machine. Create a new branch from `dev` and make your changes. Once you're done, submit a pull request to the `dev` branch of the original repository.
 
 ### Script
 
@@ -86,3 +89,6 @@ The use of this bot is entirely at your own risk, and we accept no liability for
 Additionally, this bot is provided as open-source software, and we do not offer any technical support or assistance in its installation, configuration, or use. You are solely responsible for any modifications or customizations you make to the bot's code, and we accept no responsibility for any issues that may arise as a result.
 
 By using this bot, you acknowledge and accept these terms and conditions and agree to use it responsibly and in accordance with the applicable laws and regulations.
+
+- Icons from [flaticon](https://www.flaticon.com/)
+- Website graphics from [grepolis](https://grepolis.com)
