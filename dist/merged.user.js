@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.19.5
+// @version      1.19.6
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -491,7 +491,7 @@ class AutoBootcamp extends ModernUtil {
         if (this.storage.load('bootcamp_use_def', false)) this.triggerUseDef();
 
         // Attach the observer to the window open event
-        $.Observer(GameEvents.window.open).subscribe("modernAttackSpot", this.updateWindow);
+        uw.$.Observer(GameEvents.window.open).subscribe("modernAttackSpot", this.updateWindow);
     }
 
     updateWindow = (event, handler) => {
