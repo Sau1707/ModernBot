@@ -7,9 +7,9 @@ version: 1.0.1
 
 ![bootcamp](./images/bootcamp.png 'bootcamp')
 
--   Trigger to attack automatically the bootcamp
--   2 options: With def units or without
+-   Trigger automatic attacks to the bootcamp.
+-   2 options: Only Off Units **OR** Off + Def Units
 
 ### Planned updates
 
--   Selectable what rewart to store
+-   Be able to select what reward to store in inventory.

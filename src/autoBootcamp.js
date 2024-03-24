@@ -13,7 +13,7 @@ class AutoBootcamp extends ModernUtil {
         if (this.storage.load('bootcamp_use_def', false)) this.triggerUseDef();
 
         // Attach the observer to the window open event
-        $.Observer(GameEvents.window.open).subscribe("modernAttackSpot", this.updateWindow);
+        uw.$.Observer(GameEvents.window.open).subscribe("modernAttackSpot", this.updateWindow);
     }
 
     updateWindow = (event, handler) => {

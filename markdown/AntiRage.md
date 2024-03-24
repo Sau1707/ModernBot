@@ -7,5 +7,5 @@ version: 1.0.0
 
 ![antirage](./images/antirage.png 'antirage')
 
--   Click on the god with the glow effect to spamm the porwer (work like an autoclick with some random)
--   Click on the golen rage to buff it, it will cast purification and rage at the same time
+-   Click on the god with the glow effect to spam the power (works like an autoclick with some random delay)
+-   Click on the golden rage to buff it, it will cast purification and rage at the same time.

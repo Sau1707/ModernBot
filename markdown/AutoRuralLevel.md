@@ -7,9 +7,10 @@ version: 1.0.1
 
 ![Autorurallevel](./images/autorurallevel.png 'autorurallevel')
 
--   Activate and choose the desired level
--   Works level by level, once an entire level is complete starts the next one
--   Self turn off once it's complete
+-   Choose the desired level and activate the module.
+-   Works level by level, once an entire level is complete starts the next one.
+-   Unlocks & Upgrades rural villages.
+-   Auto self turn off once it's complete.
 
 ### Planned updates
 
