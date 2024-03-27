@@ -123,4 +123,126 @@ class ModernUtil {
     isActive(type) {
         return uw.GameDataPremium.isAdvisorActivated(type);
     }
+
+
+    /**
+     * const button = elements.createButton('id', 'text', fn);
+     * $('body').append(button);
+     * To disable/enable the button:
+     * button.addClass('disabled'); button.removeClass('disabled');
+     * $('#id').addClass('disabled'); $('#id').removeClass('disabled');
+     * NOTE: Even when the button is disabled, the click event will still be triggered.
+     */
+    createButton = (id, text, fn) => {
+        const $button = $('<div>', {
+            'id': id,
+            'class': 'button_new',
+        });
+
+        // Add the left and right divs to the button
+        $button.append($('<div>', { 'class': 'left' }));
+        $button.append($('<div>', { 'class': 'right' }));
+        $button.append($('<div>', {
+            'class': 'caption js-caption',
+            'html': `${text} <div class="effect js-effect"></div>`
+        }));
+
+        // Add the click event to the button if a function is provided
+        if (fn) $(document).on('click', `#${id}`, fn);
+
+        return $button;
+    }
+
+
+    /**
+     * const title = elements.createTitle('id', 'text', fn, description);
+     * $('body').append(title);
+     * To disable/enable the title:
+     * title.addClass('disabled'); title.removeClass('disabled');
+     * $('#id').addClass('disabled'); $('#id').removeClass('disabled');
+     * NOTE: Even when the title is disabled, the click event will still be triggered.
+     */
+    createTitle = (id, text, fn, desc = '(click to toggle)') => {
+        const $div = $('<div>').addClass('game_header bold').attr('id', id).css({
+            cursor: 'pointer',
+            position: 'relative',
+        }).html(text);
+
+        const $span = $('<span>').addClass('command_count');
+        const $descDiv = $('<div>').css({
+            position: 'absolute',
+            right: '10px',
+            top: '4px',
+            fontSize: '10px'
+        }).text(desc);
+
+        $div.append($span).append($descDiv);
+        if (fn) $(document).on('click', `#${id}`, fn);
+
+        return $('<div>')
+            .append('<div class="game_border_top"></div>')
+            .append('<div class="game_border_bottom"></div>')
+            .append('<div class="game_border_left"></div>')
+            .append('<div class="game_border_right"></div>')
+            .append('<div class="game_border_corner corner1"></div>')
+            .append('<div class="game_border_corner corner2"></div>')
+            .append('<div class="game_border_corner corner3"></div>')
+            .append('<div class="game_border_corner corner4"></div>')
+            .append($div);
+    }
+
+
+    createActivity = (background) => {
+        const $activity_wrap = $('<div class="activity_wrap"></div>');
+        const $activity = $('<div class="activity"></div>');
+        const $icon = $('<div class="icon"></div>').css({
+            "background": background,
+            "position": "absolute",
+            "top": "-1px",
+            "left": "-1px",
+        });
+        const $count = $('<div class="count js-caption"></div>').text(0);
+        $icon.append($count);
+        $activity.append($icon);
+        $activity_wrap.append($activity);
+        return { $activity, $count };
+    }
+
+
+    createPopup = (left, width, height, $content) => {
+        const $box = $('<div class="sandy-box js-dropdown-list" id="toolbar_activity_recruits_list"></div>').css({
+            "left": `${left}px`,
+            "position": "absolute",
+            "width": `${width}px`,
+            "height": `${height}px`,
+            "top": "29px",
+            "margin-left": "0px",
+            "display": "none",
+        });
+
+        // Make all the corners
+        const $corner_tl = $('<div class="corner_tl"></div>');
+        const $corner_tr = $('<div class="corner_tr"></div>');
+        const $corner_bl = $('<div class="corner_bl"></div>');
+        const $corner_br = $('<div class="corner_br"></div>');
+        // Make all the borders
+        const $border_t = $('<div class="border_t"></div>');
+        const $border_b = $('<div class="border_b"></div>');
+        const $border_l = $('<div class="border_l"></div>');
+        const $border_r = $('<div class="border_r"></div>');
+        // Make the middle
+        const $middle = $('<div class="middle"></div>').css({
+            "left": "10px",
+            "right": "20px",
+            "top": "14px",
+            "bottom": "20px",
+        });
+
+        const $middle_content = $('<div class="content js-dropdown-item-list"></div>').append($content);
+        $middle.append($middle_content);
+
+        $box.append($corner_tl, $corner_tr, $corner_bl, $corner_br, $border_t, $border_b, $border_l, $border_r, $middle);
+        return $box;
+    }
+
 }

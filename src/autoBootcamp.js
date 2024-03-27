@@ -3,9 +3,9 @@ class AutoBootcamp extends ModernUtil {
         super(console, storage);
 
         // Create the buttons for the settings
-        this.$title = uw.modernElements.createTitle('auto_autobootcamp', 'Auto Bootcamp', this.toggle, '(click to toggle)');
-        this.$button_only_off = uw.modernElements.createButton('autobootcamp_off', 'Only off', this.triggerUseDef);
-        this.$button_off_def = uw.modernElements.createButton('autobootcamp_def', 'Off & Def', this.triggerUseDef);
+        this.$title = this.createTitle('auto_autobootcamp', 'Auto Bootcamp', this.toggle, '(click to toggle)');
+        this.$button_only_off = this.createButton('autobootcamp_off', 'Only off', this.triggerUseDef);
+        this.$button_off_def = this.createButton('autobootcamp_def', 'Off & Def', this.triggerUseDef);
         this.$settings = this.createSettingsHtml();
 
         // Save the state of the auto bootcamp
