@@ -165,12 +165,9 @@ class ModernBot {
     }
 }
 
-// Todo change this with a loop that wait that the page is fully loaded
-setTimeout(() => {
-
-    $(document).ready(function () {
-        uw.modernBot = new ModernBot();
-    })
-
-    // setTimeout(() => uw.modernBot.settingsFactory.openWindow(), 500);
-}, 1000);
+// Load the bot when the loader is ready
+const loader = setInterval(() => {
+    if ($("#loader").length > 0) return;
+    uw.modernBot = new ModernBot();
+    clearInterval(loader);
+}, 100);
