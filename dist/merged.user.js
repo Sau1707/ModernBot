@@ -3,7 +3,7 @@
 // @name         ModernBot
 // @author       Sau1707
 // @description  A modern grepolis bot
-// @version      1.18.2
+// @version      1.18.3
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
 // @updateURL    https://github.com/Sau1707/ModernBot/blob/main/dist/merged.user.js
@@ -1463,7 +1463,7 @@ class AutoFarm extends ModernUtil {
         const polis_list = this.generateList();
 
         // If the captain is active, claim all the resources at once and fake the opening
-        if (isCaptainActive && this.gui) {
+        if (isCaptainActive && !this.gui) {
             await this.fakeOpening();
             await this.sleep(Math.random() * 2000 + 1000); // random between 1 second and 3
             await this.fakeSelectAll();
@@ -1476,7 +1476,7 @@ class AutoFarm extends ModernUtil {
             return;
         }
 
-        if (isCaptainActive && !this.gui) {
+        if (isCaptainActive && this.gui) {
             await this.fakeGuiUpdate();
             return;
         }
