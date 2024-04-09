@@ -22,8 +22,18 @@ class ModernUtil {
         this.storage = storage;
     }
     /* Usage async this.sleep(ms) -> stop the code for ms */
-    sleep = ms => {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    sleep = (ms, stdDev) => {
+        // Check if a standard deviation is not provided
+        if (typeof stdDev === 'undefined') return new Promise(resolve => setTimeout(resolve, ms));
+
+        const mean = ms;
+        let u = 0, v = 0;
+        while (u === 0) u = Math.random(); // Converting [0,1) to (0,1)
+        while (v === 0) v = Math.random();
+        let num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+
+        num = num * stdDev + mean; // Scale and translate to desired mean and stdDev
+        return new Promise(resolve => setTimeout(resolve, num));
     };
 
     /**

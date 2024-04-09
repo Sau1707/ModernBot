@@ -6,6 +6,7 @@ class AutoFarm extends ModernUtil {
         this.timing = this.storage.load('af_level', 300000);
         this.percent = this.storage.load('af_percent', 1);
         this.active = this.storage.load('af_active', false);
+        this.gui = this.storage.load('af_gui', false);
 
         // Create the elements for the new menu
         const { $activity, $count } = this.createActivity("url(https://gpit.innogamescdn.com/images/game/premium_features/feature_icons_2.08.png) no-repeat 0 -240px");
@@ -26,18 +27,25 @@ class AutoFarm extends ModernUtil {
         this.$content = $("<div></div>")
         this.$title = $("<p>Modern Farm</p>").css({ "text-align": "center", "margin": "2px", "font-weight": "bold", "font-size": "16px" })
         this.$content.append(this.$title)
+
         this.$duration = $("<p>Duration:</p>").css({ "text-align": "left", "margin": "2px", "font-weight": "bold" })
         this.$button5 = this.createButton("modern_farm_5", "5 min", this.toggleDuration)
         this.$button10 = this.createButton("modern_farm_10", "10 min", this.toggleDuration)
         this.$button20 = this.createButton("modern_farm_20", "20 min", this.toggleDuration)
         this.$content.append(this.$duration, this.$button5, this.$button10, this.$button20)
+
         this.$storage = $("<p>Storage:</p>").css({ "text-align": "left", "margin": "2px", "font-weight": "bold" })
         this.$button80 = this.createButton("modern_farm_80", "80%", this.toggleStorage).css({ "width": "70px" })
         this.$button90 = this.createButton("modern_farm_90", "90%", this.toggleStorage).css({ "width": "80px" })
         this.$button100 = this.createButton("modern_farm_100", "100%", this.toggleStorage).css({ "width": "80px" })
         this.$content.append(this.$storage, this.$button80, this.$button90, this.$button100)
 
-        this.$popup = this.createPopup(423, 250, 130, this.$content)
+        this.$gui = $("<p>Gui:</p>").css({ "text-align": "left", "margin": "2px", "font-weight": "bold" })
+        this.$guiOn = this.createButton("modern_farm_gui_on", "ON", this.toggleGui)
+        this.$guiOff = this.createButton("modern_farm_gui_off", "OFF", this.toggleGui)
+        this.$content.append(this.$gui, this.$guiOn, this.$guiOff)
+
+        this.$popup = this.createPopup(423, 250, 170, this.$content)
         this.dropdown_active = false
 
         // Open and close the dropdown with the mouse
@@ -93,6 +101,11 @@ class AutoFarm extends ModernUtil {
             this.$count.css('color', "red")
             this.$count.text("")
         }
+
+        this.$guiOn.addClass('disabled')
+        this.$guiOff.addClass('disabled')
+        if (this.gui) this.$guiOn.removeClass('disabled')
+        else this.$guiOff.removeClass('disabled')
     }
 
     toggleDuration = (event) => {
@@ -121,11 +134,23 @@ class AutoFarm extends ModernUtil {
         this.updateButtons()
     }
 
+
+    toggleGui = (event) => {
+        const { id } = event.currentTarget
+
+        // Update the gui
+        if (id == "modern_farm_gui_on") this.gui = true
+        if (id == "modern_farm_gui_off") this.gui = false
+
+        // Save the settings and update the buttons
+        this.storage.save('af_gui', this.gui);
+        this.updateButtons()
+    }
+
     /* generate the list containing 1 polis per island */
     generateList = () => {
         const islands_list = new Set();
         const polis_list = [];
-        const tmp_polisList = [];
         let minResource = 0;
         let min_percent = 0;
 
@@ -203,7 +228,7 @@ class AutoFarm extends ModernUtil {
         const polis_list = this.generateList();
 
         // If the captain is active, claim all the resources at once and fake the opening
-        if (isCaptainActive) {
+        if (isCaptainActive && this.gui) {
             await this.fakeOpening();
             await this.sleep(Math.random() * 2000 + 1000); // random between 1 second and 3
             await this.fakeSelectAll();
@@ -213,6 +238,11 @@ class AutoFarm extends ModernUtil {
             await this.fakeUpdate();
 
             setTimeout(() => uw.WMap.removeFarmTownLootCooldownIconAndRefreshLootTimers(), 2000);
+            return;
+        }
+
+        if (isCaptainActive && !this.gui) {
+            await this.fakeGuiUpdate();
             return;
         }
 
@@ -272,8 +302,8 @@ class AutoFarm extends ModernUtil {
     main = async () => {
         // Check that the timer is not too high
         const next_collection = this.getNextCollection();
-        if (next_collection && (this.timer > next_collection + 30 * 1000 || this.timer < next_collection)) {
-            this.timer = next_collection + Math.floor(Math.random() * 20_000);
+        if (next_collection && (this.timer > next_collection + 60 * 1_000 || this.timer < next_collection)) {
+            this.timer = next_collection + Math.floor(Math.random() * 20_000) + 10_000;
         }
 
         // Claim resources when timer has passed
@@ -284,11 +314,12 @@ class AutoFarm extends ModernUtil {
             // Claim the resources, stop the interval and restart it
             clearInterval(this.active);
             this.active = null;
+
             await this.claim();
             this.active = setInterval(this.main, 1000);
 
             // Set the new timer 
-            const rand = Math.floor(Math.random() * 10_000) + 5_000;
+            const rand = Math.floor(Math.random() * 20_000) + 10_000;
             this.timer = this.timing + rand;
             if (this.timer < next_collection) this.timer = next_collection + rand;
         }
@@ -359,5 +390,36 @@ class AutoFarm extends ModernUtil {
                 trade_office: trade_office ? 1 : 0,
             };
             uw.gpAjax.ajaxGet('farm_town_overviews', 'get_farm_towns_for_town', data, false, () => myResolve());
+        });
+
+    /* Fake the gui update */
+    fakeGuiUpdate = () =>
+        new Promise(async (myResolve, myReject) => {
+            // Open the farm town overview
+            $(".toolbar_button.premium .icon").trigger('mouseenter')
+            await this.sleep(1019.39, 127.54)
+
+            // Click on the farm town overview
+            $(".farm_town_overview a").trigger('click')
+            await this.sleep(1156.65, 165.62)
+
+            // Select all the polis
+            $(".checkbox.select_all").trigger("click")
+            await this.sleep(1036.20, 135.69)
+
+            // Claim the resources
+            $("#fto_claim_button").trigger("click")
+            await this.sleep(1036.20, 135.69)
+
+            // Confirm the claim if needed
+            const el = $(".confirmation .btn_confirm.button_new")
+            if (el.length) {
+                el.trigger("click")
+                await this.sleep(1036.20, 135.69)
+            }
+
+            // Close the window
+            $(".icon_right.icon_type_speed.ui-dialog-titlebar-close").trigger("click")
+            myResolve();
         });
 }

@@ -225,6 +225,7 @@ class AutoBuild extends ModernUtil {
             this.storage.save('buildings', this.towns_buildings);
         } else {
             delete this.towns_buildings[town.id];
+            this.storage.save('buildings', this.towns_buildings);
             this.console.log(`${town.name}: Auto Build Off`);
         }
 
