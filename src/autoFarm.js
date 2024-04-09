@@ -228,7 +228,7 @@ class AutoFarm extends ModernUtil {
         const polis_list = this.generateList();
 
         // If the captain is active, claim all the resources at once and fake the opening
-        if (isCaptainActive && this.gui) {
+        if (isCaptainActive && !this.gui) {
             await this.fakeOpening();
             await this.sleep(Math.random() * 2000 + 1000); // random between 1 second and 3
             await this.fakeSelectAll();
@@ -241,7 +241,7 @@ class AutoFarm extends ModernUtil {
             return;
         }
 
-        if (isCaptainActive && !this.gui) {
+        if (isCaptainActive && this.gui) {
             await this.fakeGuiUpdate();
             return;
         }
