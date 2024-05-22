@@ -1,5 +1,9 @@
 # <div align="center"> Grepolis ModernBot </div>
 
+> [!CAUTION]
+> In both the Italy and French comunity a lot of bans has been reported, I'm looking for a solution to this, if you have ideas open an issue with suggestions!
+
+
 ### <p align="center"> If you like this project, please consider starring it to show your support and help others discover it too </p>
 
 ### <div align="center"> [Website](https://sau1707.github.io/ModernBot/) - [Donations](https://paypal.me/sau1707) </div>
