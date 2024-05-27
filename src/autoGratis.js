@@ -25,7 +25,7 @@ class AutoGratis extends ModernUtil {
                 <div class="left"></div>
                 <div class="right"></div>
                 <div class="caption js-caption">Gratis<div class="effect js-effect"></div></div>
-            </div> button (try every 4 seconds)
+            </div> button (try every 2.5 seconds)
             </div>    
         </div>
         `;
@@ -38,7 +38,7 @@ class AutoGratis extends ModernUtil {
                 'filter',
                 'brightness(100%) saturate(186%) hue-rotate(241deg)',
             );
-            this.autogratis = setInterval(this.main, 4000);
+            this.autogratis = setInterval(this.main, 2500);
         } else {
             uw.$('#auto_gratis_title').css('filter', '');
             clearInterval(this.autogratis);
@@ -49,14 +49,15 @@ class AutoGratis extends ModernUtil {
 
     /* Main loop for the autogratis bot */
     main = () => {
-        const el = uw.$('.type_building_queue.type_free').not('#dummy_free');
-        if (el.length) el.click();
-
-        const town = uw.ITowns.getCurrentTown();
-        for (let model of town.buildingOrders().models) {
-            if (model.attributes.building_time < 300) {
-                this.callGratis(town.id, model.id)
-                return;
+        const el = uw.$('.type_building_queue.type_free').not('.disabled').not('#dummy_free');
+        if (el.length) {
+            el.click();
+            const town = uw.ITowns.getCurrentTown();
+            for (let model of town.buildingOrders().models) {
+                if (model.attributes.building_time < 300) {
+                    this.callGratis(town.id, model.id);
+                    return;
+                }
             }
         }
     };
@@ -70,7 +71,12 @@ class AutoGratis extends ModernUtil {
                 "order_id": order_id
             },
             "town_id": town_id
-        }
+        };
+    
+        // Add console log
+        this.console.log(`${uw.ITowns.towns[town_id].getName()}: calling gratis for order ${order_id}`);
+    
         uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
-    }
+    };
+    
 }

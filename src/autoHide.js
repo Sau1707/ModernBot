@@ -58,7 +58,7 @@ class AutoHide extends ModernUtil {
                 <div style="position: absolute; right: 10px; top: 4px; font-size: 10px;"> (click to toggle) </div>
             </div>
             <div style="padding: 5px; font-weight: 600">
-                Check every 5 seconds, if there is more then 5000 iron store it in the hide
+                Check every 5 seconds, if there is more then 15000 iron store it in the hide
             </div>    
         </div>
         `;
@@ -96,7 +96,7 @@ class AutoHide extends ModernUtil {
         if (this.activePolis == 0) return;
         const town = uw.ITowns.towns[this.activePolis];
         const { iron } = town.resources()
-        if (iron > 5000) {
+        if (iron > 15000) {
             this.storeIron(this.activePolis, iron)
         }
     }
