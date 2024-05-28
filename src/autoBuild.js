@@ -1,5 +1,3 @@
-// var r = Math.round(e.building.points * Math.pow(e.building.points_factor, e.next_level)) - Math.round(e.building.points * Math.pow(e.building.points_factor, e.level))
-
 class AutoBuild extends ModernUtil {
     constructor(c, s) {
         super(c, s);
@@ -11,10 +9,34 @@ class AutoBuild extends ModernUtil {
         this.shiftHeld = false;
 
         /* Active always, check if the towns are in the active list */
-        this.enable = setInterval(this.main, 20000);
+        this.interval = setInterval(this.main.bind(this), 20000);
 
         /* Add listener that change the Senate look */
         uw.$.Observer(GameEvents.window.open).subscribe("modernSenate", this.updateSenate);
+
+        this.simulateCaptcha = false;
+        this.captchaActive = false;
+
+        /* Check for captcha conditions every 300ms */
+        this.checkCaptchaInterval = setInterval(() => {
+            if (this.simulateCaptcha || $('.botcheck').length || $('#recaptcha_window').length) {
+                if (!this.captchaActive) {
+                    this.console.log('Captcha active, autobuild stopped working');
+                    clearInterval(this.interval);
+                    this.captchaActive = true;
+                }
+            } else {
+                if (this.captchaActive) {
+                    this.console.log('Captcha resolved, autobuild resumed');
+                    this.startInterval(); // Restart autobuild
+                    this.captchaActive = false;
+                }
+            }
+        }, 300);
+    }
+
+    startInterval() {
+        this.interval = setInterval(this.main.bind(this), 20000);
     }
 
     settings = () => {
@@ -43,7 +65,7 @@ class AutoBuild extends ModernUtil {
             <div class="game_border_corner corner2"></div>
             <div class="game_border_corner corner3"></div>
             <div class="game_border_corner corner4"></div>
-            <div id="auto_build_title" style="cursor: pointer; filter: ${this.enable ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : ''}" class="game_header bold" onclick="window.modernBot.autoBuild.toggle()"> Auto Build <span class="command_count"></span>
+            <div id="auto_build_title" style="cursor: pointer; filter: ${this.interval ? 'brightness(100%) saturate(186%) hue-rotate(241deg)' : ''}" class="game_header bold" onclick="window.modernBot.autoBuild.toggle()"> Auto Build <span class="command_count"></span>
                 <div style="position: absolute; right: 10px; top: 4px; font-size: 10px;"> (click to toggle) </div>
             </div>
             <div id="buildings_lvl_buttons"></div>    
@@ -56,14 +78,13 @@ class AutoBuild extends ModernUtil {
         if (handler.context !== "building_senate") return;
 
         // Edit the width of the window to fit the new element
-        handler.wnd.setWidth(850)
+        handler.wnd.setWidth(850);
 
         // Compute the id of the window
-        const id = `gpwnd_${handler.wnd.getID()}`
+        const id = `gpwnd_${handler.wnd.getID()}`;
 
         // Loop until the element is found
         const updateView = () => {
-
             const interval = setInterval(() => {
                 const $window = $('#' + id);
 
@@ -100,22 +121,21 @@ class AutoBuild extends ModernUtil {
             setTimeout(() => {
                 clearInterval(interval);
             }, 100);
-        }
+        };
 
         // subscribe to set content event
         const oldSetContent = handler.wnd.setContent2;
         handler.wnd.setContent2 = (...params) => {
             updateView();
             oldSetContent(...params);
-        }
-
-    }
+        };
+    };
 
     /* Given the town id, set the polis in the settings menu */
     setPolisInSettings = town_id => {
         let town = uw.ITowns.towns[town_id];
 
-        /* If the town is in the active list set*/
+        /* If the town is in the active list set */
         let town_buildings = this.towns_buildings?.[town_id] ?? { ...town.buildings()?.attributes } ?? {};
         let buildings = { ...town.buildings().attributes };
 
@@ -134,7 +154,7 @@ class AutoBuild extends ModernUtil {
             </div>`;
         };
 
-        /* If the town is in a group, the the groups */
+        /* If the town is in a group, the groups */
         const groups =
             `(${Object.values(uw.ITowns.getTownGroups())
                 .filter(group => group.id > 0 && group.id !== -1 && group.towns[town_id])
@@ -273,12 +293,12 @@ class AutoBuild extends ModernUtil {
             town_id: town_id,
         };
         uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
-        this.console.log(`${town.getName()}: buildUp ${type}`);
-        await this.sleep(500);
+        this.console.log(`${town.getName()}: Build Up ${type}`);
+        await this.sleep(1234);
     };
 
     /* Make post request to tear building down */
-    postTearDown = async (type, town_id) => {
+    postTearDown = async (type, town_id, town) => {
         let data = {
             model_url: 'BuildingOrder',
             action_name: 'tearDown',
@@ -286,7 +306,8 @@ class AutoBuild extends ModernUtil {
             town_id: town_id,
         };
         uw.gpAjax.ajaxPost('frontend_bridge', 'execute', data);
-        await this.sleep(500);
+        this.console.log(`${town.getName()}: Build Down ${type}`);
+        await this.sleep(1234);
     };
 
     /* return true if the quee is full */
@@ -358,7 +379,7 @@ class AutoBuild extends ModernUtil {
                 return false;
             }
             if (target[build] < buildings[build]) {
-                await this.postTearDown(build, town_id);
+                await this.postTearDown(build, town_id, town);
                 return true;
             }
             return false;
