@@ -290,6 +290,7 @@ class AutoFarm extends ModernUtil {
                     if (farm_town.attributes.id != relation.attributes.farm_town_id) continue;
                     if (relation.attributes.relation_status !== 1) continue;
                     if (relation.attributes.lootable_at !== null && now < relation.attributes.lootable_at) continue;
+                    if (relation.attributes.loot !== null && (4000 + relation.attributes.expansion_stage * 1000) - relation.attributes.loot < 115) continue;
 
                     this.claimSingle(town_id, relation.attributes.farm_town_id, relation.id, Math.ceil(this.timing / 600_000));
                     await this.sleep(Math.random() * 1000 + 500);
