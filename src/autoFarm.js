@@ -1,11 +1,12 @@
+
 class AutoFarm extends ModernUtil {
     constructor(c, s) {
         super(c, s);
 
         // Load the settings
-        this.timing = this.storage.load('af_level', 300000);
-        this.percent = this.storage.load('af_percent', 1);
-        this.active = this.storage.load('af_active', false);
+        this.timing = this.storage.load('af_level', 3000);
+        this.percent = this.storage.load('af_percent', 0.7);
+        this.active = this.storage.load('af_active', true);
         this.gui = this.storage.load('af_gui', false);
 
         // Create the elements for the new menu
@@ -35,17 +36,19 @@ class AutoFarm extends ModernUtil {
         this.$content.append(this.$duration, this.$button5, this.$button10, this.$button20)
 
         this.$storage = $("<p>Storage:</p>").css({ "text-align": "left", "margin": "2px", "font-weight": "bold" })
+        this.$button60 = this.createButton("modern_farm_60", "60%", this.toggleStorage).css({ "width": "70px" })
+        this.$button70 = this.createButton("modern_farm_70", "70%", this.toggleStorage).css({ "width": "70px" })
         this.$button80 = this.createButton("modern_farm_80", "80%", this.toggleStorage).css({ "width": "70px" })
-        this.$button90 = this.createButton("modern_farm_90", "90%", this.toggleStorage).css({ "width": "80px" })
+        this.$button90 = this.createButton("modern_farm_90", "90%", this.toggleStorage).css({ "width": "70px" })
         this.$button100 = this.createButton("modern_farm_100", "100%", this.toggleStorage).css({ "width": "80px" })
-        this.$content.append(this.$storage, this.$button80, this.$button90, this.$button100)
+        this.$content.append(this.$storage, this.$button60, this.$button70, this.$button80, this.$button90, this.$button100)
 
         this.$gui = $("<p>Gui:</p>").css({ "text-align": "left", "margin": "2px", "font-weight": "bold" })
         this.$guiOn = this.createButton("modern_farm_gui_on", "ON", this.toggleGui)
         this.$guiOff = this.createButton("modern_farm_gui_off", "OFF", this.toggleGui)
         this.$content.append(this.$gui, this.$guiOn, this.$guiOff)
 
-        this.$popup = this.createPopup(423, 250, 170, this.$content)
+        this.$popup = this.createPopup(423, 250, 200, this.$content)
         this.dropdown_active = false
 
         // Open and close the dropdown with the mouse
@@ -85,6 +88,8 @@ class AutoFarm extends ModernUtil {
         this.$button5.addClass('disabled')
         this.$button10.addClass('disabled')
         this.$button20.addClass('disabled')
+        this.$button60.addClass('disabled')
+        this.$button70.addClass('disabled')
         this.$button80.addClass('disabled')
         this.$button90.addClass('disabled')
         this.$button100.addClass('disabled')
@@ -93,13 +98,15 @@ class AutoFarm extends ModernUtil {
         if (this.timing == 600000) this.$button10.removeClass('disabled')
         if (this.timing == 1200000) this.$button20.removeClass('disabled')
 
+        if (this.percent == 0.6) this.$button60.removeClass('disabled')
+        if (this.percent == 0.7) this.$button70.removeClass('disabled')
         if (this.percent == 0.8) this.$button80.removeClass('disabled')
         if (this.percent == 0.9) this.$button90.removeClass('disabled')
         if (this.percent == 1) this.$button100.removeClass('disabled')
 
         if (!this.active) {
             this.$count.css('color', "red")
-            this.$count.text("")
+            this.$count.text("NA")
         }
 
         this.$guiOn.addClass('disabled')
@@ -125,9 +132,11 @@ class AutoFarm extends ModernUtil {
         const { id } = event.currentTarget
 
         // Update the percent
-        if (id == "modern_farm_80") this.percent = 0.8
-        if (id == "modern_farm_90") this.percent = 0.9
-        if (id == "modern_farm_100") this.percent = 1
+        if (id == "modern_farm_60") this.percent = 0.6;
+        if (id == "modern_farm_70") this.percent = 0.7;
+        if (id == "modern_farm_80") this.percent = 0.8;
+        if (id == "modern_farm_90") this.percent = 0.9;
+        if (id == "modern_farm_100") this.percent = 1;
 
         // Save the settings and update the buttons
         this.storage.save('af_percent', this.percent);
@@ -149,25 +158,42 @@ class AutoFarm extends ModernUtil {
 
     /* generate the list containing 1 polis per island */
     generateList = () => {
-        const islands_list = new Set();
         const polis_list = [];
-        let minResource = 0;
-        let min_percent = 0;
+        const islands_dict = [];
 
         const { models: towns } = uw.MM.getOnlyCollectionByName('Town');
 
-        for (const town of towns) {
+        for (let town of towns) {
             const { on_small_island, island_id, id } = town.attributes;
-            if (on_small_island || islands_list.has(island_id)) continue;
+            if (on_small_island) continue;
 
-            // Check the min percent for each town
             const { wood, stone, iron, storage } = uw.ITowns.getTown(id).resources();
-            minResource = Math.min(wood, stone, iron);
-            min_percent = minResource / storage;
+            let avgResource = (wood + stone + iron) / storage;
+            town.avgResource = avgResource;
 
-            islands_list.add(island_id);
+            // If any resource above storage setting -> do not farm
+            if((wood / storage) > this.percent || (wood / storage) > this.percent || (wood / storage) > this.percent){
+                continue;
+            }
+
+            // If first town for this island add
+            if(islands_dict[island_id] === undefined){
+                islands_dict[island_id] = town;
+                continue;
+            }
+
+            let otherTown = islands_dict[island_id];
+
+            // If this town as less resources % -> change town to farm
+            if (avgResource < otherTown.avgResource){
+                islands_dict[island_id] = town;
+            }
+        }
+
+        // Someone else can probably write better code than this :P
+        for (const [island, town] of Object.entries(islands_dict)){
+            this.console.log(`island ${island}, town selected to collect farming villages :${town.attributes.name}`);
             polis_list.push(town.id);
-            // if (min_percent < this.percent) continue;
         }
 
         return polis_list;
@@ -247,7 +273,7 @@ class AutoFarm extends ModernUtil {
         }
 
         // If the captain is not active, claim the resources one by one, but limit the number of claims
-        let max = 60;
+        let max = 100;
         const { models: player_relation_models } = uw.MM.getOnlyCollectionByName('FarmTownPlayerRelation');
         const { models: farm_town_models } = uw.MM.getOnlyCollectionByName('FarmTown');
         const now = Math.floor(Date.now() / 1000);
@@ -266,8 +292,11 @@ class AutoFarm extends ModernUtil {
                     if (relation.attributes.lootable_at !== null && now < relation.attributes.lootable_at) continue;
 
                     this.claimSingle(town_id, relation.attributes.farm_town_id, relation.id, Math.ceil(this.timing / 600_000));
-                    await this.sleep(500);
-                    if (!max) return;
+                    await this.sleep(Math.random() * 1000 + 500);
+                    if (!max){
+                        setTimeout(() => uw.WMap.removeFarmTownLootCooldownIconAndRefreshLootTimers(), 2000);
+                        return;
+                    } 
                     else max -= 1;
                 }
             }
