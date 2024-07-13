@@ -168,11 +168,14 @@ class AutoFarm extends ModernUtil {
             if (on_small_island) continue;
 
             const { wood, stone, iron, storage } = uw.ITowns.getTown(id).resources();
-            let avgResource = (wood + stone + iron) / storage;
+            let avgResource = (wood + stone + iron) / (storage * 3);
             town.avgResource = avgResource;
 
             // If any resource above storage setting -> do not farm
-            if((wood / storage) > this.percent && (wood / storage) > this.percent && (wood / storage) > this.percent){
+            // if((wood / storage) > this.percent && (wood / storage) > this.percent && (wood / storage) > this.percent){
+
+            // If avg resource above storage setting -> do not farm
+            if(avgResource > this.percent){
                 continue;
             }
 
