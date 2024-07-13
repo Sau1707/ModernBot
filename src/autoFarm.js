@@ -172,7 +172,7 @@ class AutoFarm extends ModernUtil {
             town.avgResource = avgResource;
 
             // If any resource above storage setting -> do not farm
-            if((wood / storage) > this.percent || (wood / storage) > this.percent || (wood / storage) > this.percent){
+            if((wood / storage) > this.percent && (wood / storage) > this.percent && (wood / storage) > this.percent){
                 continue;
             }
 
