@@ -6,8 +6,6 @@
 
 ### <p align="center"> If you like this project, please consider starring it to show your support and help others discover it too </p>
 
-### <div align="center"> [Website](https://sau1707.github.io/ModernBot/) - [Donations](https://paypal.me/sau1707) </div>
-
 
 ## Development
 
@@ -95,4 +93,3 @@ Additionally, this bot is provided as open-source software, and we do not offer 
 By using this bot, you acknowledge and accept these terms and conditions and agree to use it responsibly and in accordance with the applicable laws and regulations.
 
 - Icons from [flaticon](https://www.flaticon.com/)
-- Website graphics from [grepolis](https://grepolis.com)
