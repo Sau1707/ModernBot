@@ -1,36 +1,42 @@
 {
-	"name": "grepolis",
-	"version": "1.0.0",
-	"description": "",
-	"main": "main.js",
-	"type": "commonjs",
-	"scripts": {
-		"dev": "npx gulp",
-		"start": "npx gulp --updateVersion"
-	},
-	"author": "",
-	"license": "ISC",
-	"devDependencies": {
-		"del": "^7.0.0",
-		"gulp": "^4.0.2",
-		"gulp-clean-css": "^4.3.0",
-		"gulp-concat": "^2.6.1",
-		"gulp-footer": "^2.1.0",
-		"gulp-uglify": "^3.0.2",
-		"through2": "^4.0.2"
-	},
-	"dependencies": {
-		"@types/jquery": "^3.5.16",
-		"gulp-insert": "^0.5.0"
-	},
-	"prettier": {
-		"bracketSpacing": true,
-		"printWidth": 400,
-		"tabWidth": 4,
-		"useTabs": true,
-		"singleQuote": true,
-		"semi": true,
-		"arrowParens": "avoid",
-		"bracketSameLine": false
-	}
+    "name": "grepolis",
+    "version": "1.0.0",
+    "description": "",
+    "main": "main.js",
+    "type": "commonjs",
+    "scripts": {
+        "dev": "nodemon"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "del": "^7.0.0",
+        "gulp": "^4.0.2",
+        "gulp-clean-css": "^4.3.0",
+        "gulp-concat": "^2.6.1",
+        "gulp-footer": "^2.1.0",
+        "gulp-uglify": "^3.0.2",
+        "through2": "^4.0.2"
+    },
+    "dependencies": {
+        "@types/jquery": "^3.5.16",
+        "gulp-insert": "^0.5.0"
+    },
+    "prettier": {
+        "bracketSpacing": true,
+        "printWidth": 400,
+        "tabWidth": 4,
+        "useTabs": true,
+        "singleQuote": true,
+        "semi": true,
+        "arrowParens": "avoid",
+        "bracketSameLine": false
+    },
+    "nodemonConfig": {
+        "watch": [
+            "new"
+        ],
+        "ext": "js,css",
+        "exec": "node build.js"
+    }
 }
