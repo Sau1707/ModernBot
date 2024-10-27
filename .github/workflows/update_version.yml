@@ -9,7 +9,7 @@ jobs:
             - name: Check out the repo
               uses: actions/checkout@v3
               with:
-                  fetch-depth: 0 # Fetch all history for all tags and branches
+                  fetch-depth: 0
 
             - name: Set up Node.js
               uses: actions/setup-node@v2
