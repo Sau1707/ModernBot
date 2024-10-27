@@ -6,7 +6,7 @@
     "type": "commonjs",
     "scripts": {
         "dev": "nodemon",
-        "build": "node .\\build.js --version"
+        "build": "node build.js --version"
     },
     "author": "",
     "license": "ISC",
