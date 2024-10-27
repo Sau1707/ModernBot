@@ -1,0 +1,42 @@
+.modern_bot_settings {
+    z-index: 10;
+    position: absolute;
+    top: 52px !important;
+    right: 116px !important;
+}
+
+.modern_active {
+    position: relative;
+    background-blend-mode: multiply;
+    /* Or another blend mode that achieves your effect */
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Adjust color for blending */
+}
+
+
+.modern_title_description {
+    position: absolute;
+    right: 10px;
+    top: 4px;
+    font-size: 10px
+}
+
+.game_border .game_header.active {
+    filter: brightness(100%) saturate(186%) hue-rotate(241deg);
+}
+
+@keyframes rotateForever {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.rotate-forever {
+    animation: rotateForever 5s linear infinite;
+    transform-origin: 16px 15px;
+    filter: hue-rotate(72deg) saturate(2.5);
+}
