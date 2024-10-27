@@ -20,7 +20,7 @@ jobs:
               run: npm install
 
             - name: Build and update version
-              run: npm start
+              run: node .\build.js --version
 
             - name: Add /dist folder
               run: |
