@@ -1,21 +1,21 @@
-# <div align="center"> Grepolis ModernBot </div>
-
-> [!CAUTION]
-> In both the Italy and French comunity a lot of bans has been reported, I'm looking for a solution to this, if you have ideas open an issue with suggestions!
+# ModernBot
 
 
-### <p align="center"> If you like this project, please consider starring it to show your support and help others discover it too </p>
+![screenshot](./img/screen.png)
 
+<br />
 
-## Development
+## Installation
 
-### Contributing
+### <div align="center"> [Version 1.0](https://github.com/Sau1707/ModernBot/raw/refs/heads/main/dist/merged.user.js) </div>
 
-The `main` branch has the stable version of the bot. The `dev` branch has the latest changes and it's the one that should be used for development.
+Version 2.0 Work in progress
 
-Fork the repository and clone it to your local machine. Create a new branch from `dev` and make your changes. Once you're done, submit a pull request to the `dev` branch of the original repository.
+ModerLite Work in progress
 
-### Script
+<br />
+
+## Script
 
 The script it's divided in modules under the `src` directory.
 
@@ -26,7 +26,7 @@ npm install
 npm run dev
 ```
 
-it will create a [gulp](https://gulpjs.com/docs/en/getting-started/quick-start/) server that listen to changes in the code. Each time a file it's saved all the modules are merged into one under the dist folder
+it will create a nodemon server that listen to changes in the code. Each time a file it's saved all the modules are merged into one under the dist folder
 
 Place this into a tampermokey script:
 
@@ -38,7 +38,7 @@ Place this into a tampermokey script:
 // @version      1.0.0
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
-// @require      file://C:\[path]\ModernBot\dist\merged.user.js
+// @require      file://C:\[path]\ModernBot\dist\modernbot.user.js
 // ==/UserScript==
 ```
 
@@ -50,37 +50,7 @@ chrome://extensions/
 
 Then select tampermoney and add `Allow access to file URLs`
 
-### Website
-
-The website dynamicall load the content of `markdown` folder and generate a box for each one of them
-
-The title of the file it's the title of the module, the other details has to be set as follow.
-
-```
----
-description:
-version:
----
-
-[Content of the popup]
-```
-
-In order to run the website locally:
-
-```
-cd website
-npm install
-npm run dev
-```
-
-### Version
-
-The version get automatically updated every time it's done a commit, the version works as follow:
-
--   1.[src_file_count].[numbers_of_commits]
-
-If the file count it's the same, +1 to the numbers_of_commits it's added \
-If the file count increase (a new module it's added) then the version will be 1.[src_file_count + 1].0
+<br />
 
 ## Disclaimer
 

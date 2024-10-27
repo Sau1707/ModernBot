@@ -1,9 +1,9 @@
-// Entry path
+/*
 
-// Loop over all the components
-// Check that the user has not moved the mouse, if so the bot is stopped
-// Check if the bot check is not active, if so the bot is stopped
-// Random stop, 
+
+
+*/
+
 
 class ModernBot {
     STOP_TIME = 1000 * 5;
@@ -22,7 +22,7 @@ class ModernBot {
                 id: 'farm',
                 render: () => this.autoFarm.render(),
             },
-            // {
+            // { 
             //     title: 'Build',
             //     id: 'build',
             //     render: () => { },
@@ -58,8 +58,10 @@ class ModernBot {
         $("#modern_settings").addClass("rotate-forever")
 
         // After each action, wait for the delay to pass
+        // TODO: Add a ramdon delay that sometimes skips the action
 
         // Check if the farm is available
+        // Farm can be done in every island / Current town
         const hasFarm = await this.autoFarm.execute();
         if (hasFarm) {
             console.log("Farm was executed");
@@ -68,6 +70,13 @@ class ModernBot {
             return;
         };
 
+        // TODO: Check for building upgrades
+        // TODO: Check for research upgrades
+        // TODO: Check for rural trades / upgrades
+        // TODO: Check if the town has the bootcamp?
+        // TODO: Check if the gratis can be claimed
+        // TODO: Cave?
+        // TODO: Train & Heros?
         this.loopActive = false;
     }
 
