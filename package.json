@@ -5,7 +5,8 @@
     "main": "main.js",
     "type": "commonjs",
     "scripts": {
-        "dev": "nodemon"
+        "dev": "nodemon",
+        "build": "node .\\build.js --version"
     },
     "author": "",
     "license": "ISC",
