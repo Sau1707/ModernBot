@@ -1,0 +1,3 @@
+class AutoBootcamp extends ModernUtils {
+
+}
