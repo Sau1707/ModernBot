@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         ModernBot
-// @version      0.0.2
+// @version      0.0.3
 // @description  A modern grepolis bot
 // @match        http://*.grepolis.com/game/*
 // @match        https://*.grepolis.com/game/*
